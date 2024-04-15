@@ -1,0 +1,20 @@
+name: coverage 
+
+on: [push, pull_request]
+
+jobs:
+  coverage-foundry:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: yarn
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+          
+      - run: yarn coverage-forge

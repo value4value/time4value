@@ -1,0 +1,15 @@
+.env
+
+artifacts/
+cache-hardhat/
+cache-foundry/
+cache/
+out/
+
+node_modules
+
+coverage/
+coverage.json
+lcov.info
+
+.vscode
