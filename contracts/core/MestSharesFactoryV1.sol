@@ -8,14 +8,16 @@
 pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IMestShare} from "../intf/IMestShare.sol";
+import {IYieldTool} from "./YieldTool.sol";
 import {BondingCurveLib} from "../lib/BondingCurveLib.sol";
-import "../intf/IAave.sol";
-import "forge-std/Test.sol";
 
-contract MestSharesFactoryV1 is Ownable, Test {
+contract MestSharesFactoryV1 is Ownable {
+    using SafeERC20 for IERC20;
+
     address public immutable mestERC1155;
-    address public immutable WETH;
     uint256 public shareTypeNumber;
 
     address public protocolFeeReceiver;
@@ -26,13 +28,9 @@ contract MestSharesFactoryV1 is Ownable, Test {
     mapping(uint256 => address) public sharesMap;
     mapping(address => uint256[]) public creatorSharesMap; // index all shares one creator create
 
-    // for aave
     uint256 public depositedTotalAmount; // origin ETH amount
     uint256 public yieldBuffer = 1e12; // avoid decimal error
-
-    IAavePool public aavePool;
-    IAaveGateway public aaveGateway;
-    IAToken public aWETH;
+    IYieldTool public yieldTool;
 
     struct CurveFixedParam {
         uint256 basePrice;
@@ -55,10 +53,9 @@ contract MestSharesFactoryV1 is Ownable, Test {
     );
 
     // ============== constructor ==============
-    constructor(address _protocolFeeReceiver, address _mestERC1155, address _weth) {
+    constructor(address _protocolFeeReceiver, address _mestERC1155) {
         protocolFeeReceiver = _protocolFeeReceiver;
         mestERC1155 = _mestERC1155;
-        WETH = _weth;
 
         generalCurveFixedParam.basePrice = 5000000000000000;
         generalCurveFixedParam.inflectionPoint = 1500;
@@ -85,17 +82,23 @@ contract MestSharesFactoryV1 is Ownable, Test {
         creatorFeePercent = _feePercent;
     }
 
-    function setAaveInfo(address newPool, address newGateway) external onlyOwner {
-        if(address(aWETH) != address(0)) {
-            require(aWETH.balanceOf(address(this)) == 0, "AToken didnt withdraw all");
-            // revoke allowrance
-            aWETH.approve(address(aaveGateway), 0);
-        }
-        aaveGateway = IAaveGateway(newGateway);
-        aavePool = IAavePool(newPool);
+    function setYieldTool(address _yieldTool) external onlyOwner {
+        // check remove condition
+        if(address(yieldTool) != address(0)) {
+            uint256 yieldBal = yieldTool.yieldBalanceOf(address(this));
+            require(yieldBal == 0, "Yield token didnt withdraw all");
 
-        aWETH = IAToken(aavePool.getReserveData(WETH).aTokenAddress);
-        aWETH.approve(address(aaveGateway), type(uint256).max);
+            // revoke approve
+            address yieldToken = yieldTool.yieldToken();
+            IERC20(yieldToken).approve(address(yieldTool), 0);
+        }
+
+        // change yieldTool
+        yieldTool = IYieldTool(_yieldTool);
+
+        // yield token approve for
+        address yieldToken = yieldTool.yieldToken();
+        IERC20(yieldToken).approve(_yieldTool, type(uint256).max);
     }
 
     function setYieldBuffer(uint256 newYieldBuffer) external onlyOwner {
@@ -107,7 +110,7 @@ contract MestSharesFactoryV1 is Ownable, Test {
      * @return maxYieldAmount max yield amount owner could get
      */
     function maxClaimableYield() public returns(uint256 maxYieldAmount) {
-        uint256 withdrawableAmount = aWETH.balanceOf(address(this));
+        uint256 withdrawableAmount = yieldTool.yieldBalanceOf(address(this));
         maxYieldAmount = (withdrawableAmount - depositedTotalAmount) < yieldBuffer ? 0 : withdrawableAmount - depositedTotalAmount - yieldBuffer;
     }
 
@@ -119,17 +122,19 @@ contract MestSharesFactoryV1 is Ownable, Test {
     function claimYield(uint256 amount, address to) public onlyOwner {
         uint256 maxAmount = maxClaimableYield();
         require(amount <= maxAmount, "Invalid yield amount");
-        aaveGateway.withdrawETH(address(aavePool), amount, to);
+        yieldTool.yieldWithdraw(amount);
+        _safeTransferETH(to, amount);
     }
 
     function withdrawAllAtokenToETH() external onlyOwner {
-        uint256 withdrawableAmount = aWETH.balanceOf(address(this));
-        aaveGateway.withdrawETH(address(aavePool), withdrawableAmount, address(this));
+        uint256 withdrawableAmount = yieldTool.yieldMaxWithdrawable(address(this));
+        yieldTool.yieldWithdraw(withdrawableAmount);
     }
 
     function depositAllETHToAToken() external onlyOwner {
         uint256 ethAmount = address(this).balance;
-        aaveGateway.depositETH{value: ethAmount}(address(aavePool), address(this), 0);
+        _safeTransferETH(address(yieldTool), ethAmount);
+        yieldTool.yieldDeposit(ethAmount);
     }
 
     // ================ calculate price ==============
@@ -211,6 +216,7 @@ contract MestSharesFactoryV1 is Ownable, Test {
      * @dev in this case, slippage protection use msg.value insufficient
      */
     function buyShare(uint256 shareId, uint256 quantity) public payable {
+        require(address(yieldTool) != address(0), "Invalid yieldTool");
         require(shareId < shareTypeNumber, "Invalid shareId");
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
@@ -235,7 +241,8 @@ contract MestSharesFactoryV1 is Ownable, Test {
         }
 
         // deposit aave
-        aaveGateway.depositETH{value: subTotalPrice}(address(aavePool), address(this), 0);
+        _safeTransferETH(address(yieldTool), subTotalPrice);
+        yieldTool.yieldDeposit(subTotalPrice);
         depositedTotalAmount += subTotalPrice;
     }
 
@@ -245,6 +252,7 @@ contract MestSharesFactoryV1 is Ownable, Test {
      * @param minETHAmount minimum amount of ETH that a user receives, used for slippage protection. If the amount is less than this ETH value, it will revert.
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount) public payable {
+        require(address(yieldTool) != address(0), "Invalid yieldTool");
         require(shareId < shareTypeNumber, "Invalid shareId");
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
         address creator = sharesMap[shareId];
@@ -256,7 +264,7 @@ contract MestSharesFactoryV1 is Ownable, Test {
         emit Trade(msg.sender, shareId, false, quantity, totalPrice, protocolFee, creatorFee, fromSupply);
 
         // withdraw from aave
-        aaveGateway.withdrawETH(address(aavePool), subTotalPrice, address(this));
+        yieldTool.yieldWithdraw(subTotalPrice);
         depositedTotalAmount -= subTotalPrice;
 
         // pay
