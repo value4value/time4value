@@ -66,6 +66,12 @@ contract MestSharesFactoryV1 is Ownable, Test {
         generalCurveFixedParam.linearPriceSlope = 0;
     }
 
+    // ==========================================
+
+    fallback() external payable {}
+
+    receive() external payable {}
+
     // ============ Owner Settings ==============
     function setProtocolFeeReceiver(address newReceiver) external onlyOwner {
         protocolFeeReceiver = newReceiver;
@@ -80,16 +86,50 @@ contract MestSharesFactoryV1 is Ownable, Test {
     }
 
     function setAaveInfo(address newPool, address newGateway) external onlyOwner {
+        if(address(aWETH) != address(0)) {
+            require(aWETH.balanceOf(address(this)) == 0, "AToken didnt withdraw all");
+            // revoke allowrance
+            aWETH.approve(address(aaveGateway), 0);
+        }
         aaveGateway = IAaveGateway(newGateway);
         aavePool = IAavePool(newPool);
 
         aWETH = IAToken(aavePool.getReserveData(WETH).aTokenAddress);
-        // todo revoke allowrance
         aWETH.approve(address(aaveGateway), type(uint256).max);
     }
 
     function setYieldBuffer(uint256 newYieldBuffer) external onlyOwner {
         yieldBuffer = newYieldBuffer;
+    }
+
+    /**
+     * @notice calculate all yield profit OWNER could get
+     * @return maxYieldAmount max yield amount owner could get
+     */
+    function maxClaimableYield() public returns(uint256 maxYieldAmount) {
+        uint256 withdrawableAmount = aWETH.balanceOf(address(this));
+        maxYieldAmount = (withdrawableAmount - depositedTotalAmount) < yieldBuffer ? 0 : withdrawableAmount - depositedTotalAmount - yieldBuffer;
+    }
+
+    /**
+     * @notice only for owner to get certain amount yield
+     * @param amount owner claim amount
+     * @param to yield receiver address
+     */
+    function claimYield(uint256 amount, address to) public onlyOwner {
+        uint256 maxAmount = maxClaimableYield();
+        require(amount <= maxAmount, "Invalid yield amount");
+        aaveGateway.withdrawETH(address(aavePool), amount, to);
+    }
+
+    function withdrawAllAtokenToETH() external onlyOwner {
+        uint256 withdrawableAmount = aWETH.balanceOf(address(this));
+        aaveGateway.withdrawETH(address(aavePool), withdrawableAmount, address(this));
+    }
+
+    function depositAllETHToAToken() external onlyOwner {
+        uint256 ethAmount = address(this).balance;
+        aaveGateway.depositETH{value: ethAmount}(address(aavePool), address(this), 0);
     }
 
     // ================ calculate price ==============
@@ -236,20 +276,5 @@ contract MestSharesFactoryV1 is Ownable, Test {
             (bool success,) = to.call{value: value}(new bytes(0));
             require(success, "Eth transfer failed");
         }
-    }
-
-    // todo calculate yield
-    function maxClaimableYield() public returns(uint256 maxYieldAmount) {
-        console.log("cal yield");
-        uint256 withdrawableAmount = aWETH.balanceOf(address(this));
-        console.log(withdrawableAmount);
-        console.log(depositedTotalAmount);
-        maxYieldAmount = (withdrawableAmount - depositedTotalAmount) < yieldBuffer ? 0 : withdrawableAmount - depositedTotalAmount - yieldBuffer;
-    }
-
-    function claimYield(uint256 amount, address to) public onlyOwner {
-        uint256 maxAmount = maxClaimableYield();
-        require(amount <= maxAmount, "Invalid yield amount");
-        aaveGateway.withdrawETH(address(aavePool), amount, to);
     }
 }

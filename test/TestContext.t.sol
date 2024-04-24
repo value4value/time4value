@@ -14,6 +14,7 @@ import  "contracts/core/MestSharesFactoryV1.sol";
 contract TestContext is Test {
     MestSharesFactoryV1 public mestFactory;
     MestERC1155 public erc1155TokenTemp;
+    IAToken public aWETH;
 
     address public receiver = address(999);
     address public owner = address(1);
@@ -30,6 +31,7 @@ contract TestContext is Test {
 
         vm.prank(owner);
         mestFactory.setAaveInfo(0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        aWETH = IAToken(IAavePool(0x794a61358D6845594F94dc1DB02A252b5b4814aD).getReserveData(weth).aTokenAddress);
     }
 
     function testSuccess() public {}
