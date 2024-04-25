@@ -134,9 +134,9 @@ Scripts available via `npm run-script`:
 ```
 Foundry Commands
   unit tests
-    forge test
+    forge test --fork-url [ARB-RPC]
   coverage
-    forge coverage
+    forge coverage --fork-url [ARB-RPC]
 ```
 
 ### Adding dependency
