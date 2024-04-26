@@ -58,6 +58,7 @@ contract YieldTool is Ownable, IYieldTool {
 
     // user buy share > mestFactory > yieldAggregator > [aave > aWETH] > mestFactory > ERC1155 > user
     function yieldDeposit(uint256) external onlyFactory {
+        // todo add aave state judge
         uint256 ethAmount = address(this).balance;
         if(ethAmount > 0) {
             aaveGateway.depositETH{value: ethAmount}(address(aavePool), mestFactory, 0);
@@ -66,6 +67,7 @@ contract YieldTool is Ownable, IYieldTool {
 
     // user sell share > mestFactory > yieldAggregator > [aave > ETH] > mestFactory --> user
     function yieldWithdraw(uint256 amount) external onlyFactory {
+        // todo add aave state judge
         if(amount > 0) {
             aWETH.transferFrom(mestFactory, address(this), amount);
             aaveGateway.withdrawETH(address(aavePool), amount, mestFactory);

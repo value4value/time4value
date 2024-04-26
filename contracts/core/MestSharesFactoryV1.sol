@@ -58,6 +58,7 @@ contract MestSharesFactoryV1 is Ownable {
     ) {
         mestERC1155 = _mestERC1155;
 
+        // todo need change before formally sell?
         generalCurveFixedParam.basePrice = _basePrice; //5000000000000000;
         generalCurveFixedParam.inflectionPoint = _inflectionPoint; //1500;
         generalCurveFixedParam.inflectionPrice = _inflectionPrice; //102500000000000000;
@@ -82,10 +83,11 @@ contract MestSharesFactoryV1 is Ownable {
         yieldTool = IYieldTool(_yieldTool);
         // yield token approve for
         address yieldToken = yieldTool.yieldToken();
-        IERC20(yieldToken).approve(_yieldTool, type(uint256).max);
+        IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
     }
 
     function migrate(address _destination, address _yieldTool) external onlyOwner {
+        require(_yieldTool != address(0), "Invalid yieldTool");
         // only withdraw all
         if(_destination == address(this)) {
             _withdrawAllYieldTokenToETH();
@@ -97,20 +99,17 @@ contract MestSharesFactoryV1 is Ownable {
 
             // check remove condition
             if(address(yieldTool) != address(0)) {
-                uint256 yieldBal = yieldTool.yieldBalanceOf(address(this));
-                require(yieldBal == 0, "Yield token didnt withdraw all");
-
                 // revoke approve
                 yieldToken = yieldTool.yieldToken();
-                IERC20(yieldToken).approve(address(yieldTool), 0);
+                IERC20(yieldToken).safeApprove(address(yieldTool), 0);
             }
 
             // change yieldTool
             yieldTool = IYieldTool(_yieldTool);
 
-            // yield token approve for
+            // yield token approve for yieldTool
             yieldToken = yieldTool.yieldToken();
-            IERC20(yieldToken).approve(_yieldTool, type(uint256).max);
+            IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
 
             // deposit all ETH
             _depositAllETHToYieldToken();
@@ -262,7 +261,6 @@ contract MestSharesFactoryV1 is Ownable {
      * @param referral referral fee receiver
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public payable {
-        require(address(yieldTool) != address(0), "Invalid yieldTool");
         require(shareId < shareIndex, "Invalid shareId");
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
         address creator = sharesMap[shareId];

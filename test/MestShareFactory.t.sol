@@ -23,23 +23,53 @@ contract TestMestShareFactory is TestContext {
     function testSetYieldTool() public  {
         YieldTool newYieldTool = new YieldTool(address(mestFactory), 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
 
+        // invalid yieldtool addr
+        vm.prank(owner);
+        vm.expectRevert(bytes("Invalid yieldTool"));
+        mestFactory.migrate(address(newYieldTool), address(0));
+
         vm.prank(owner);
         mestFactory.migrate(address(newYieldTool), address(newYieldTool));   
     }
 
-    /*
-    function testSetAaveInfo() public {
-        vm.prank(owner);
-        yieldTool.setAaveInfo(0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
-    
-        testBuyShare();
-        vm.expectRevert(bytes("AToken didnt withdraw all"));
+    function testSetInitialYieldTool() public {
+        MestSharesFactoryV1 newMestFactory;
+        YieldTool newYieldTool;
+
+        newMestFactory = new MestSharesFactoryV1(address(erc1155TokenTemp), 5000000000000000, 1500, 102500000000000000, 0);
+        newYieldTool = new YieldTool(address(newMestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        newMestFactory.transferOwnership(owner);
+        newYieldTool.transferOwnership(owner);
+
+        // test before set yieldtool buy fail
+        vm.deal(user1, 10 ether);
+        vm.prank(user1);
+        newMestFactory.createShare(user1); 
+        vm.prank(user1);
+        vm.expectRevert(bytes("Invalid yieldTool"));
+        newMestFactory.buyShare{value:5500050111111109}(0, 1, receiver);
 
         vm.prank(owner);
-        yieldTool.setAaveInfo(0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        newMestFactory.setInitialYieldTool(address(newYieldTool));
+
+        vm.prank(owner);
+        vm.expectRevert(bytes("Have set yieldTool"));
+        newMestFactory.setInitialYieldTool(address(newYieldTool));
     }
-    */
-    
+
+    function testInitialMigrateFail() public {
+        MestSharesFactoryV1 newMestFactory;
+        YieldTool newYieldTool;
+
+        newMestFactory = new MestSharesFactoryV1(address(erc1155TokenTemp), 5000000000000000, 1500, 102500000000000000, 0);
+        newYieldTool = new YieldTool(address(newMestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        newMestFactory.transferOwnership(owner);
+        newYieldTool.transferOwnership(owner);
+
+        vm.prank(owner);
+        vm.expectRevert(); // yield token = address(0), interface error
+        newMestFactory.migrate(address(newYieldTool),address(newYieldTool));
+    }
 
     function testCreateShare() public {
         vm.deal(user1, 10 ether);
@@ -331,19 +361,12 @@ contract TestMestShareFactory is TestContext {
         uint256 factoryEthBal = address(mestFactory).balance;
         console.log("all factory eth amount:", factoryEthBal);
         assertEq(factoryEthBal, allEthAmount);
-    }
 
-    /*
-    function testDepositAll() public {
-        testWithdrawAll();
-
-        uint256 factoryEthBal = address(mestFactory).balance;
         vm.prank(owner);
-        mestFactory.depositAllETHToAToken();
-        uint256 factoryAtokenBal = aWETH.balanceOf(address(mestFactory));
-        assertEq(factoryAtokenBal, factoryEthBal);
+        mestFactory.migrate(address(yieldTool), address(yieldTool));
+        uint256 allEthAmountAfter = aWETH.balanceOf(address(mestFactory));
+        assertEq(allEthAmount, allEthAmountAfter);
     }
-    */
 
     function testSetYieldBuffer() public {
         testBuyShare();
