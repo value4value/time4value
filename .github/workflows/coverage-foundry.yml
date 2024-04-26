@@ -12,9 +12,9 @@ jobs:
       - name: Check out
         uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-        run: yarn
+      - run: yarn
       - name: Install Foundry
         uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
-        run: yarn coverage-forge
+      - run: yarn coverage-forge
