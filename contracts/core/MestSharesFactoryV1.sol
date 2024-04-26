@@ -18,18 +18,18 @@ contract MestSharesFactoryV1 is Ownable {
     using SafeERC20 for IERC20;
 
     address public immutable mestERC1155;
-    uint256 public shareTypeNumber;
+    uint256 public shareTypeNumber; // 命名 shareIndex 会更好理解一些 
 
-    address public protocolFeeReceiver;
-    uint256 public protocolFeePercent = 5 * 1e16; // unit in 1e18, default is 5%
-    uint256 public creatorFeePercent = 5 * 1e16; // unit in 1e18, default is 5%
+    address public protocolFeeReceiver; // 移除 protocol fee, 在 trade 时设置 referral receiver 会更合适
+    uint256 public protocolFeePercent = 5 * 1e16;
+    uint256 public creatorFeePercent = 5 * 1e16;
     CurveFixedParam public generalCurveFixedParam;
 
     mapping(uint256 => address) public sharesMap;
-    mapping(address => uint256[]) public creatorSharesMap; // index all shares one creator create
+    mapping(address => uint256[]) public creatorSharesMap; // 该变量可以考虑移除，因为 sharemap 也能计算出该数据
 
-    uint256 public depositedTotalAmount; // origin ETH amount
-    uint256 public yieldBuffer = 1e12; // avoid decimal error
+    uint256 public depositedTotalAmount; // ETH 数量是不是可以通过 supply 计算出来？_subTotal(0, supply)
+    uint256 public yieldBuffer = 1e12; // 该变量放在 yield 合约地址会更合适
     IYieldTool public yieldTool;
 
     struct CurveFixedParam {
@@ -55,6 +55,7 @@ contract MestSharesFactoryV1 is Ownable {
         protocolFeeReceiver = _protocolFeeReceiver;
         mestERC1155 = _mestERC1155;
 
+        // curver 参数允许初始化时配置
         generalCurveFixedParam.basePrice = 5000000000000000;
         generalCurveFixedParam.inflectionPoint = 1500;
         generalCurveFixedParam.inflectionPrice = 102500000000000000;
@@ -77,6 +78,8 @@ contract MestSharesFactoryV1 is Ownable {
         creatorFeePercent = _feePercent;
     }
 
+    // 如果已创建的 share 不能更换 yield 策略，那么是否不需要如此处理
+    // 新创建的 share 允许配置新的 yield 策略
     function setYieldTool(address _yieldTool) external onlyOwner {
         // check remove condition
         if(address(yieldTool) != address(0)) {
@@ -96,10 +99,12 @@ contract MestSharesFactoryV1 is Ownable {
         IERC20(yieldToken).approve(_yieldTool, type(uint256).max);
     }
 
+    // 放在 yield 策略更合适
     function setYieldBuffer(uint256 newYieldBuffer) external onlyOwner {
         yieldBuffer = newYieldBuffer;
     }
 
+    // 放在 yield 策略更合适, claimYield 调用该方法即可
     /**
      * @notice Calculate the maximum yield that the owner can claim.
      * @return maxYieldAmount max yield amount owner could get
@@ -121,6 +126,7 @@ contract MestSharesFactoryV1 is Ownable {
         _safeTransferETH(to, amount);
     }
 
+    // migrate 放在 yield 合约中，也可以考虑有没有比 migrare 更好的方法
     function withdrawAllAtokenToETH() external onlyOwner {
         uint256 withdrawableAmount = yieldTool.yieldMaxWithdrawable(address(this));
         yieldTool.yieldWithdraw(withdrawableAmount);
