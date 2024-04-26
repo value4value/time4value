@@ -1,9 +1,9 @@
 {
-  "name": "combination-pizza-hut-and-taco-bell",
+  "name": "mest-protocol",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "git@cache:cachemonet0x0CF6619/houndry.git",
-  "author": "cachemonet0x0CF6619 <90769841+cachemonet0x0CF6619@users.noreply.github.com>",
+  "repository": "git@github.com:mest-io/mest-protocol.git",
+  "author": "dev@mest.io",
   "license": "MIT",
   "scripts": {
     "lint": "solhint 'src/**/*.sol'",

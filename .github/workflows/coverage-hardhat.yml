@@ -5,10 +5,16 @@ on: [push, pull_request]
 jobs:
   coverage-hardhat:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        node-version: [16]
     steps:
       - name: Check out
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - run: yarn
-      - run: yarn coverage
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: yarn
+      - name: Test Coverage
+        run: yarn coverage
