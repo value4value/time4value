@@ -1,8 +1,9 @@
-import { run, ethers } from 'hardhat';
+// @ts-ignore
+import hardhat from 'hardhat';
 
 async function deploy () {
-  await run('compile');
-  const Contract = await ethers.getContractFactory('Mover');
+  await hardhat.run('compile');
+  const Contract = await hardhat.ethers.getContractFactory('Mover');
   const contract = await Contract.deploy();
   await contract.deployed();
   console.log(contract.address);
