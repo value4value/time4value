@@ -18,4 +18,4 @@ jobs:
         with:
           version: nightly
   
-      - run: forge test
+      - run: forge test --fork-url https://arbitrum.llamarpc.com
