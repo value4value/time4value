@@ -26,19 +26,18 @@ contract TestContext is Test {
 
     function createMestFactory() public {
         erc1155TokenTemp = new MestERC1155("http://mest.io/share/");
-        mestFactory = new MestSharesFactoryV1(receiver, address(erc1155TokenTemp));
-        yieldTool = new YieldTool(address(mestFactory), weth);
+        mestFactory = new MestSharesFactoryV1(address(erc1155TokenTemp), 5000000000000000, 1500, 102500000000000000, 0);
+        yieldTool = new YieldTool(address(mestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
         mestFactory.transferOwnership(owner);
         yieldTool.transferOwnership(owner);
         erc1155TokenTemp.setFactory(address(mestFactory));
         erc1155TokenTemp.transferOwnership(owner);
 
         vm.prank(owner);
-        yieldTool.setAaveInfo(0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
         aWETH = IAToken(IAavePool(0x794a61358D6845594F94dc1DB02A252b5b4814aD).getReserveData(weth).aTokenAddress);
         
         vm.prank(owner);
-        mestFactory.setYieldTool(address(yieldTool));
+        mestFactory.setInitialYieldTool(address(yieldTool));
     }
 
     function testSuccess() public {}
