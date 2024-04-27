@@ -134,7 +134,7 @@ contract MestSharesFactoryV1 is Ownable {
     function _depositAllETHToYieldToken() internal {
         uint256 ethAmount = address(this).balance;
         _safeTransferETH(address(yieldTool), ethAmount);
-        yieldTool.yieldDeposit(ethAmount);
+        yieldTool.yieldDeposit();
     }
 
     // ==================== public =======================
@@ -246,7 +246,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         // deposit to yield aggregator, e.g. Aave
         _safeTransferETH(address(yieldTool), subTotalPrice);
-        yieldTool.yieldDeposit(subTotalPrice);
+        yieldTool.yieldDeposit();
         depositedETHAmount += subTotalPrice;
     }
 

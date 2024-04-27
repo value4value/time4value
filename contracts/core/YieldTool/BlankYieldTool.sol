@@ -33,7 +33,7 @@ contract BlankYieldTool is IYieldTool {
 
     // ================== yield interface ==================
 
-    function yieldDeposit(uint256) external onlyFactory {
+    function yieldDeposit() external onlyFactory {
         _safeTransferETH(mestFactory, address(this).balance);
     }
 

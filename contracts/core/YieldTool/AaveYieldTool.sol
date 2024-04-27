@@ -58,7 +58,7 @@ contract AaveYieldTool is Ownable, IYieldTool {
     // ================== yield interface ==================
 
     // user buy share > mestFactory > yieldAggregator > [aave > aWETH] > mestFactory > ERC1155 > user
-    function yieldDeposit(uint256) external onlyFactory {
+    function yieldDeposit() external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
         if(ethAmount > 0) {
