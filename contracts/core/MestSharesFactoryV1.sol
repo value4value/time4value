@@ -20,7 +20,7 @@ contract MestSharesFactoryV1 is Ownable {
     address public immutable mestERC1155;
     uint256 public shareIndex; 
 
-    uint256 public defaultReferralFeePercent = 5 * 1e16;
+    uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
     CurveFixedParam public generalCurveFixedParam;
 
@@ -68,8 +68,8 @@ contract MestSharesFactoryV1 is Ownable {
 
     receive() external payable {}
 
-    function setDefaultReferralFeePercent(uint256 _feePercent) external onlyOwner {
-        defaultReferralFeePercent = _feePercent;
+    function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
+        referralFeePercent = _feePercent;
     }
 
     function setCreatorFeePercent(uint256 _feePercent) external onlyOwner {
@@ -85,16 +85,26 @@ contract MestSharesFactoryV1 is Ownable {
         IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
     }
 
+    /**
+     * @notice this function used for 3 method: withdraw all yield token to ETH \ deposit all ETH to yield token \ migrate
+     * use _destination and _yieldTool address to distinct:
+     * 1. withdraw all yieldToken: _destination == address(this)
+     * 2. deposit all ETH: _yieldTool == address(yieldTool) && _destination == _yieldTool
+     * 3. migrate: _destination == _yieldTool, and _yieldTool is new yield tool address
+     * @param _destination where ETH go
+     * @param _yieldTool yield tool address
+     */
     function migrate(address _destination, address _yieldTool) external onlyOwner {
         require(_yieldTool != address(0), "Invalid yieldTool");
         // only withdraw all
         if(_destination == address(this)) {
             _withdrawAllYieldTokenToETH();
         }
+        // only deposit all ETH
         else if(_yieldTool == address(yieldTool) && _destination == _yieldTool) {
-            // deposit all ETH
             _depositAllETHToYieldToken();
         }
+        // migrate yieldtool
         else if(_destination == _yieldTool) {
             address yieldToken;
             // withdraw all yieldtoken
@@ -160,10 +170,10 @@ contract MestSharesFactoryV1 is Ownable {
         returns (uint256 total, uint256 subTotal, uint256 referralFee, uint256 creatorFee)
     {
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        uint256 referralFeePercent = referral != address(0) ? defaultReferralFeePercent : 0;
+        uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
         subTotal = _subTotal(fromSupply, quantity);
-        referralFee = subTotal * referralFeePercent / 1 ether;
+        referralFee = subTotal * actualReferralFeePercent / 1 ether;
         creatorFee = subTotal * creatorFeePercent / 1 ether;
         total = subTotal + referralFee + creatorFee;
     }
@@ -181,11 +191,11 @@ contract MestSharesFactoryV1 is Ownable {
         returns (uint256 total, uint256 subTotal, uint256 referralFee, uint256 creatorFee)
     {
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        uint256 referralFeePercent = referral != address(0) ? defaultReferralFeePercent : 0;
+        uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
         subTotal = _subTotal(fromSupply - quantity, quantity);
-        referralFee = subTotal * referralFeePercent / 1 ether;
+        referralFee = subTotal * actualReferralFeePercent / 1 ether;
         creatorFee = subTotal * creatorFeePercent / 1 ether;
         total = subTotal - referralFee - creatorFee;
     }

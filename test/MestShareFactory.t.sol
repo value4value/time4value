@@ -266,9 +266,9 @@ contract TestMestShareFactory is TestContext {
         testCreateShare();
 
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        mestFactory.setDefaultReferralFeePercent(0);
+        mestFactory.setReferralFeePercent(0);
         vm.prank(owner);
-        mestFactory.setDefaultReferralFeePercent(0);
+        mestFactory.setReferralFeePercent(0);
         vm.prank(user1);
         mestFactory.buyShare{value:5500050111111109}(0, 1, receiver);
         uint256 receiverBalAfter = receiver.balance;
