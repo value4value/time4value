@@ -7,6 +7,7 @@
 
 pragma solidity 0.8.16;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../intf/IAave.sol";
 
 interface IYieldTool {
@@ -20,10 +21,9 @@ interface IYieldTool {
 /**
  * @notice Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
  */ 
-
- //todo 考虑：undercollateralized（aave导致坏账）
-
 contract YieldTool is Ownable, IYieldTool {
+    using SafeERC20 for IERC20;
+
     // for aave   
     address public immutable mestFactory;
     address public immutable WETH;
@@ -31,7 +31,7 @@ contract YieldTool is Ownable, IYieldTool {
 
     IAavePool public aavePool;
     IAaveGateway public aaveGateway;
-    IAToken public aWETH;
+    IERC20 public aWETH;
 
     uint256 internal constant ACTIVE_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFF;
     uint256 internal constant FROZEN_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFF;
@@ -44,8 +44,8 @@ contract YieldTool is Ownable, IYieldTool {
         aaveGateway = IAaveGateway(_aaveGateway);
         aavePool = IAavePool(_aavePool);
 
-        aWETH = IAToken(aavePool.getReserveData(WETH).aTokenAddress);
-        aWETH.approve(address(aaveGateway), type(uint256).max);
+        aWETH = IERC20(aavePool.getReserveData(WETH).aTokenAddress);
+        aWETH.safeApprove(address(aaveGateway), type(uint256).max);
     }
 
     modifier onlyFactory() {
@@ -65,25 +65,18 @@ contract YieldTool is Ownable, IYieldTool {
 
     // user buy share > mestFactory > yieldAggregator > [aave > aWETH] > mestFactory > ERC1155 > user
     function yieldDeposit(uint256) external onlyFactory {
+        require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
-        if(_checkAavePoolState()) {   
-            if(ethAmount > 0) {
-                aaveGateway.depositETH{value: ethAmount}(address(aavePool), mestFactory, 0);
-            }
-        }
-        else {
-            _safeTransferETH(mestFactory, ethAmount);
+        if(ethAmount > 0) {
+            aaveGateway.depositETH{value: ethAmount}(address(aavePool), mestFactory, 0);
         }
     }
-    // if aave is paused mest not
-    // eth 正常buy and sell
-    // 之前的钱 如果没提
-    // 如果此时有一些 eth剩余在合约里，aave正常后是不是能单独deposit进去
 
     // user sell share > mestFactory > yieldAggregator > [aave > ETH] > mestFactory --> user
     function yieldWithdraw(uint256 amount) external onlyFactory {
-        if(amount > 0 && _checkAavePoolState()) {
-            aWETH.transferFrom(mestFactory, address(this), amount);
+        require(_checkAavePoolState(), "Aave paused");
+        if(amount > 0) {
+            aWETH.safeTransferFrom(mestFactory, address(this), amount);
             aaveGateway.withdrawETH(address(aavePool), amount, mestFactory);
         }
     }
@@ -126,18 +119,5 @@ contract YieldTool is Ownable, IYieldTool {
 
     function _getPaused(uint256 configData) internal pure returns (bool) {
         return configData & ~PAUSED_MASK != 0;
-    }
-
-    /** 
-     * @notice Transfers ETH to the recipient address
-     * @param to The destination of the transfer
-     * @param value The value to be transferred
-     * @dev Fails with `Eth transfer failed`
-     */ 
-    function _safeTransferETH(address to, uint256 value) internal {
-        if (value > 0) {
-            (bool success,) = to.call{value: value}(new bytes(0));
-            require(success, "Eth transfer failed");
-        }
     }
 }
