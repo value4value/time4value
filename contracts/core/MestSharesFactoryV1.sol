@@ -92,6 +92,10 @@ contract MestSharesFactoryV1 is Ownable {
         if(_destination == address(this)) {
             _withdrawAllYieldTokenToETH();
         }
+        else if(_yieldTool == address(yieldTool) && _destination == _yieldTool) {
+            // deposit all ETH
+            _depositAllETHToYieldToken();
+        }
         else if(_destination == _yieldTool) {
             address yieldToken;
             // withdraw all yieldtoken
@@ -114,6 +118,7 @@ contract MestSharesFactoryV1 is Ownable {
             // deposit all ETH
             _depositAllETHToYieldToken();
         }
+        
     }
 
     /**
