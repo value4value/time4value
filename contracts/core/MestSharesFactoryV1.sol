@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IMestShare } from "../intf/IMestShare.sol";
-import { IYieldTool } from "contracts/intf/IYieldTool.sol";
+import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
 contract MestSharesFactoryV1 is Ownable {
@@ -28,7 +28,7 @@ contract MestSharesFactoryV1 is Ownable {
     mapping(address => uint256[]) public creatorSharesMap; 
 
     uint256 public depositedETHAmount; 
-    IYieldTool public yieldTool;
+    IYieldAggregator public yieldAggregator;
 
     struct CurveFixedParam {
         uint256 basePrice;
@@ -77,26 +77,26 @@ contract MestSharesFactoryV1 is Ownable {
     }
 
     /**
-     * @notice this function used for 3 cases for setting yieldTool
-     * case 1 address(0) -> yieldTool
-     * case 2 yieldTool -> blank yieldTool, which won't do yield farming
-     * case 3 yieldTool -> new yieldTool
-     * @param _yieldTool yield tool address    
+     * @notice this function used for 3 cases for setting yieldAggregator
+     * case 1 address(0) -> yieldAggregator
+     * case 2 yieldAggregator -> blank yieldAggregator, which won't do yield farming
+     * case 3 yieldAggregator -> new yieldAggregator
+     * @param _yieldAggregator yield tool address    
      */
-    function migrate(address _yieldTool) external onlyOwner {
-        require(_yieldTool != address(0), "Invalid yieldTool");
-        if(address(yieldTool) == address(0)) {
-            _setYieldAggregator(_yieldTool);
+    function migrate(address _yieldAggregator) external onlyOwner {
+        require(_yieldAggregator != address(0), "Invalid yieldAggregator");
+        if(address(yieldAggregator) == address(0)) {
+            _setYieldAggregator(_yieldAggregator);
         } else {
             // withdraw all yieldtoken
             _withdrawAllYieldTokenToETH();
 
-            // revoke old yieldTool approve
-            address yieldToken = yieldTool.yieldToken();
-            IERC20(yieldToken).safeApprove(address(yieldTool), 0);
+            // revoke old yieldAggregator approve
+            address yieldToken = yieldAggregator.yieldToken();
+            IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
             
-            // change yieldTool
-            _setYieldAggregator(_yieldTool);
+            // change yieldAggregator
+            _setYieldAggregator(_yieldAggregator);
 
             // deposit all ETH
             _depositAllETHToYieldToken();
@@ -109,32 +109,32 @@ contract MestSharesFactoryV1 is Ownable {
      * @param to yield receiver address
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
-        uint256 maxAmount = yieldTool.yieldMaxClaimable(depositedETHAmount);
+        uint256 maxAmount = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
         require(amount <= maxAmount, "Invalid yield amount");
-        yieldTool.yieldWithdraw(amount);
+        yieldAggregator.yieldWithdraw(amount);
         _safeTransferETH(to, amount);
     }
 
     // =============== internal for migrate ===================
 
-    function _setYieldAggregator(address _yieldTool) internal {
-        // set yieldTool
-        yieldTool = IYieldTool(_yieldTool);
+    function _setYieldAggregator(address _yieldAggregator) internal {
+        // set yieldAggregator
+        yieldAggregator = IYieldAggregator(_yieldAggregator);
 
-        // yield token approve for yieldTool
-        address yieldToken = yieldTool.yieldToken();
-        IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
+        // yield token approve for yieldAggregator
+        address yieldToken = yieldAggregator.yieldToken();
+        IERC20(yieldToken).safeApprove(_yieldAggregator, type(uint256).max);
     }
 
     function _withdrawAllYieldTokenToETH() internal {
-        uint256 withdrawableETHAmount = yieldTool.yieldBalanceOf(address(this));
-        yieldTool.yieldWithdraw(withdrawableETHAmount);
+        uint256 withdrawableETHAmount = yieldAggregator.yieldBalanceOf(address(this));
+        yieldAggregator.yieldWithdraw(withdrawableETHAmount);
     }
 
     function _depositAllETHToYieldToken() internal {
         uint256 ethAmount = address(this).balance;
-        _safeTransferETH(address(yieldTool), ethAmount);
-        yieldTool.yieldDeposit();
+        _safeTransferETH(address(yieldAggregator), ethAmount);
+        yieldAggregator.yieldDeposit();
     }
 
     // ==================== public =======================
@@ -219,7 +219,7 @@ contract MestSharesFactoryV1 is Ownable {
      * @dev in this case, slippage protection use msg.value insufficient
      */
     function buyShare(uint256 shareId, uint256 quantity, address referral) public payable {
-        require(address(yieldTool) != address(0), "Invalid yieldTool");
+        require(address(yieldAggregator) != address(0), "Invalid yieldAggregator");
         require(shareId < shareIndex, "Invalid shareId");
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
@@ -245,8 +245,8 @@ contract MestSharesFactoryV1 is Ownable {
         }
 
         // deposit to yield aggregator, e.g. Aave
-        _safeTransferETH(address(yieldTool), subTotalPrice);
-        yieldTool.yieldDeposit();
+        _safeTransferETH(address(yieldAggregator), subTotalPrice);
+        yieldAggregator.yieldDeposit();
         depositedETHAmount += subTotalPrice;
     }
 
@@ -268,7 +268,7 @@ contract MestSharesFactoryV1 is Ownable {
         emit Trade(msg.sender, shareId, false, quantity, totalPrice, referralFee, creatorFee, fromSupply);
 
         // withdraw from yield aggregator, e.g. Aave
-        yieldTool.yieldWithdraw(subTotalPrice);
+        yieldAggregator.yieldWithdraw(subTotalPrice);
         depositedETHAmount -= subTotalPrice;
 
         // unstake ETH to user

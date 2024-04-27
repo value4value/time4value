@@ -9,13 +9,13 @@ pragma solidity 0.8.16;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "contracts/intf/IAave.sol";
-import { IYieldTool } from "contracts/intf/IYieldTool.sol";
+import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
- * @notice YieldTool for Aave
+ * @notice YieldAggregator for Aave
  * Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
  */ 
-contract AaveYieldTool is Ownable, IYieldTool {
+contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
     // for aave   

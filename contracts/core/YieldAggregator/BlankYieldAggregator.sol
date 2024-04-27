@@ -7,12 +7,12 @@
 
 pragma solidity 0.8.16;
 
-import { IYieldTool } from "contracts/intf/IYieldTool.sol";
+import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
- * @notice no yield farming yieldTool, for backup
+ * @notice no yield farming yieldAggregator, for backup
  */ 
-contract BlankYieldTool is IYieldTool {
+contract BlankYieldAggregator is IYieldAggregator {
 
     address public immutable mestFactory;
     address public immutable WETH;
