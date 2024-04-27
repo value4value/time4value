@@ -58,7 +58,6 @@ contract MestSharesFactoryV1 is Ownable {
     ) {
         mestERC1155 = _mestERC1155;
 
-        // todo need change before formally sell?
         generalCurveFixedParam.basePrice = _basePrice; //5000000000000000;
         generalCurveFixedParam.inflectionPoint = _inflectionPoint; //1500;
         generalCurveFixedParam.inflectionPrice = _inflectionPrice; //102500000000000000;
