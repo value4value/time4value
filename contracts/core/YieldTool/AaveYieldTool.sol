@@ -8,20 +8,14 @@
 pragma solidity 0.8.16;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../intf/IAave.sol";
-
-interface IYieldTool {
-    function yieldDeposit(uint256) external;
-    function yieldWithdraw(uint256 amount) external;
-    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableETHAmount);
-    function yieldToken() external view returns(address);
-    function yieldMaxClaimable(uint256 depositedETHAmount) external view returns(uint256 maxClaimableETH);
-}
+import "contracts/intf/IAave.sol";
+import { IYieldTool } from "contracts/intf/IYieldTool.sol";
 
 /**
- * @notice Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
+ * @notice YieldTool for Aave
+ * Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
  */ 
-contract YieldTool is Ownable, IYieldTool {
+contract AaveYieldTool is Ownable, IYieldTool {
     using SafeERC20 for IERC20;
 
     // for aave   

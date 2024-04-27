@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IMestShare } from "../intf/IMestShare.sol";
-import { IYieldTool } from "./YieldTool.sol";
+import { IYieldTool } from "contracts/intf/IYieldTool.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
 contract MestSharesFactoryV1 is Ownable {
@@ -76,58 +76,31 @@ contract MestSharesFactoryV1 is Ownable {
         creatorFeePercent = _feePercent;
     }
 
-    function setInitialYieldTool(address _yieldTool) external onlyOwner {
-        require(address(yieldTool) == address(0), "Have set yieldTool");
-
-        yieldTool = IYieldTool(_yieldTool);
-        // yield token approve for
-        address yieldToken = yieldTool.yieldToken();
-        IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
-    }
-
     /**
-     * @notice this function used for 3 method: withdraw all yield token to ETH \ deposit all ETH to yield token \ migrate
-     * use _destination and _yieldTool address to distinct:
-     * 1. withdraw all yieldToken: _destination == address(this)
-     * 2. deposit all ETH: _yieldTool == address(yieldTool) && _destination == _yieldTool
-     * 3. migrate: _destination == _yieldTool, and _yieldTool is new yield tool address
-     * @param _destination where ETH go
-     * @param _yieldTool yield tool address
+     * @notice this function used for 3 cases for setting yieldTool
+     * case 1 address(0) -> yieldTool
+     * case 2 yieldTool -> blank yieldTool, which won't do yield farming
+     * case 3 yieldTool -> new yieldTool
+     * @param _yieldTool yield tool address    
      */
-    function migrate(address _destination, address _yieldTool) external onlyOwner {
+    function migrate(address _yieldTool) external onlyOwner {
         require(_yieldTool != address(0), "Invalid yieldTool");
-        // only withdraw all
-        if(_destination == address(this)) {
-            _withdrawAllYieldTokenToETH();
-        }
-        // only deposit all ETH
-        else if(_yieldTool == address(yieldTool) && _destination == _yieldTool) {
-            _depositAllETHToYieldToken();
-        }
-        // migrate yieldtool
-        else if(_destination == _yieldTool) {
-            address yieldToken;
+        if(address(yieldTool) == address(0)) {
+            _setYieldAggregator(_yieldTool);
+        } else {
             // withdraw all yieldtoken
             _withdrawAllYieldTokenToETH();
 
-            // check remove condition
-            if(address(yieldTool) != address(0)) {
-                // revoke approve
-                yieldToken = yieldTool.yieldToken();
-                IERC20(yieldToken).safeApprove(address(yieldTool), 0);
-            }
-
+            // revoke old yieldTool approve
+            address yieldToken = yieldTool.yieldToken();
+            IERC20(yieldToken).safeApprove(address(yieldTool), 0);
+            
             // change yieldTool
-            yieldTool = IYieldTool(_yieldTool);
-
-            // yield token approve for yieldTool
-            yieldToken = yieldTool.yieldToken();
-            IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
+            _setYieldAggregator(_yieldTool);
 
             // deposit all ETH
             _depositAllETHToYieldToken();
         }
-        
     }
 
     /**
@@ -143,6 +116,15 @@ contract MestSharesFactoryV1 is Ownable {
     }
 
     // =============== internal for migrate ===================
+
+    function _setYieldAggregator(address _yieldTool) internal {
+        // set yieldTool
+        yieldTool = IYieldTool(_yieldTool);
+
+        // yield token approve for yieldTool
+        address yieldToken = yieldTool.yieldToken();
+        IERC20(yieldToken).safeApprove(_yieldTool, type(uint256).max);
+    }
 
     function _withdrawAllYieldTokenToETH() internal {
         uint256 withdrawableETHAmount = yieldTool.yieldBalanceOf(address(this));

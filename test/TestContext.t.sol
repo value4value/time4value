@@ -10,12 +10,14 @@ pragma solidity 0.8.16;
 import "forge-std/Test.sol";
 import {MestERC1155} from "contracts/core/token/MestERC1155.sol";
 import "contracts/core/MestSharesFactoryV1.sol";
-import "contracts/core/YieldTool.sol";
+import "contracts/core/YieldTool/AaveYieldTool.sol";
+import {BlankYieldTool} from "contracts/core/YieldTool/BlankYieldTool.sol";
 
 contract TestContext is Test {
     MestSharesFactoryV1 public mestFactory;
     MestERC1155 public erc1155TokenTemp;
-    YieldTool public yieldTool;
+    AaveYieldTool public yieldTool;
+    BlankYieldTool public blankYieldTool;
     IAToken public aWETH;
 
     address public receiver = address(999);
@@ -27,7 +29,8 @@ contract TestContext is Test {
     function createMestFactory() public {
         erc1155TokenTemp = new MestERC1155("http://mest.io/share/");
         mestFactory = new MestSharesFactoryV1(address(erc1155TokenTemp), 5000000000000000, 1500, 102500000000000000, 0);
-        yieldTool = new YieldTool(address(mestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        yieldTool = new AaveYieldTool(address(mestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        blankYieldTool = new BlankYieldTool(address(mestFactory), weth);
         mestFactory.transferOwnership(owner);
         yieldTool.transferOwnership(owner);
         erc1155TokenTemp.setFactory(address(mestFactory));
@@ -37,7 +40,7 @@ contract TestContext is Test {
         aWETH = IAToken(IAavePool(0x794a61358D6845594F94dc1DB02A252b5b4814aD).getReserveData(weth).aTokenAddress);
         
         vm.prank(owner);
-        mestFactory.setInitialYieldTool(address(yieldTool));
+        mestFactory.migrate(address(yieldTool));
     }
 
     function testSuccess() public {}
