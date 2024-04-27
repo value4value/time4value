@@ -293,7 +293,7 @@ contract TestMestShareFactory is TestContext {
     function testYield() public {
         testBuyShare();
         vm.warp(1724693433); // need to fill a number gt current block.timestamp
-        uint256 deposited = mestFactory.depositedTotalAmount();
+        uint256 deposited = mestFactory.depositedETHAmount();
         uint256 maxYield = yieldTool.yieldMaxClaimable(deposited);
         //console.log(maxYield);
         assertEq(deposited, 10000227777777775);
@@ -371,7 +371,7 @@ contract TestMestShareFactory is TestContext {
     function testSetYieldBuffer() public {
         testBuyShare();
         vm.warp(1714693433); // need to fill a number gt current block.timestamp
-        uint256 deposited = mestFactory.depositedTotalAmount();
+        uint256 deposited = mestFactory.depositedETHAmount();
         uint256 maxYield = yieldTool.yieldMaxClaimable(deposited);
         //console.log(maxYield);
         assertEq(deposited, 10000227777777775);

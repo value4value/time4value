@@ -27,7 +27,7 @@ contract MestSharesFactoryV1 is Ownable {
     mapping(uint256 => address) public sharesMap;
     mapping(address => uint256[]) public creatorSharesMap; 
 
-    uint256 public depositedTotalAmount; 
+    uint256 public depositedETHAmount; 
     IYieldTool public yieldTool;
 
     struct CurveFixedParam {
@@ -136,7 +136,7 @@ contract MestSharesFactoryV1 is Ownable {
      * @param to yield receiver address
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
-        uint256 maxAmount = yieldTool.yieldMaxClaimable(depositedTotalAmount);
+        uint256 maxAmount = yieldTool.yieldMaxClaimable(depositedETHAmount);
         require(amount <= maxAmount, "Invalid yield amount");
         yieldTool.yieldWithdraw(amount);
         _safeTransferETH(to, amount);
@@ -145,8 +145,8 @@ contract MestSharesFactoryV1 is Ownable {
     // =============== internal for migrate ===================
 
     function _withdrawAllYieldTokenToETH() internal {
-        uint256 withdrawableAmount = yieldTool.yieldBalanceOf(address(this));
-        yieldTool.yieldWithdraw(withdrawableAmount);
+        uint256 withdrawableETHAmount = yieldTool.yieldBalanceOf(address(this));
+        yieldTool.yieldWithdraw(withdrawableETHAmount);
     }
 
     function _depositAllETHToYieldToken() internal {
@@ -265,7 +265,7 @@ contract MestSharesFactoryV1 is Ownable {
         // deposit to yield aggregator, e.g. Aave
         _safeTransferETH(address(yieldTool), subTotalPrice);
         yieldTool.yieldDeposit(subTotalPrice);
-        depositedTotalAmount += subTotalPrice;
+        depositedETHAmount += subTotalPrice;
     }
 
     /**
@@ -287,7 +287,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         // withdraw from yield aggregator, e.g. Aave
         yieldTool.yieldWithdraw(subTotalPrice);
-        depositedTotalAmount -= subTotalPrice;
+        depositedETHAmount -= subTotalPrice;
 
         // unstake ETH to user
         _safeTransferETH(msg.sender, totalPrice);

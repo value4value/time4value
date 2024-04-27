@@ -13,9 +13,9 @@ import "../intf/IAave.sol";
 interface IYieldTool {
     function yieldDeposit(uint256) external;
     function yieldWithdraw(uint256 amount) external;
-    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableAmount);
+    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableETHAmount);
     function yieldToken() external view returns(address);
-    function yieldMaxClaimable(uint256 depositedTotalAmount) external view returns(uint256 maxClaimableETH);
+    function yieldMaxClaimable(uint256 depositedETHAmount) external view returns(uint256 maxClaimableETH);
 }
 
 /**
@@ -81,7 +81,7 @@ contract YieldTool is Ownable, IYieldTool {
         }
     }
 
-    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableAmount) {
+    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableETHAmount) {
         return aWETH.balanceOf(owner);
     }
 
@@ -93,9 +93,9 @@ contract YieldTool is Ownable, IYieldTool {
      * @notice Calculate the maximum yield that the owner can claim.
      * @return maxClaimableETH max yield amount owner could get
      */
-    function yieldMaxClaimable(uint256 depositedTotalAmount) external view returns(uint256 maxClaimableETH) {
-        uint256 withdrawableAmount = aWETH.balanceOf(mestFactory);
-        maxClaimableETH = (withdrawableAmount - depositedTotalAmount) < yieldBuffer ? 0 : withdrawableAmount - depositedTotalAmount - yieldBuffer;
+    function yieldMaxClaimable(uint256 depositedETHAmount) external view returns(uint256 maxClaimableETH) {
+        uint256 withdrawableETHAmount = aWETH.balanceOf(mestFactory);
+        maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer ? 0 : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
     }
 
     // ================= internal ====================
