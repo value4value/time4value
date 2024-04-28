@@ -10,12 +10,14 @@ pragma solidity 0.8.16;
 import "forge-std/Test.sol";
 import {MestERC1155} from "contracts/core/token/MestERC1155.sol";
 import "contracts/core/MestSharesFactoryV1.sol";
-import "contracts/core/YieldTool.sol";
+import "contracts/core/YieldAggregator/AaveYieldAggregator.sol";
+import {BlankYieldAggregator} from "contracts/core/YieldAggregator/BlankYieldAggregator.sol";
 
 contract TestContext is Test {
     MestSharesFactoryV1 public mestFactory;
     MestERC1155 public erc1155TokenTemp;
-    YieldTool public yieldTool;
+    AaveYieldAggregator public yieldAggregator;
+    BlankYieldAggregator public blankYieldAggregator;
     IAToken public aWETH;
 
     address public receiver = address(999);
@@ -26,19 +28,19 @@ contract TestContext is Test {
 
     function createMestFactory() public {
         erc1155TokenTemp = new MestERC1155("http://mest.io/share/");
-        mestFactory = new MestSharesFactoryV1(receiver, address(erc1155TokenTemp));
-        yieldTool = new YieldTool(address(mestFactory), weth);
+        mestFactory = new MestSharesFactoryV1(address(erc1155TokenTemp), 5000000000000000, 1500, 102500000000000000, 0);
+        yieldAggregator = new AaveYieldAggregator(address(mestFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
+        blankYieldAggregator = new BlankYieldAggregator(address(mestFactory), weth);
         mestFactory.transferOwnership(owner);
-        yieldTool.transferOwnership(owner);
+        yieldAggregator.transferOwnership(owner);
         erc1155TokenTemp.setFactory(address(mestFactory));
         erc1155TokenTemp.transferOwnership(owner);
 
         vm.prank(owner);
-        yieldTool.setAaveInfo(0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
         aWETH = IAToken(IAavePool(0x794a61358D6845594F94dc1DB02A252b5b4814aD).getReserveData(weth).aTokenAddress);
         
         vm.prank(owner);
-        mestFactory.setYieldTool(address(yieldTool));
+        mestFactory.migrate(address(yieldAggregator));
     }
 
     function testSuccess() public {}
