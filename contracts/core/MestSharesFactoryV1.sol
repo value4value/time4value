@@ -48,6 +48,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 creatorFee,
         uint256 newSupply
     );
+    event ClaimYield(uint256 amount, address indexed to);
 
     constructor(
         address _mestERC1155, 
@@ -113,6 +114,8 @@ contract MestSharesFactoryV1 is Ownable {
         require(amount <= maxAmount, "Invalid yield amount");
         yieldAggregator.yieldWithdraw(amount);
         _safeTransferETH(to, amount);
+
+        emit ClaimYield(amount, to);
     }
 
     // =============== internal for migrate ===================

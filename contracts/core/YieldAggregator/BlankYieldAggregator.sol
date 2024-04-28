@@ -40,7 +40,7 @@ contract BlankYieldAggregator is IYieldAggregator {
     function yieldWithdraw(uint256) external onlyFactory {
     }
 
-    function yieldBalanceOf(address) external view returns(uint256 withdrawableETHAmount) {
+    function yieldBalanceOf(address) external pure returns(uint256 withdrawableETHAmount) {
         return 0;
     }
 
@@ -48,7 +48,7 @@ contract BlankYieldAggregator is IYieldAggregator {
         return WETH;
     }
 
-    function yieldMaxClaimable(uint256) external view returns(uint256 maxClaimableETH) {
+    function yieldMaxClaimable(uint256) external pure returns(uint256 maxClaimableETH) {
         return 0;
     }
 

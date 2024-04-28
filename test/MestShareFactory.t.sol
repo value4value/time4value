@@ -118,6 +118,7 @@ contract TestMestShareFactory is TestContext {
         //console.log(user1BalAfter - user1BalBefore);
         //console.log(receiverBalAfter - receiverBalBefore);
         console.log("buy share factory bal:", factoryBal);
+        console.log("standardAmount:", 10000227777777775);
 
         // the 3rd share
         (
@@ -212,6 +213,7 @@ contract TestMestShareFactory is TestContext {
 
         //assertEq(factoryBalBefore - factoryBalAfter, 5000182222222220);
         console.log("sell share factory bal:", factoryBalBefore - factoryBalAfter);
+        console.log("standardAmount:", 5000182222222220);
         assertEq(user2BalAfter - user2BalBefore, 4500163999999998);
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
@@ -331,6 +333,7 @@ contract TestMestShareFactory is TestContext {
         uint256 user2BalAfter = user2.balance;
 
         console.log("yield test factory balance:", factoryBalBefore - factoryBalAfter);
+        console.log("standardAmount:", 5000182222222220);
         //assertEq(factoryBalBefore - factoryBalAfter, 5000182222222220); // sometimes it will be 5000182222222220
         assertEq(user2BalAfter - user2BalBefore, 4500163999999998);
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
@@ -370,7 +373,7 @@ contract TestMestShareFactory is TestContext {
         assertEq(factoryEthBal, allEthAmount);
     }
 
-    function testBlankYieldTooBuyAndSell() public {
+    function testBlankYieldToolBuyAndSell() public {
         testWithdrawAll();
 
         {
@@ -389,14 +392,50 @@ contract TestMestShareFactory is TestContext {
         uint256 factoryBalAfter = address(mestFactory).balance;
         uint256 user2BalAfter = user2.balance;
 
-        assertEq(factoryBalBefore - factoryBalAfter, 5000182222222220); 
+        assertEq(factoryBalBefore - factoryBalAfter, 5000182222222220);
         assertEq(user2BalAfter - user2BalBefore, 4500163999999998);
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
         }
 
-        // todo test buy
+        {
+        uint256 user1BalBefore = user1.balance;
+        uint256 receiverBalBefore = receiver.balance;
+        uint256 factoryBalBefore = address(mestFactory).balance;
+        uint256 user2BalBefore = user2.balance;
+        vm.prank(user2);
+        mestFactory.buyShare{value:5501050111111109}(0, 1, receiver);
+        uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
+        uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
+        assertEq(user2ShareBal, 1); 
+        assertEq(shareSupply, 2);
+        uint256 user1BalAfter = user1.balance;
+        uint256 receiverBalAfter = receiver.balance;
+        uint256 factoryBalAfter = address(mestFactory).balance;
+        uint256 user2BalAfter = user2.balance;
 
+        //console.log(factoryBalAfter - factoryBalBefore); 
+        //console.log(user2BalBefore - user2BalAfter);
+        //console.log(user1BalAfter - user1BalBefore); // creatorFee
+        //console.log(receiverBalAfter - receiverBalBefore); // referalFee
+
+        assertEq(factoryBalAfter - factoryBalBefore, 5000182222222220); 
+        assertEq(user2BalBefore - user2BalAfter, 5500200444444442); // totalprice + gasfee
+        assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
+        assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
+        }
+
+        vm.prank(owner);
+        vm.expectRevert(bytes("Invalid yield amount"));
+        mestFactory.claimYield(1, receiver);
+
+        vm.prank(owner);
+        mestFactory.claimYield(0, receiver);
+
+        uint256 amount = blankYieldAggregator.yieldBalanceOf(address(this));
+        assertEq(amount, 0);
+        amount = blankYieldAggregator.yieldMaxClaimable(0);
+        assertEq(amount, 0);
     }
 
     function testBlankYieldAggregator2AaveYieldAggregator() public {
@@ -408,7 +447,56 @@ contract TestMestShareFactory is TestContext {
         uint256 allEthAmountAfter = aWETH.balanceOf(address(mestFactory));
         assertEq(allEthAmount, allEthAmountAfter);
 
-        // todo test buy and sell
+        {
+        uint256 user1BalBefore = user1.balance;
+        uint256 receiverBalBefore = receiver.balance;
+        uint256 factoryBalBefore = aWETH.balanceOf(address(mestFactory));
+        uint256 user2BalBefore = user2.balance;
+        vm.prank(user2);
+        mestFactory.sellShare(0, 1, 0, receiver);
+        uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
+        uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
+        assertEq(user2ShareBal, 0); 
+        assertEq(shareSupply, 1);
+        uint256 user1BalAfter = user1.balance;
+        uint256 receiverBalAfter = receiver.balance;
+        uint256 factoryBalAfter = aWETH.balanceOf(address(mestFactory));
+        uint256 user2BalAfter = user2.balance;
+
+        console.log("factory bal:", factoryBalBefore - factoryBalAfter);
+        console.log("standardAmount:", 5000182222222220);  
+        assertEq(user2BalAfter - user2BalBefore, 4500163999999998);
+        assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
+        assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
+        }
+
+        {
+        uint256 user1BalBefore = user1.balance;
+        uint256 receiverBalBefore = receiver.balance;
+        uint256 factoryBalBefore = aWETH.balanceOf(address(mestFactory));
+        uint256 user2BalBefore = user2.balance;
+        vm.prank(user2);
+        mestFactory.buyShare{value:5501050111111109}(0, 1, receiver);
+        uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
+        uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
+        assertEq(user2ShareBal, 1); 
+        assertEq(shareSupply, 2);
+        uint256 user1BalAfter = user1.balance;
+        uint256 receiverBalAfter = receiver.balance;
+        uint256 factoryBalAfter = aWETH.balanceOf(address(mestFactory));
+        uint256 user2BalAfter = user2.balance;
+
+        //console.log(factoryBalAfter - factoryBalBefore); 
+        //console.log(user2BalBefore - user2BalAfter);
+        //console.log(user1BalAfter - user1BalBefore); // creatorFee
+        //console.log(receiverBalAfter - receiverBalBefore); // referalFee
+
+        console.log("factory bal:", factoryBalAfter - factoryBalBefore);
+        console.log("standardAmount:", 5000182222222220); 
+        assertEq(user2BalBefore - user2BalAfter, 5500200444444442); // totalprice + gasfee
+        assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
+        assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
+        }
     }
     
 }
