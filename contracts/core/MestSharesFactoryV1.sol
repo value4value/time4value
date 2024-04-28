@@ -144,45 +144,45 @@ contract MestSharesFactoryV1 is Ownable {
 
     /**
      * @notice Calculates buy price and fees.
-     * @return total Amount user pay after fees.
-     * @return subTotal Price of shares before fees.
+     * @return buyPriceAfterFee Amount user pay after fees.
+     * @return buyPrice Price of shares before fees.
      * @return referralFee Fee by the protocol. If = address(0), there is no referral fee.
      * @return creatorFee Fee by the share's creator.
     */
     function getBuyPriceAfterFee(uint256 shareId, uint256 quantity, address referral)
         public
         view
-        returns (uint256 total, uint256 subTotal, uint256 referralFee, uint256 creatorFee)
+        returns (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee)
     {
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        subTotal = _subTotal(fromSupply, quantity);
-        referralFee = subTotal * actualReferralFeePercent / 1 ether;
-        creatorFee = subTotal * creatorFeePercent / 1 ether;
-        total = subTotal + referralFee + creatorFee;
+        buyPrice = _subTotal(fromSupply, quantity);
+        referralFee = buyPrice * actualReferralFeePercent / 1 ether;
+        creatorFee = buyPrice * creatorFeePercent / 1 ether;
+        buyPriceAfterFee = buyPrice + referralFee + creatorFee;
     }
 
     /**
      * @notice Calculates sell price and fees.
-     * @return total Amount user receives after fees.
-     * @return subTotal Price of shares before fees.
+     * @return sellPriceAfterFee Amount user receives after fees.
+     * @return sellPrice Price of shares before fees.
      * @return referralFee Fee by the protocol. If = address(0), there is no referral fee.
      * @return creatorFee Fee by the share's creator.
      */
     function getSellPriceAfterFee(uint256 shareId, uint256 quantity, address referral)
         public
         view
-        returns (uint256 total, uint256 subTotal, uint256 referralFee, uint256 creatorFee)
+        returns (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee)
     {
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        subTotal = _subTotal(fromSupply - quantity, quantity);
-        referralFee = subTotal * actualReferralFeePercent / 1 ether;
-        creatorFee = subTotal * creatorFeePercent / 1 ether;
-        total = subTotal - referralFee - creatorFee;
+        sellPrice = _subTotal(fromSupply - quantity, quantity);
+        referralFee = sellPrice * actualReferralFeePercent / 1 ether;
+        creatorFee = sellPrice * creatorFeePercent / 1 ether;
+        sellPriceAfterFee = sellPrice - referralFee - creatorFee;
     }
 
     /**
@@ -230,11 +230,11 @@ contract MestSharesFactoryV1 is Ownable {
         // Anti-frontrunining, first buyer must be creator
         require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
 
-        (uint256 totalPrice, uint256 subTotalPrice, uint256 referralFee, uint256 creatorFee) = getBuyPriceAfterFee(shareId, quantity, referral);
-        require(msg.value >= totalPrice, "Insufficient payment");
+        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) = getBuyPriceAfterFee(shareId, quantity, referral);
+        require(msg.value >= buyPriceAfterFee, "Insufficient payment");
         IMestShare(mestERC1155).shareMint(msg.sender, shareId, quantity);
         emit Trade(
-            msg.sender, shareId, true, quantity, totalPrice, referralFee, creatorFee, fromSupply + quantity
+            msg.sender, shareId, true, quantity, buyPriceAfterFee, referralFee, creatorFee, fromSupply + quantity
         );
 
         // pay fee
@@ -242,15 +242,15 @@ contract MestSharesFactoryV1 is Ownable {
         _safeTransferETH(creator, creatorFee);
 
         // refund if paid more than necessary
-        uint256 refundAmount = msg.value - totalPrice;
+        uint256 refundAmount = msg.value - buyPriceAfterFee;
         if (refundAmount > 0) {
             _safeTransferETH(msg.sender, refundAmount);
         }
 
         // deposit to yield aggregator, e.g. Aave
-        _safeTransferETH(address(yieldAggregator), subTotalPrice);
+        _safeTransferETH(address(yieldAggregator), buyPrice);
         yieldAggregator.yieldDeposit();
-        depositedETHAmount += subTotalPrice;
+        depositedETHAmount += buyPrice;
     }
 
     /**
@@ -264,18 +264,18 @@ contract MestSharesFactoryV1 is Ownable {
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
         address creator = sharesMap[shareId];
 
-        (uint256 totalPrice, uint256 subTotalPrice, uint256 referralFee, uint256 creatorFee) = getSellPriceAfterFee(shareId, quantity, referral);
-        require(totalPrice >= minETHAmount, "Insufficient minReceive");
+        (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) = getSellPriceAfterFee(shareId, quantity, referral);
+        require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
         IMestShare(mestERC1155).shareBurn(msg.sender, shareId, quantity);
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        emit Trade(msg.sender, shareId, false, quantity, totalPrice, referralFee, creatorFee, fromSupply);
+        emit Trade(msg.sender, shareId, false, quantity, sellPriceAfterFee, referralFee, creatorFee, fromSupply);
 
         // withdraw from yield aggregator, e.g. Aave
-        yieldAggregator.yieldWithdraw(subTotalPrice);
-        depositedETHAmount -= subTotalPrice;
+        yieldAggregator.yieldWithdraw(sellPrice);
+        depositedETHAmount -= sellPrice;
 
         // unstake ETH to user
-        _safeTransferETH(msg.sender, totalPrice);
+        _safeTransferETH(msg.sender, sellPriceAfterFee);
 
         // pay fee
         _safeTransferETH(referral, referralFee);

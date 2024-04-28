@@ -439,7 +439,7 @@ contract TestMestShareFactory is TestContext {
     }
 
     function testBlankYieldAggregator2AaveYieldAggregator() public {
-        testWithdrawAll();
+        testBlankYieldToolBuyAndSell();
         uint256 allEthAmount = address(mestFactory).balance;
 
         vm.prank(owner);
@@ -498,5 +498,4 @@ contract TestMestShareFactory is TestContext {
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
         }
     }
-    
 }
