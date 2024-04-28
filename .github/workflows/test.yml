@@ -24,9 +24,9 @@ jobs:
         continue-on-error: true
       - name: Retry if fail forge test
         if: steps.forge_test.outcome == 'failure'
-        uses: nick-invision/retry@v3
+        uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 3   # Total time before giving up
+          timeout_minutes: 10   # Total time before giving up
           max_attempts: 3      # Total number of attempts
           command: forge test --fork-url https://arbitrum.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea
-          delay_seconds: 60    # Delay between retries
+          retry_wait_seconds: 60    # Delay between retries
