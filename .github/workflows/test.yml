@@ -19,4 +19,4 @@ jobs:
       - uses: onbjerg/foundry-toolchain@v1
         with:
           version: nightly
-      - run: forge test --fork-url https://arbitrum.llamarpc.com
+      - run: forge test --fork-url https://arbitrum.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea
