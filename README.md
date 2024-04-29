@@ -7,7 +7,7 @@
   <em>Buy something via the bonding curve and yield farming.</em>
 </p>
 
----
+##
 
 Mest Protocol provides a new way to pay where you can stake ETH by a unique S-shaped bonding curve and yield farming, buy what you need, and withdraw whenever you want.  
 
@@ -17,6 +17,7 @@ Mest Protocol provides a new way to pay where you can stake ETH by a unique S-sh
 * 🌟 Made for early-stage startups and KOLs.
 
 <div align="center">
+<br/>
 
 | Features                       | Mest  | Friendtech | Coinbase Commerce |
 |--------------------------------|-------|------------|-------------------|
@@ -25,17 +26,18 @@ Mest Protocol provides a new way to pay where you can stake ETH by a unique S-sh
 | Permissionless                 | ✅    | ✅          | ❌                |
 | Tokenization                   | ✅    | ❌          | ❌                |
 
+<br/>
 </div>
 
 ## How Mest works？
 
 ### Buy / Sell
 
-![Curve](images/curve.png)
+<div align="center">
+  <img src="images/curve.png" width="70%">
+</div>
 
 Mest Protocol is an S-shaped bonding curve that combines a quadratic function and a square root function. Briefly, when you buy, mint tokens and the price gradually rises; when you sell, burn tokens and the price gradually falls. The staked ETH will be deposited into the interest rate market, which provides the creator with a sustainable income, while at the same time you can enjoy the services provided by the creator through NFT.
-
-Note: A 5% commission is paid to the creator for each transaction, as well as an optional referral fee.
 
 ### Claim
 
@@ -43,7 +45,9 @@ Mest Protocol deposits funds into an interest rate market (e.g. Aave / Pendle.) 
 
 ## Contract
 
-![Mest Protocol Architeture](images/protcol.png)
+<div align="center">
+  <img src="images/protocol.png" width="70%">
+</div>
 
 We detail a few of the core contracts in the Mest protocol.
 
