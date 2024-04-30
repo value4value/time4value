@@ -109,7 +109,7 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
         uint256 maxAmount = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
-        require(amount <= maxAmount, "Invalid yield amount");
+        require(amount <= maxAmount, "Insufficient yield");
 
         yieldAggregator.yieldWithdraw(amount);
         _safeTransferETH(to, amount);
