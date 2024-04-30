@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.16;
 
-import "./TestContext.t.sol";
+import "../TestContext.t.sol";
 
-contract TestMestShareFactory is TestContext {
+contract MestShareFactoryTests is TestContext {
     address public user1 = address(11);
     address public user2 = address(22);
     address public newReceiver = address(33);
@@ -12,7 +12,7 @@ contract TestMestShareFactory is TestContext {
     function setUp() public {
         createMestFactory();
     }
-    
+
     function testSetNewYieldAggregator() public  {
         AaveYieldAggregator newYieldAggregator = new AaveYieldAggregator(address(mestFactory), 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
 
@@ -22,7 +22,7 @@ contract TestMestShareFactory is TestContext {
         mestFactory.migrate(address(0));
 
         vm.prank(owner);
-        mestFactory.migrate(address(newYieldAggregator));   
+        mestFactory.migrate(address(newYieldAggregator));
     }
 
     function testSetInitialYieldAggregator() public {
@@ -39,7 +39,7 @@ contract TestMestShareFactory is TestContext {
         // test before set yieldAggregator buy fail
         vm.deal(user1, 10 ether);
         vm.prank(user1);
-        newMestFactory.createShare(user1); 
+        newMestFactory.createShare(user1);
         vm.prank(user1);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
         newMestFactory.buyShare{value:5500050111111109}(0, 1, receiver);
@@ -56,7 +56,7 @@ contract TestMestShareFactory is TestContext {
         vm.deal(user1, 10 ether);
 
         vm.prank(user1);
-        mestFactory.createShare(user1); 
+        mestFactory.createShare(user1);
 
         (address creator)= mestFactory.sharesMap(0); // id is 0
         assertEq(creator, user1);
@@ -64,16 +64,16 @@ contract TestMestShareFactory is TestContext {
         assertEq(shareUri, "http://mest.io/share/0");
     }
 
-    
+
     function testBuyShare() public {
         testCreateShare();
         vm.deal(user2, 10 ether);
 
         // test query buy 1
         (
-            uint256 total, 
-            uint256 subTotal, 
-            uint256 referalFee, 
+            uint256 total,
+            uint256 subTotal,
+            uint256 referalFee,
             uint256 creatorFee
         ) = mestFactory.getBuyPriceAfterFee(0, 1, receiver);
         assertEq(total, 5500050111111109); //0.0055e
@@ -83,9 +83,9 @@ contract TestMestShareFactory is TestContext {
 
         // test query buy 2
         (
-            total, 
-            subTotal, 
-            referalFee, 
+            total,
+            subTotal,
+            referalFee,
             creatorFee
         ) = mestFactory.getBuyPriceAfterFee(0, 2, receiver);
         assertEq(total, 11000250555555551); //0.011e, the second total price is 5500200444444442 > 5500050111111109
@@ -107,7 +107,7 @@ contract TestMestShareFactory is TestContext {
         uint256 factoryBal = aWETH.balanceOf(address(mestFactory));
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
-        //assertEq(factoryBal, 10000227777777775); 
+        //assertEq(factoryBal, 10000227777777775);
         //console.log(user1BalAfter - user1BalBefore);
         //console.log(receiverBalAfter - receiverBalBefore);
         console.log("buy share factory bal:", factoryBal);
@@ -115,9 +115,9 @@ contract TestMestShareFactory is TestContext {
 
         // the 3rd share
         (
-            total, 
-            subTotal, 
-            referalFee, 
+            total,
+            subTotal,
+            referalFee,
             creatorFee
         ) = mestFactory.getBuyPriceAfterFee(0, 1, receiver);
         assertEq(total, 5500450999999993); // 0.0055e > the first price
@@ -165,19 +165,19 @@ contract TestMestShareFactory is TestContext {
         mestFactory.buyShare(2, 1, receiver);
     }
 
-    
+
     function testSellShare() public {
         testBuyShare();
 
         // test query sell 1
         {
         (
-            uint256 total, 
-            uint256 subTotal, 
-            uint256 referalFee, 
+            uint256 total,
+            uint256 subTotal,
+            uint256 referalFee,
             uint256 creatorFee
         ) = mestFactory.getSellPriceAfterFee(0, 1, receiver);
-        //console.log(total); 
+        //console.log(total);
         //console.log(subTotal);
         //console.log(referalFee);
         //console.log(creatorFee);
@@ -197,7 +197,7 @@ contract TestMestShareFactory is TestContext {
         mestFactory.sellShare(0, 1, 0, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 0); 
+        assertEq(user2ShareBal, 0);
         assertEq(shareSupply, 1);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
@@ -242,7 +242,7 @@ contract TestMestShareFactory is TestContext {
         vm.expectRevert(bytes("Insufficient shares"));
         mestFactory.sellShare(0, 3, 0, receiver);
     }
-    
+
 
     // ==================== test owner ===================
 
@@ -294,12 +294,12 @@ contract TestMestShareFactory is TestContext {
         // test query sell 1
         {
         (
-            uint256 total, 
-            uint256 subTotal, 
-            uint256 referalFee, 
+            uint256 total,
+            uint256 subTotal,
+            uint256 referalFee,
             uint256 creatorFee
         ) = mestFactory.getSellPriceAfterFee(0, 1, receiver);
-        //console.log(total); 
+        //console.log(total);
         //console.log(subTotal);
         //console.log(referalFee);
         //console.log(creatorFee);
@@ -319,7 +319,7 @@ contract TestMestShareFactory is TestContext {
         mestFactory.sellShare(0, 1, 0, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 0); 
+        assertEq(user2ShareBal, 0);
         assertEq(shareSupply, 1);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
@@ -379,7 +379,7 @@ contract TestMestShareFactory is TestContext {
         mestFactory.sellShare(0, 1, 0, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 0); 
+        assertEq(user2ShareBal, 0);
         assertEq(shareSupply, 1);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
@@ -401,19 +401,19 @@ contract TestMestShareFactory is TestContext {
         mestFactory.buyShare{value:5501050111111109}(0, 1, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 1); 
+        assertEq(user2ShareBal, 1);
         assertEq(shareSupply, 2);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
         uint256 factoryBalAfter = address(mestFactory).balance;
         uint256 user2BalAfter = user2.balance;
 
-        //console.log(factoryBalAfter - factoryBalBefore); 
+        //console.log(factoryBalAfter - factoryBalBefore);
         //console.log(user2BalBefore - user2BalAfter);
         //console.log(user1BalAfter - user1BalBefore); // creatorFee
         //console.log(receiverBalAfter - receiverBalBefore); // referalFee
 
-        assertEq(factoryBalAfter - factoryBalBefore, 5000182222222220); 
+        assertEq(factoryBalAfter - factoryBalBefore, 5000182222222220);
         assertEq(user2BalBefore - user2BalAfter, 5500200444444442); // totalprice + gasfee
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
@@ -450,7 +450,7 @@ contract TestMestShareFactory is TestContext {
         mestFactory.sellShare(0, 1, 0, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 0); 
+        assertEq(user2ShareBal, 0);
         assertEq(shareSupply, 1);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
@@ -458,7 +458,7 @@ contract TestMestShareFactory is TestContext {
         uint256 user2BalAfter = user2.balance;
 
         console.log("factory bal:", factoryBalBefore - factoryBalAfter);
-        console.log("standardAmount:", 5000182222222220);  
+        console.log("standardAmount:", 5000182222222220);
         assertEq(user2BalAfter - user2BalBefore, 4500163999999998);
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee
@@ -473,20 +473,20 @@ contract TestMestShareFactory is TestContext {
         mestFactory.buyShare{value:5501050111111109}(0, 1, receiver);
         uint256 user2ShareBal = erc1155TokenTemp.balanceOf(user2, 0);
         uint256 shareSupply = erc1155TokenTemp.totalSupply(0);
-        assertEq(user2ShareBal, 1); 
+        assertEq(user2ShareBal, 1);
         assertEq(shareSupply, 2);
         uint256 user1BalAfter = user1.balance;
         uint256 receiverBalAfter = receiver.balance;
         uint256 factoryBalAfter = aWETH.balanceOf(address(mestFactory));
         uint256 user2BalAfter = user2.balance;
 
-        //console.log(factoryBalAfter - factoryBalBefore); 
+        //console.log(factoryBalAfter - factoryBalBefore);
         //console.log(user2BalBefore - user2BalAfter);
         //console.log(user1BalAfter - user1BalBefore); // creatorFee
         //console.log(receiverBalAfter - receiverBalBefore); // referalFee
 
         console.log("factory bal:", factoryBalAfter - factoryBalBefore);
-        console.log("standardAmount:", 5000182222222220); 
+        console.log("standardAmount:", 5000182222222220);
         assertEq(user2BalBefore - user2BalAfter, 5500200444444442); // totalprice + gasfee
         assertEq(user1BalAfter - user1BalBefore, 250009111111111); // creatorFee
         assertEq(receiverBalAfter - receiverBalBefore, 250009111111111); // referalFee

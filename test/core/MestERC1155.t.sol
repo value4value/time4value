@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.16;
 
-import "./TestContext.t.sol";
+import "../TestContext.t.sol";
 
-contract TestMestERC1155 is TestContext {
+contract MestERC1155Tests is TestContext {
     address mockFactory = address(999);
     address mockUser = address(8);
 

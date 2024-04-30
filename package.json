@@ -6,13 +6,15 @@
   "author": "dev@mest.io",
   "license": "MIT",
   "scripts": {
-    "lint": "solhint 'src/**/*.sol'",
+    "lint": "solhint 'contracts/**/*.sol'",
+    "lint:test": "solhint 'test/**/*.sol'",
     "compile": "npx hardhat compile",
     "coverage": "npx hardhat coverage --solcoverjs .solcover.js",
     "coverage-forge": "forge coverage",
     "deploy": "npx hardhat run scripts/deploy.ts",
     "integration": "npx hardhat test",
-    "verify": "npx hardhat verify"
+    "verify": "npx hardhat verify",
+    "test": "forge test --fork-url https://arbitrum.llamarpc.com"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.3",
@@ -27,7 +29,8 @@
     "ethers": "^5.5.4",
     "hardhat": "^2.22.3",
     "hardhat-gas-reporter": "^1.0.8",
-    "mocha": "^9.2.1",
+    "mocha": "10.1.0",
+    "solhint": "^4.5.4",
     "solidity-coverage": "^0.8.12",
     "toml": "^3.0.0",
     "ts-node": "^10.6.0",

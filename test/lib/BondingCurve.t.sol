@@ -65,12 +65,12 @@ contract BondingCurveHelper {
         uint256 fromSupply,
         uint256 quantity
     ) public pure returns (uint256) {
-        uint256 sum = BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity); 
+        uint256 sum = BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity);
         return sum;
     }
 }
 
-contract TestBondingCurve is Test {
+contract BondingCurveTests is Test {
     BondingCurveHelper public helper;
 
     function setUp() public {
