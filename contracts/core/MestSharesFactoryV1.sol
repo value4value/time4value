@@ -61,6 +61,7 @@ contract MestSharesFactoryV1 is Ownable {
     }
 
     fallback() external payable {}
+
     receive() external payable {}
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
