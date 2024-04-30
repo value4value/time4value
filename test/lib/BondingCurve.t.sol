@@ -1,15 +1,10 @@
-/*
-
-    Copyright 2024 MEST.
-    SPDX-License-Identifier: Apache-2.0
-
-*/
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.16;
 
 import "forge-std/Test.sol";
-import {BondingCurveLib} from "contracts/lib/BondingCurveLib.sol";
-import {FixedPointMathLib} from "contracts/lib/FixedPointMathLib.sol";
+import { BondingCurveLib } from "contracts/lib/BondingCurveLib.sol";
+import { FixedPointMathLib } from "contracts/lib/FixedPointMathLib.sol";
 
 contract BondingCurveHelper {
     function sigmoid2Sum(

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 
 /// @notice Arithmetic library with operations for fixed-point numbers.
