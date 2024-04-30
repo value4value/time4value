@@ -3,12 +3,12 @@
   <em></em>
   <img src="images/banner.png" width="300">
   <em></em>
-  <em>Mest is a payment protocol for everyone.</em>
-  <em>Buy something via the bonding curve and yield farming.</em>
+  <em>A NEW WAY TO PAY.</em>
+  <em>Payment via the bonding curve and yield farming.</em>
   <em></em>
 </pre>
 
-Mest Protocol provides a new way to pay where you can stake ETH by a unique S-shaped bonding curve and yield farming, buy what you need, and withdraw whenever you want.  
+The contract provides a new way to pay where you can stake ETH by a unique S-shaped bonding curve and yield farming, buy what you need, and withdraw whenever you want.  
 
 * 🐦 For users, pay early and save more
 * 💵 For you, long-term revenue from fees and yield
@@ -28,9 +28,9 @@ Mest Protocol provides a new way to pay where you can stake ETH by a unique S-sh
 <br/>
 </div>
 
-## How Mest works？
+## How it works？
 
-Mest Protocol utilizes an S-shaped bonding curve, blending a quadratic and a square root function for dynamic pricing. When you buy, it mints tokens and drives prices up; when you sell, it burns tokens and lowers prices. And the staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to shares owner.
+The contract utilizes an S-shaped bonding curve, blending a quadratic and a square root function for dynamic pricing. When you buy, it mints tokens and drives prices up; when you sell, it burns tokens and lowers prices. And the staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to shares owner.
 
 <div align="center">
   <img src="images/curve.png" width="90%">
