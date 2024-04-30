@@ -1,11 +1,10 @@
 
-<p align="center">
+<pre align="center">
   <img src="images/banner.png" width="300">
   <br/>
   <em>Mest is a payment protocol for everyone.</em>
-  <br/>
   <em>Buy something via the bonding curve and yield farming.</em>
-</p>
+</pre>
 
 ##
 
@@ -31,37 +30,29 @@ Mest Protocol provides a new way to pay where you can stake ETH by a unique S-sh
 
 ## How Mest works？
 
-### Buy / Sell
-
 <div align="center">
   <img src="images/curve.png" width="70%">
 </div>
 
-Mest Protocol is an S-shaped bonding curve that combines a quadratic function and a square root function. Briefly, when you buy, mint tokens and the price gradually rises; when you sell, burn tokens and the price gradually falls. The staked ETH will be deposited into the interest rate market, which provides the creator with a sustainable income, while at the same time you can enjoy the services provided by the creator through NFT.
+Mest Protocol utilizes an S-shaped bonding curve, blending a quadratic and a square root function for dynamic pricing. When you buy, it mints tokens and drives prices up; when you sell, it burns tokens and lowers prices. Staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to creators.
 
-### Claim
-
-Mest Protocol deposits funds into an interest rate market (e.g. Aave / Pendle.) and the pool will hold equity tokens like aToken / PT. Users can withdraw the corresponding ETH at any time by burn NFTs, while the creator only claims the interest, i.e. the amount that exceeds the pledged assets.
-
-## Contract
+## Contracts
 
 <div align="center">
   <img src="images/protocol.png" width="70%">
 </div>
 
-We detail a few of the core contracts in the Mest protocol.
+### ERC1155
 
-### MestERC1155
+The token is a standard `ERC1155` contract, with NFTs serving as shares in the bonding curve. When you trade shares, NFTs are minted or burned.
 
-MestERC1155 is a standard ERC1155 contract where the NFTs are used as shares for the boding curve, i.e. the ownership share of the pool, and every time a buy / sell shares is made the respective amount of NFTs is minted / burned.
+### SharesFactory
 
-### MestShares
+SharesFactory is the core contract that contains the bonding curve and yield aggregator logic where you can mint, buy, and sell shares, as well as change yield strategies and claim yields.
 
-MestShares is the core contract that contains the S-Curve and is responsible to create, mint, and burn shares, as well as to choose the yield strategy and claim the yield through MestYield.
+### YieldAggregator 
 
-### MestYield 
-
-MestYield is the yield strategy contract. It is a upgradeable proxy contract, which is responsible for the deposit and withdrawal of funds in the interest rate market, and calculates the yield that can be claimed.
+YieldAggregator is a yield strategy contract that provides a common interface for `SharesFactory` to use, such as deposit, withdraw, and claimable. However, the underlying logic can be any yield strategy, such as Aave, Pendle and LRT, or even nothing.
 
 ## Deployment And Test
 
@@ -86,3 +77,6 @@ Foundry Commands
   coverage
     forge coverage --fork-url [ARB-RPC]
 ```
+
+## Acknowledgement
+
