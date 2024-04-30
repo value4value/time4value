@@ -1,9 +1,4 @@
-/*
-
-    Copyright 2024 MEST.
-    SPDX-License-Identifier: Apache-2.0
-
-*/
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.16;
 
@@ -14,11 +9,9 @@ contract TestMestShareFactory is TestContext {
     address public user2 = address(22);
     address public newReceiver = address(33);
 
-
     function setUp() public {
         createMestFactory();
     }
-    
     
     function testSetNewYieldAggregator() public  {
         AaveYieldAggregator newYieldAggregator = new AaveYieldAggregator(address(mestFactory), 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);

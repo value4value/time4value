@@ -1,24 +1,18 @@
-/*
-
-    Copyright 2024 MEST.
-    SPDX-License-Identifier: MIT
-
-*/
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.16;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "contracts/intf/IAave.sol";
 import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
- * @notice YieldAggregator for Aave
- * Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
+ * @notice This contract is designed for Aave's ETH yield farming.
  */ 
 contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
-    // for aave   
     address public immutable mestFactory;
     address public immutable WETH;
     uint256 public yieldBuffer = 1e12; 
@@ -51,13 +45,18 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
 
     receive() external payable {}
 
+    /**
+     * @notice Updates the yield buffer, which is used to cover rounding errors during withdrawals and deposits.
+     * For more information, see: https://dev.pooltogether.com/protocol/reference/prize-vaults/PrizeVault#yieldbuffer
+     */
     function setYieldBuffer(uint256 newYieldBuffer) external onlyOwner {
         yieldBuffer = newYieldBuffer;
     }
 
-    // ================== yield interface ==================
-
-    // user buy share > mestFactory > yieldAggregator > [aave > aWETH] > mestFactory > ERC1155 > user
+    /**
+     * @notice Deposits ETH into the Aave and mints aToken for the factory.
+     * Only callable by the factory contract.
+     */
     function yieldDeposit() external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
@@ -66,7 +65,10 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         }
     }
 
-    // user sell share > mestFactory > yieldAggregator > [aave > ETH] > mestFactory --> user
+    /**
+     * @notice Withdraws ETH from the Aave and transfers it to the factory.
+     * Only callable by the factory contract.
+     */
     function yieldWithdraw(uint256 amount) external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
         if(amount > 0) {
@@ -92,10 +94,12 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer ? 0 : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
     }
 
-    // ================= internal ====================
-
+    /**
+     * @notice Check Aave pool state
+     * @return bool true if Aave pool is active, false otherwise
+     * @dev For more information, see: https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
+     */
     function _checkAavePoolState() internal view returns(bool) {
-        // check if asset is paused
         uint256 configData = aavePool.getReserveData(WETH).configuration.data;
         if (!(_getActive(configData) && !_getFrozen(configData) && !_getPaused(configData))) {
             return false;

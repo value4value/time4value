@@ -1,16 +1,11 @@
-/*
-
-    Copyright 2024 MEST.
-    SPDX-License-Identifier: MIT
-
-*/
+// SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import { IMestShare } from "../../intf/IMestShare.sol";
 import { Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import { Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import { IMestShare } from "../intf/IMestShare.sol";
 
 contract MestERC1155 is ERC1155Supply, Ownable, IMestShare {
     address public _FACTORY_;
