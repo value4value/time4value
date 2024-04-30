@@ -141,6 +141,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
+        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
 
         (
             uint256 buyPriceAfterFee, 
@@ -148,8 +149,6 @@ contract MestSharesFactoryV1 is Ownable {
             uint256 referralFee, 
             uint256 creatorFee
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
-
-        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
@@ -189,9 +188,8 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public payable {
         require(shareId < shareIndex, "Invalid shareId");
-
+        require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
         address creator = sharesMap[shareId];
-        uint256 shareBalance = IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId);
 
         (
             uint256 sellPriceAfterFee, 
@@ -199,8 +197,6 @@ contract MestSharesFactoryV1 is Ownable {
             uint256 referralFee, 
             uint256 creatorFee
         ) = getSellPriceAfterFee(shareId, quantity, referral);
-
-        require(shareBalance >= quantity, "Insufficient shares");
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
