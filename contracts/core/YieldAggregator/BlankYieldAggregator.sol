@@ -5,7 +5,7 @@ pragma solidity 0.8.16;
 import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
- * @notice no yield farming yieldAggregator, for backup
+ * @notice This is an empty contract, i.e., it does not do any yield farming as a fallback.
  */ 
 contract BlankYieldAggregator is IYieldAggregator {
 
@@ -25,8 +25,6 @@ contract BlankYieldAggregator is IYieldAggregator {
     fallback() external payable {}
 
     receive() external payable {}
-
-    // ================== yield interface ==================
 
     function yieldDeposit() external onlyFactory {
         _safeTransferETH(mestFactory, address(this).balance);

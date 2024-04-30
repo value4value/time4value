@@ -8,8 +8,7 @@ import "contracts/intf/IAave.sol";
 import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
- * @notice YieldAggregator for Aave
- * Mest Factory needn't care about Yield Strategy，only call deposit(), withdraw(), claim()...
+ * @notice This contract is designed for Aave's ETH yield farming.
  */ 
 contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
