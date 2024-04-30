@@ -221,12 +221,13 @@ contract TestMestShareFactory is TestContext {
         mestFactory.sellShare(0, 1, 4600163999999998, receiver);
     }
 
-    function testQuerySellFailed() public {
-        testBuyShare();
+    // Remove thie test case later, because getSellPriceAfterFee remove require statement
+    // function testQuerySellFailed() public {
+    //     testBuyShare();
 
-        vm.expectRevert(bytes("Exceeds supply"));
-        mestFactory.getSellPriceAfterFee(0, 5, receiver);
-    }
+    //     // vm.expectRevert(bytes("Insufficient shares"));
+    //     mestFactory.getSellPriceAfterFee(0, 5, receiver);
+    // }
 
     function testSellInvalidId() public {
         testBuyShare();
@@ -419,7 +420,7 @@ contract TestMestShareFactory is TestContext {
         }
 
         vm.prank(owner);
-        vm.expectRevert(bytes("Invalid yield amount"));
+        vm.expectRevert(bytes("Insufficient yield"));
         mestFactory.claimYield(1, receiver);
 
         vm.prank(owner);
