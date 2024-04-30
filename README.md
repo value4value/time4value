@@ -30,17 +30,13 @@ Mest Protocol provides a new way to pay where you can stake ETH by a unique S-sh
 
 ## How Mest works？
 
-Mest Protocol utilizes an S-shaped bonding curve, blending a quadratic and a square root function for dynamic pricing. When you buy, it mints tokens and drives prices up; when you sell, it burns tokens and lowers prices. Staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to creators.
+Mest Protocol utilizes an S-shaped bonding curve, blending a quadratic and a square root function for dynamic pricing. When you buy, it mints tokens and drives prices up; when you sell, it burns tokens and lowers prices. And the staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to shares owner.
 
 <div align="center">
   <img src="images/curve.png" width="90%">
 </div>
 
 ## Contracts
-
-<div align="center">
-  <img src="images/workflow.png" width="80%">
-</div>
 
 ### NFT
 
