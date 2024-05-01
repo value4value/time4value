@@ -187,7 +187,7 @@ contract MestSharesFactoryV1 is Ownable {
      * @param minETHAmount The minmum amount of ETH will be used for slippage protection.
      * @param referral The address of the referral fee recipient.
      */
-    function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public payable {
+    function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
         address creator = sharesMap[shareId];
