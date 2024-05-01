@@ -33,6 +33,7 @@ contract MestSharesFactoryV1 is Ownable {
     mapping(address => uint256[]) public creatorSharesMap; 
 
     event ClaimYield(uint256 amount, address indexed to);
+    event MigrateYield(address indexed yieldAggregator);
     event Create(uint256 indexed shareId, address indexed creator);
     event Trade(
         address indexed trader,
@@ -100,6 +101,8 @@ contract MestSharesFactoryV1 is Ownable {
              // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
             _depositAllETHToYieldToken();
         }
+
+        emit MigrateYield(_yieldAggregator);
     }
 
     /**
@@ -190,8 +193,8 @@ contract MestSharesFactoryV1 is Ownable {
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
-        address creator = sharesMap[shareId];
 
+        address creator = sharesMap[shareId];
         (
             uint256 sellPriceAfterFee, 
             uint256 sellPrice, 
