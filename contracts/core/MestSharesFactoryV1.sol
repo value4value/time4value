@@ -142,14 +142,14 @@ contract MestSharesFactoryV1 is Ownable {
 
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
-
         (
             uint256 buyPriceAfterFee, 
             uint256 buyPrice, 
             uint256 referralFee, 
             uint256 creatorFee
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
+
+        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
