@@ -30,7 +30,6 @@ contract MestSharesFactoryV1 is Ownable {
     IYieldAggregator public yieldAggregator;
 
     mapping(uint256 => address) public sharesMap;
-    mapping(address => uint256[]) public creatorSharesMap; 
 
     event ClaimYield(uint256 amount, address indexed to);
     event MigrateYield(address indexed yieldAggregator);
@@ -127,7 +126,6 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function createShare(address creator) public {
         sharesMap[shareIndex] = creator;
-        creatorSharesMap[creator].push(shareIndex);
 
         emit Create(shareIndex, creator);
 
