@@ -77,7 +77,7 @@ contract BondingCurveTests is Test {
         helper = new BondingCurveHelper();
     }
 
-        function testSigmoid2MultiPurchase(
+    function testSigmoid2MultiPurchase(
         uint32 g,
         uint96 h,
         uint32 s,
@@ -109,6 +109,22 @@ contract BondingCurveTests is Test {
         uint256 multi = BondingCurveLib.sigmoid2Sum(g, h, s - q, q);
 
         assertTrue(multi == sum);
+    }
+
+    // Check that the sum is monotonically increasing with the supply
+    function testSigmoid2(uint32 g, uint96 h) public {
+        unchecked {
+            if (g < 3) g = 3;
+            if (h == 0) h++;
+            for (uint256 o; o < 8; ++o) {
+                uint256 supply = g - 3 + o;
+                if (supply < type(uint32).max) {
+                    uint256 p0 = _sigmoid2(g, h, uint32(supply));
+                    uint256 p1 = _sigmoid2(g, h, uint32(supply + 1));
+                    assertTrue(p0 <= p1);
+                }
+            }
+        }
     }
 
     function testSigmoid2Sum() public {
@@ -154,5 +170,13 @@ contract BondingCurveTests is Test {
     function testLinearSum() public {
         uint256 sum = helper.linearSum(500000000000000, 0, 2);
         assertEq(sum, 1500000000000000);
+    }
+
+    function _sigmoid2(
+        uint32 inflectionPoint,
+        uint96 inflectionPrice,
+        uint32 supply
+    ) internal pure returns (uint256) {
+        return BondingCurveLib.sigmoid2Sum(inflectionPoint, inflectionPrice, supply, 1);
     }
 }
