@@ -9,4 +9,12 @@ libs = ['node_modules', 'lib']
 test = 'test'
 cache_path  = 'cache-foundry'
 
+[fmt]
+line_length = 160                                             # Maximum line length where formatter will try to wrap the line
+tab_width = 4                                                 # Number of spaces per indentation level
+bracket_spacing = true                                        # Whether or not to print spaces between brackets
+multiline_func_header = 'params_first'
+quote_style = 'double'
+ignore = ['test/**/*.sol']
+
 # See more config options https://github.com/gakonst/foundry/tree/master/config
