@@ -22,7 +22,7 @@ contract BondingCurveHelper {
         uint256 inflectionPrice,
         uint256 fromSupply,
         uint256 quantity
-    ) public returns (uint256 sum) {
+    ) public pure returns (uint256 sum) {
         unchecked {
             uint256 g = inflectionPoint;
             uint256 h = inflectionPrice;
