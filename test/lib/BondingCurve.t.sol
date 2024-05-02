@@ -77,6 +77,40 @@ contract BondingCurveTests is Test {
         helper = new BondingCurveHelper();
     }
 
+        function testSigmoid2MultiPurchase(
+        uint32 g,
+        uint96 h,
+        uint32 s,
+        uint8 q
+    ) public {
+        vm.assume(s <= type(uint32).max - q);
+
+        uint256 sum;
+        for (uint256 i = 0; i < q; ++i) {
+            sum += BondingCurveLib.sigmoid2Sum(g, h, s + uint32(i), 1);
+        }
+        uint256 multi = BondingCurveLib.sigmoid2Sum(g, h, s, q);
+
+        assertTrue(multi == sum);
+    }
+
+    function testSigmoid2MultiSell(
+        uint32 g,
+        uint96 h,
+        uint32 s,
+        uint8 q
+    ) public {
+        vm.assume(s >= q);
+
+        uint256 sum;
+        for (uint256 i = 0; i < q; ++i) {
+            sum += BondingCurveLib.sigmoid2Sum(g, h, s - uint32(i + 1), 1);
+        }
+        uint256 multi = BondingCurveLib.sigmoid2Sum(g, h, s - q, q);
+
+        assertTrue(multi == sum);
+    }
+
     function testSigmoid2Sum() public {
         uint256 sum = helper.sigmoid2Sum(0, 5 * 1e16, 10, 1);
         assertEq(sum, 0);
