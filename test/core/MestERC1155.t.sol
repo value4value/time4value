@@ -14,24 +14,44 @@ contract MestERC1155Tests is TestContext {
 
     function testSetURI() public {
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        erc1155TokenTemp.setURI("https://test.io/");
-        vm.prank(owner);
-        erc1155TokenTemp.setURI("https://test.io/");
+        sharesNFT.setURI(baseURI);
 
-        string memory shareUri = erc1155TokenTemp.uri(0);
-        assertEq(shareUri, "https://test.io/0");
+        vm.prank(owner);
+        sharesNFT.setURI(baseURI);
+
+        string memory shareUri = sharesNFT.uri(0);
+        assertEq(shareUri, "https://mest.io/shares/0");
     }
 
     function testSetFactory() public {
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        erc1155TokenTemp.setFactory(mockFactory);
-        vm.prank(owner);
-        erc1155TokenTemp.setFactory(mockFactory);
+        sharesNFT.setFactory(mockFactory);
 
+        vm.prank(owner);
+        sharesNFT.setFactory(mockFactory);
+
+        // check if factory is set by mint
         vm.prank(mockFactory);
-        erc1155TokenTemp.shareMint(mockUser, 0, 10);
-        uint256 mockUserBal = erc1155TokenTemp.balanceOf(mockUser, 0);
+        sharesNFT.shareMint(mockUser, 0, 10);
+        uint256 mockUserBal = sharesNFT.balanceOf(mockUser, 0);
         assertEq(mockUserBal, 10);
     }
 
+    function testShareMint() public {
+        vm.prank(address(sharesFactory));
+        sharesNFT.shareMint(mockUser, 0, 10);
+
+        uint256 mockUserBal = sharesNFT.balanceOf(mockUser, 0);
+        assertEq(mockUserBal, 10);
+    }
+
+    function testShareBurn() public {
+        vm.startPrank(address(sharesFactory));
+        sharesNFT.shareMint(mockUser, 0, 10);
+        sharesNFT.shareBurn(mockUser, 0, 10);
+        vm.stopPrank();
+
+        uint256 mockUserBal = sharesNFT.balanceOf(mockUser, 0);
+        assertEq(mockUserBal, 0);
+    }
 }
