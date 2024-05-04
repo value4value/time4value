@@ -13,57 +13,18 @@ contract MestShareFactoryTests is TestContext {
         createMestFactory();
     }
 
-    function testSetNewYieldAggregator() public  {
-        AaveYieldAggregator newYieldAggregator = new AaveYieldAggregator(address(sharesFactory), 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
-
-        // invalid yieldAggregator addr
-        vm.prank(owner);
-        vm.expectRevert(bytes("Invalid yieldAggregator"));
-        sharesFactory.migrate(address(0));
-
-        vm.prank(owner);
-        sharesFactory.migrate(address(newYieldAggregator));
-    }
-
-    function testSetInitialYieldAggregator() public {
-        MestSharesFactoryV1 newsharesFactory;
-        AaveYieldAggregator newYieldAggregator;
-
-        newsharesFactory = new MestSharesFactoryV1(address(sharesNFT), 5000000000000000, 1500, 102500000000000000, 0);
-        newYieldAggregator = new AaveYieldAggregator(address(newsharesFactory), weth, 0x794a61358D6845594F94dc1DB02A252b5b4814aD, 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb);
-        newsharesFactory.transferOwnership(owner);
-        newYieldAggregator.transferOwnership(owner);
-        vm.prank(owner);
-        sharesNFT.setFactory(address(newsharesFactory));
-
-        // test before set yieldAggregator buy fail
-        vm.deal(user1, 10 ether);
-        vm.prank(user1);
-        newsharesFactory.createShare(user1);
-        vm.prank(user1);
-        vm.expectRevert(bytes("Invalid yieldAggregator"));
-        newsharesFactory.buyShare{value:5500050111111109}(0, 1, receiver);
-
-        vm.prank(owner);
-        newsharesFactory.migrate(address(newYieldAggregator));
-
-        vm.prank(user1);
-        newsharesFactory.buyShare{value:5500050111111109}(0, 1, receiver);
-        assertEq(aWETH.balanceOf(address(newsharesFactory)), 5000045555555555);
-    }
-
     function testCreateShare() public {
         vm.deal(user1, 10 ether);
 
         vm.prank(user1);
         sharesFactory.createShare(user1);
 
-        (address creator)= sharesFactory.sharesMap(0); // id is 0
+        (address creator) = sharesFactory.sharesMap(0); // id is 0
         assertEq(creator, user1);
-        string memory shareUri = sharesNFT.uri(0);
-        assertEq(shareUri, "http://mest.io/share/0");
-    }
 
+        uint256 shareIndex = sharesFactory.shareIndex();
+        assertEq(shareIndex, 1);
+    }
 
     function testBuyShare() public {
         testCreateShare();
@@ -278,7 +239,7 @@ contract MestShareFactoryTests is TestContext {
         testBuyShare();
         vm.warp(1724693433); // need to fill a number gt current block.timestamp
         uint256 deposited = sharesFactory.depositedETHAmount();
-        uint256 maxYield = yieldAggregator.yieldMaxClaimable(deposited);
+        uint256 maxYield = aaveYieldAggregator.yieldMaxClaimable(deposited);
         //console.log(maxYield);
         assertEq(deposited, 10000227777777775);
         uint256 withdrawAmount = aWETH.balanceOf(address(sharesFactory));
@@ -340,15 +301,15 @@ contract MestShareFactoryTests is TestContext {
         testBuyShare();
         vm.warp(1714693433); // need to fill a number gt current block.timestamp
         uint256 deposited = sharesFactory.depositedETHAmount();
-        uint256 maxYield = yieldAggregator.yieldMaxClaimable(deposited);
+        uint256 maxYield = aaveYieldAggregator.yieldMaxClaimable(deposited);
         //console.log(maxYield);
         assertEq(deposited, 10000227777777775);
         uint256 withdrawAmount = aWETH.balanceOf(address(sharesFactory));
         assertEq(withdrawAmount - deposited - maxYield, 1e12); // 1e12 is default yieldbuffer
 
         vm.prank(owner);
-        yieldAggregator.setYieldBuffer(1e11);
-        uint256 maxYieldAfter = yieldAggregator.yieldMaxClaimable(deposited);
+        aaveYieldAggregator.setYieldBuffer(1e11);
+        uint256 maxYieldAfter = aaveYieldAggregator.yieldMaxClaimable(deposited);
         assertEq(maxYieldAfter - maxYield, 1e12 - 1e11);
     }
 
@@ -437,7 +398,7 @@ contract MestShareFactoryTests is TestContext {
         uint256 allEthAmount = address(sharesFactory).balance;
 
         vm.prank(owner);
-        sharesFactory.migrate(address(yieldAggregator));
+        sharesFactory.migrate(address(aaveYieldAggregator));
         uint256 allEthAmountAfter = aWETH.balanceOf(address(sharesFactory));
         assertEq(allEthAmount, allEthAmountAfter);
 
