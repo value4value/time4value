@@ -30,9 +30,9 @@ contract MestSharesFactoryV1 is Ownable {
     IYieldAggregator public yieldAggregator;
 
     mapping(uint256 => address) public sharesMap;
-    mapping(address => uint256[]) public creatorSharesMap; 
 
     event ClaimYield(uint256 amount, address indexed to);
+    event MigrateYield(address indexed yieldAggregator);
     event Create(uint256 indexed shareId, address indexed creator);
     event Trade(
         address indexed trader,
@@ -100,6 +100,8 @@ contract MestSharesFactoryV1 is Ownable {
              // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
             _depositAllETHToYieldToken();
         }
+
+        emit MigrateYield(_yieldAggregator);
     }
 
     /**
@@ -109,7 +111,7 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
         uint256 maxAmount = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
-        require(amount <= maxAmount, "Invalid yield amount");
+        require(amount <= maxAmount, "Insufficient yield");
 
         yieldAggregator.yieldWithdraw(amount);
         _safeTransferETH(to, amount);
@@ -124,7 +126,6 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function createShare(address creator) public {
         sharesMap[shareIndex] = creator;
-        creatorSharesMap[creator].push(shareIndex);
 
         emit Create(shareIndex, creator);
 
@@ -142,14 +143,14 @@ contract MestSharesFactoryV1 is Ownable {
 
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
-
         (
             uint256 buyPriceAfterFee, 
             uint256 buyPrice, 
             uint256 referralFee, 
             uint256 creatorFee
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
+
+        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
@@ -187,11 +188,11 @@ contract MestSharesFactoryV1 is Ownable {
      * @param minETHAmount The minmum amount of ETH will be used for slippage protection.
      * @param referral The address of the referral fee recipient.
      */
-    function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public payable {
+    function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
         require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
-        address creator = sharesMap[shareId];
 
+        address creator = sharesMap[shareId];
         (
             uint256 sellPriceAfterFee, 
             uint256 sellPrice, 
