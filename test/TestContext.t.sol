@@ -7,6 +7,7 @@ import "contracts/core/MestSharesFactoryV1.sol";
 import "contracts/core/YieldAggregator/AaveYieldAggregator.sol";
 import { MestERC1155 } from "contracts/core/MestERC1155.sol";
 import { BlankYieldAggregator } from "contracts/core/YieldAggregator/BlankYieldAggregator.sol";
+import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 contract TestContext is Test {
     MestSharesFactoryV1 public sharesFactory;
@@ -55,8 +56,8 @@ contract TestContext is Test {
         vm.prank(owner);
         aWETH = IAToken(IAavePool(aavePool).getReserveData(weth).aTokenAddress);
         
-        // vm.prank(owner);
-        // sharesFactory.migrate(address(aaveYieldAggregator));
+        vm.prank(owner);
+        sharesFactory.migrate(address(aaveYieldAggregator));
     }
 
     function testSuccess() public {}

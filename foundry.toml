@@ -15,6 +15,5 @@ tab_width = 4                                                 # Number of spaces
 bracket_spacing = true                                        # Whether or not to print spaces between brackets
 multiline_func_header = 'params_first'
 quote_style = 'double'
-ignore = ['test/**/*.sol']
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config
