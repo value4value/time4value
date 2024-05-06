@@ -128,4 +128,6 @@ contract TestPlus is Test {
             }
         }
     }
+
+    function testSuccess() public {}
 }
