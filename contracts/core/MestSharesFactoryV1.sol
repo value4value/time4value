@@ -262,6 +262,7 @@ contract MestSharesFactoryV1 is Ownable {
     {
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
+        require(fromSupply >= quantity, "Exceeds supply");
 
         sellPrice = _subTotal(fromSupply - quantity, quantity);
         referralFee = sellPrice * actualReferralFeePercent / 1 ether;
