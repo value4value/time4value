@@ -382,7 +382,7 @@ contract MestShareFactoryTests is TestContext {
 
         vm.prank(owner);
         vm.expectRevert(bytes("Insufficient yield"));
-        mestFactory.claimYield(1, receiver);
+        sharesFactory.claimYield(1, receiver);
 
         vm.prank(owner);
         sharesFactory.claimYield(0, receiver);
