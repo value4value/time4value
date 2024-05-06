@@ -5,8 +5,8 @@ pragma solidity 0.8.16;
 import "../TestContext.t.sol";
 
 contract MestERC1155Tests is TestContext {
-    address mockFactory = address(999);
-    address mockUser = address(8);
+    address mockFactory = address(1);
+    address mockUser = address(2);
 
     function setUp() public {
         createMestFactory();

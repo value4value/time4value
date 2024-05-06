@@ -15,13 +15,14 @@ contract TestContext is Test {
 
     AaveYieldAggregator public aaveYieldAggregator;
     BlankYieldAggregator public blankYieldAggregator;
-    IAToken public aWETH;
 
     address public receiver = address(999);
     address public owner = address(1);
     address public weth = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
     address public aavePool = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     address public aaveGateway = 0xecD4bd3121F9FD604ffaC631bF6d41ec12f1fafb;
+
+    IAToken public aWETH = IAToken(IAavePool(aavePool).getReserveData(weth).aTokenAddress);
 
     string public baseURI = "https://mest.io/shares/";
 
@@ -37,10 +38,6 @@ contract TestContext is Test {
             0 // inflectionPrice
         );
 
-        sharesNFT.setFactory(address(sharesFactory));
-        sharesNFT.transferOwnership(owner);
-        sharesFactory.transferOwnership(owner);
-
         aaveYieldAggregator = new AaveYieldAggregator(
             address(sharesFactory), 
             weth, 
@@ -53,9 +50,11 @@ contract TestContext is Test {
             weth
         );
 
-        vm.prank(owner);
-        aWETH = IAToken(IAavePool(aavePool).getReserveData(weth).aTokenAddress);
-        
+        sharesNFT.setFactory(address(sharesFactory));
+        sharesNFT.transferOwnership(owner);
+        sharesFactory.transferOwnership(owner);
+        aaveYieldAggregator.transferOwnership(owner);
+
         vm.prank(owner);
         sharesFactory.migrate(address(aaveYieldAggregator));
     }
