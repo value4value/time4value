@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn
-      - uses: onbjerg/foundry-toolchain@v1
+      - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
       - id: forge_test

@@ -9,13 +9,13 @@ import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 
 /**
  * @notice This contract is designed for Aave's ETH yield farming.
- */ 
+ */
 contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
     address public immutable mestFactory;
     address public immutable WETH;
-    uint256 public yieldBuffer = 1e12; 
+    uint256 public yieldBuffer = 1e12;
 
     IAavePool public aavePool;
     IAaveGateway public aaveGateway;

@@ -45,7 +45,6 @@ contract BlankYieldAggregator is IYieldAggregator {
         return 0;
     }
 
-
     /** 
      * @notice Transfers ETH to the recipient address
      * @param to The destination of the transfer

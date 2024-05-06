@@ -21,7 +21,7 @@ contract MestSharesFactoryV1 is Ownable {
 
     address public immutable mestERC1155;
 
-    uint256 public shareIndex; 
+    uint256 public shareIndex;
     uint256 public depositedETHAmount;
     uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
@@ -46,9 +46,9 @@ contract MestSharesFactoryV1 is Ownable {
     );
 
     constructor(
-        address _mestERC1155, 
-        uint256 _basePrice, 
-        uint256 _inflectionPoint, 
+        address _mestERC1155,
+        uint256 _basePrice,
+        uint256 _inflectionPoint,
         uint256 _inflectionPrice,
         uint256 _linearPriceSlope
     ) {
@@ -78,7 +78,7 @@ contract MestSharesFactoryV1 is Ownable {
      * Case 1: address(0) -> yieldAggregator, which initializes yield farming.
      * Case 2: yieldAggregator -> blank yieldAggregator, which cancels yield farming.
      * Case 3: yieldAggregator -> new yieldAggregator, which migrates to a new yield farming.
-     * @param _yieldAggregator The address of the yield aggregator.    
+     * @param _yieldAggregator The address of the yield aggregator.
     */
     function migrate(address _yieldAggregator) external onlyOwner {
         require(_yieldAggregator != address(0), "Invalid yieldAggregator");
@@ -93,7 +93,7 @@ contract MestSharesFactoryV1 is Ownable {
             // Step 2: Revoke the approval of the old yieldAggregator.
             address yieldToken = yieldAggregator.yieldToken();
             IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
-            
+
             // Step 3: Set the new yieldAggregator.
             _setYieldAggregator(_yieldAggregator);
 
@@ -132,7 +132,7 @@ contract MestSharesFactoryV1 is Ownable {
         shareIndex++;
     }
 
-    /** 
+    /**
      * @param shareId The ID of the share.
      * @param quantity The quantity of shares.
      * @param referral The address of the referral fee recipient.
@@ -144,9 +144,9 @@ contract MestSharesFactoryV1 is Ownable {
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
         (
-            uint256 buyPriceAfterFee, 
-            uint256 buyPrice, 
-            uint256 referralFee, 
+            uint256 buyPriceAfterFee,
+            uint256 buyPrice,
+            uint256 referralFee,
             uint256 creatorFee
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
 
@@ -156,13 +156,13 @@ contract MestSharesFactoryV1 is Ownable {
         // Mint shares to the buyer
         IMestShare(mestERC1155).shareMint(msg.sender, shareId, quantity);
         emit Trade(
-            msg.sender, 
-            shareId, 
-            true, 
-            quantity, 
-            buyPriceAfterFee, 
-            referralFee, 
-            creatorFee, 
+            msg.sender,
+            shareId,
+            true,
+            quantity,
+            buyPriceAfterFee,
+            referralFee,
+            creatorFee,
             fromSupply + quantity
         );
 
@@ -182,7 +182,7 @@ contract MestSharesFactoryV1 is Ownable {
         }
     }
 
-    /** 
+    /**
      * @param shareId The ID of the share.
      * @param quantity The quantity of shares.
      * @param minETHAmount The minmum amount of ETH will be used for slippage protection.
@@ -194,9 +194,9 @@ contract MestSharesFactoryV1 is Ownable {
 
         address creator = sharesMap[shareId];
         (
-            uint256 sellPriceAfterFee, 
-            uint256 sellPrice, 
-            uint256 referralFee, 
+            uint256 sellPriceAfterFee,
+            uint256 sellPrice,
+            uint256 referralFee,
             uint256 creatorFee
         ) = getSellPriceAfterFee(shareId, quantity, referral);
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
@@ -205,16 +205,16 @@ contract MestSharesFactoryV1 is Ownable {
         IMestShare(mestERC1155).shareBurn(msg.sender, shareId, quantity);
         uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
         emit Trade(
-            msg.sender, 
-            shareId, 
-            false, 
-            quantity, 
-            sellPriceAfterFee, 
-            referralFee, 
-            creatorFee, 
+            msg.sender,
+            shareId,
+            false,
+            quantity,
+            sellPriceAfterFee,
+            referralFee,
+            creatorFee,
             fromSupply
         );
-        
+
         // Withdraw the sell price (in ETH) from the yield aggregator (e.g., Aave)
         yieldAggregator.yieldWithdraw(sellPrice);
         depositedETHAmount -= sellPrice;
@@ -314,12 +314,12 @@ contract MestSharesFactoryV1 is Ownable {
         }
     }
 
-    /** 
+    /**
      * @notice Transfers ETH to the recipient address
      * @param to The destination of the transfer
      * @param value The value to be transferred
      * @dev Fails with `ETH transfer failed`
-     */ 
+     */
     function _safeTransferETH(address to, uint256 value) internal {
         if (value > 0) {
             (bool success,) = to.call{value: value}(new bytes(0));
