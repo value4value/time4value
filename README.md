@@ -56,9 +56,9 @@ We use foundry and hardhat to build tests and deploy.
 
 ```bash
 unit tests
-  forge test --fork-url [ARB-RPC]
+  forge test --fork-url [RPC]
 coverage
-  forge coverage --fork-url [ARB-RPC]
+  forge coverage --fork-url [RPC]
 compile
   npx hardhat compile
 deploy
