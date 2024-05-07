@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.16;
+
+pragma solidity 0.8.25;
 
 import "forge-std/Script.sol";
 import "contracts/core/MestSharesFactoryV1.sol";
@@ -31,7 +32,7 @@ contract DeployScript is Script {
 
     string public baseURI = "https://mest.io/shares/";
 
-    function run() external {
+    function run() virtual public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
