@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity 0.8.25;
 
 import "forge-std/Test.sol";
 
@@ -66,7 +66,7 @@ contract TestPlus is Test {
         uint256 x,
         uint256 min,
         uint256 max
-    ) internal pure virtual returns (uint256 result) {
+    ) internal pure virtual override returns (uint256 result) {
         result = _hem(x, min, max);
     }
 
