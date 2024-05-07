@@ -11,7 +11,7 @@
     "compile": "npx hardhat compile",
     "coverage": "npx hardhat coverage --solcoverjs .solcover.js",
     "coverage-forge": "forge coverage",
-    "deploy": "npx hardhat run scripts/deploy.ts",
+    "deploy": "source .env && forge script scripts/Deploy.s.sol:DeployScript --rpc-url $OPTIMISM_SEPOLIA_RPC --broadcast --verify -vvvv",
     "integration": "npx hardhat test",
     "verify": "npx hardhat verify",
     "test": "forge test --fork-url https://arbitrum.llamarpc.com"
