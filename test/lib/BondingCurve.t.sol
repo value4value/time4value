@@ -95,7 +95,12 @@ contract BondingCurveTests is TestPlus {
         assertEq(sum, 501672240802675);
     }
 
-    function _mockSigmoid2Sum(uint32 inflectionPoint, uint128 inflectionPrice, uint32 fromSupply, uint32 quantity) internal pure returns (uint256 sum) {
+    function _mockSigmoid2Sum(
+        uint32 inflectionPoint,
+        uint128 inflectionPrice,
+        uint32 fromSupply,
+        uint32 quantity
+    ) internal pure returns (uint256 sum) {
         uint256 g = inflectionPoint;
         uint256 h = inflectionPrice;
 
@@ -123,11 +128,22 @@ contract BondingCurveTests is TestPlus {
         }
     }
 
-    function _sigmoid2Sum(uint32 inflectionPoint, uint128 inflectionPrice, uint32 supply, uint32 quantity) internal pure returns (uint256) {
+    function _sigmoid2Sum(
+        uint32 inflectionPoint,
+        uint128 inflectionPrice,
+        uint32 supply,
+        uint32 quantity
+    ) internal pure returns (uint256) {
         return BondingCurveLib.sigmoid2Sum(inflectionPoint, inflectionPrice, supply, quantity);
     }
 
-    function _sigmoid2Brutalized(uint32 inflectionPoint, uint96 inflectionPrice, uint32 supply, uint32 quantity, uint256 expectedResult) internal {
+    function _sigmoid2Brutalized(
+        uint32 inflectionPoint,
+        uint96 inflectionPrice,
+        uint32 supply,
+        uint32 quantity,
+        uint256 expectedResult
+    ) internal {
         uint256 w = _random();
         assembly {
             inflectionPoint := or(inflectionPoint, shl(32, w))

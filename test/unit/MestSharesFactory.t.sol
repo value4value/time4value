@@ -101,13 +101,23 @@ contract MestSharesFactoryTests is TestContext {
         uint256 aliceBalBefore = addrAlice.balance;
 
         // check MaxClaimableYield < yieldBuffer
-        (uint256 depositedETHAmountBefore, uint256 yieldBalanceBefore, uint256 yieldMaxClaimableBefore, uint256 yieldBufferBefore) = _getYield();
+        (
+            uint256 depositedETHAmountBefore,
+            uint256 yieldBalanceBefore,
+            uint256 yieldMaxClaimableBefore,
+            uint256 yieldBufferBefore
+        ) = _getYield();
         assertTrue((yieldBalanceBefore - depositedETHAmountBefore) < yieldBufferBefore);
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
         vm.warp(YIELD_CLAIM_TIME);
-        (uint256 depositedETHAmountAfter, uint256 yieldBalanceAfter, uint256 yieldMaxClaimableAfter, uint256 yieldBufferAfter) = _getYield();
+        (
+            uint256 depositedETHAmountAfter,
+            uint256 yieldBalanceAfter,
+            uint256 yieldMaxClaimableAfter,
+            uint256 yieldBufferAfter
+        ) = _getYield();
 
         // check MaxClaimableYield >= yieldBuffer
         assertTrue((yieldBalanceAfter - depositedETHAmountAfter) >= yieldBufferAfter);

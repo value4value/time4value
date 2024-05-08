@@ -5,7 +5,12 @@ pragma solidity 0.8.25;
 import { FixedPointMathLib } from "solady/utils/FixedPointMathLib.sol";
 
 library BondingCurveLib {
-    function sigmoid2Sum(uint256 inflectionPoint, uint256 inflectionPrice, uint256 fromSupply, uint256 quantity) internal pure returns (uint256 sum) {
+    function sigmoid2Sum(
+        uint256 inflectionPoint,
+        uint256 inflectionPrice,
+        uint256 fromSupply,
+        uint256 quantity
+    ) internal pure returns (uint256 sum) {
         // We don't need checked arithmetic for the sum.
         // The max possible sum for the quadratic region is capped at:
         // `n * (n + 1) * (2*n + 1) * h < 2**32 * 2**33 * 2**34 * 2**128 = 2**227`.
@@ -47,7 +52,11 @@ library BondingCurveLib {
         }
     }
 
-    function linearSum(uint256 linearPriceSlope, uint256 fromSupply, uint256 quantity) internal pure returns (uint256 sum) {
+    function linearSum(
+        uint256 linearPriceSlope,
+        uint256 fromSupply,
+        uint256 quantity
+    ) internal pure returns (uint256 sum) {
         // We don't need checked arithmetic for the sum because the max possible
         // intermediate value is capped at:
         // `k * m < 2**32 * 2**128 = 2**160 < 2**256`.

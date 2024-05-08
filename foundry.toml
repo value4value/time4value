@@ -10,7 +10,7 @@ test = 'test'
 cache_path  = 'cache-foundry'
 
 [fmt]
-line_length = 160                                             # Maximum line length where formatter will try to wrap the line
+line_length = 120                                             # Maximum line length where formatter will try to wrap the line
 tab_width = 4                                                 # Number of spaces per indentation level
 bracket_spacing = true                                        # Whether or not to print spaces between brackets
 multiline_func_header = 'params_first'
