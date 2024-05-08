@@ -23,7 +23,6 @@ interface IAavePool {
         //bit 168-175: eMode category
         //bit 176-211: unbacked mint cap in whole tokens, 0 ⇒ no cap
         //bit 212-251: debt ceiling for isolation mode with decimals bit 252-255: unused
-
         uint256 data;
     }
 

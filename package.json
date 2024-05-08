@@ -13,8 +13,7 @@
     "verify": "npx hardhat verify",
     "test": "forge test -vvv --fork-url https://mainnet.optimism.io",
     "lint": "solhint 'contracts/**/*.sol'",
-    "lint:test": "solhint 'test/**/*.sol'",
-    "prettier": "prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol' 'test/**/*.sol'",
+    "fmt": "forge fmt --check && solhint \"{scripts,contracts,test}/**/*.sol\"",
     "deploy": "source .env && forge script script/Deploy.s.sol:DeployScript --rpc-url $OPTIMISM_SEPOLIA_RPC --broadcast --verify -vvvv"
   },
   "devDependencies": {
@@ -33,7 +32,7 @@
     "solady": "^0.0.198"
   },
   "prettier": {
-    "printWidth": 120,
+    "printWidth": 160,
     "tabWidth": 4,
     "useTabs": false,
     "semi": true,
@@ -41,14 +40,6 @@
     "bracketSpacing": true,
     "plugins": [
       "prettier-plugin-solidity"
-    ],
-    "overrides": [
-      {
-        "files": "*.sol",
-        "options": {
-          "parser": "solidity-parse"
-        }
-      }
     ]
   }
 }

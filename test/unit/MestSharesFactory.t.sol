@@ -101,23 +101,13 @@ contract MestSharesFactoryTests is TestContext {
         uint256 aliceBalBefore = addrAlice.balance;
 
         // check MaxClaimableYield < yieldBuffer
-        (
-            uint256 depositedETHAmountBefore,
-            uint256 yieldBalanceBefore,
-            uint256 yieldMaxClaimableBefore,
-            uint256 yieldBufferBefore
-        ) = _getYield();
+        (uint256 depositedETHAmountBefore, uint256 yieldBalanceBefore, uint256 yieldMaxClaimableBefore, uint256 yieldBufferBefore) = _getYield();
         assertTrue((yieldBalanceBefore - depositedETHAmountBefore) < yieldBufferBefore);
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
         vm.warp(YIELD_CLAIM_TIME);
-        (
-            uint256 depositedETHAmountAfter,
-            uint256 yieldBalanceAfter,
-            uint256 yieldMaxClaimableAfter,
-            uint256 yieldBufferAfter
-        ) = _getYield();
+        (uint256 depositedETHAmountAfter, uint256 yieldBalanceAfter, uint256 yieldMaxClaimableAfter, uint256 yieldBufferAfter) = _getYield();
 
         // check MaxClaimableYield >= yieldBuffer
         assertTrue((yieldBalanceAfter - depositedETHAmountAfter) >= yieldBufferAfter);
@@ -181,7 +171,7 @@ contract MestSharesFactoryTests is TestContext {
     // Negative test cases
     function testBuySharesRefund() public {
         uint256 aliceBalBefore = addrAlice.balance;
-        (uint256 buyPriceAfterFee, , , ) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
 
         // Check revert if not enough value
         vm.prank(addrAlice);
@@ -217,14 +207,14 @@ contract MestSharesFactoryTests is TestContext {
         sharesFactory.buyShare{ value: 1 ether }(shareIndex, 1, referralReceiver);
 
         // invalid value, when value < buyPriceAfterFee
-        (uint256 buyPriceAfterFee, , , ) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Insufficient payment"));
         sharesFactory.buyShare{ value: buyPriceAfterFee / 2 }(0, 1, referralReceiver);
     }
 
     function testSellSharesFailed() public {
-        (uint256 sellPriceAfterFee, , , ) = sharesFactory.getSellPriceAfterFee(0, 1, referralReceiver);
+        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(0, 1, referralReceiver);
         uint256 minETHAmount = (sellPriceAfterFee * 95) / 100;
         uint256 overETHAmount = (sellPriceAfterFee * 120) / 100;
 
@@ -245,7 +235,7 @@ contract MestSharesFactoryTests is TestContext {
     }
 
     function testSellSharesReferralToZeroAddress() public {
-        (, , uint256 referralFee, ) = sharesFactory.getSellPriceAfterFee(0, 1, address(0));
+        (,, uint256 referralFee,) = sharesFactory.getSellPriceAfterFee(0, 1, address(0));
         assertEq(referralFee, 0);
     }
 
@@ -260,13 +250,13 @@ contract MestSharesFactoryTests is TestContext {
     }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 buyPriceAfterFee, , , ) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }
 
     function _sellShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 sellPriceAfterFee, , , ) = sharesFactory.getSellPriceAfterFee(shareId, quantity, referral);
+        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.sellShare(shareId, quantity, sellPriceAfterFee, referral);
     }

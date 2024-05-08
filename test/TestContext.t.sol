@@ -70,5 +70,5 @@ contract TestContext is Test {
         sharesFactory.migrate(address(aaveYieldAggregator));
     }
 
-    function testSuccess() public {}
+    function testSuccess() public { }
 }

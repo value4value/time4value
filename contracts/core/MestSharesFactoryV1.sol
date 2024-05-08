@@ -45,13 +45,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 newSupply
     );
 
-    constructor(
-        address _mestERC1155,
-        uint256 _basePrice,
-        uint256 _inflectionPoint,
-        uint256 _inflectionPrice,
-        uint256 _linearPriceSlope
-    ) {
+    constructor(address _mestERC1155, uint256 _basePrice, uint256 _inflectionPoint, uint256 _inflectionPrice, uint256 _linearPriceSlope) {
         MEST_ERC1155 = _mestERC1155;
 
         generalCurveFixedParam.basePrice = _basePrice; // 5000000000000000;
@@ -60,9 +54,9 @@ contract MestSharesFactoryV1 is Ownable {
         generalCurveFixedParam.linearPriceSlope = _linearPriceSlope; // 0;
     }
 
-    fallback() external payable {}
+    fallback() external payable { }
 
-    receive() external payable {}
+    receive() external payable { }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
         referralFeePercent = _feePercent;
@@ -143,27 +137,14 @@ contract MestSharesFactoryV1 is Ownable {
 
         address creator = sharesMap[shareId];
         uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
-        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) = getBuyPriceAfterFee(
-            shareId,
-            quantity,
-            referral
-        );
+        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) = getBuyPriceAfterFee(shareId, quantity, referral);
 
         require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
         IMestShare(MEST_ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Trade(
-            msg.sender,
-            shareId,
-            true,
-            quantity,
-            buyPriceAfterFee,
-            referralFee,
-            creatorFee,
-            fromSupply + quantity
-        );
+        emit Trade(msg.sender, shareId, true, quantity, buyPriceAfterFee, referralFee, creatorFee, fromSupply + quantity);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
@@ -192,11 +173,7 @@ contract MestSharesFactoryV1 is Ownable {
         require(IMestShare(MEST_ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
 
         address creator = sharesMap[shareId];
-        (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) = getSellPriceAfterFee(
-            shareId,
-            quantity,
-            referral
-        );
+        (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) = getSellPriceAfterFee(shareId, quantity, referral);
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
@@ -297,12 +274,7 @@ contract MestSharesFactoryV1 is Ownable {
         unchecked {
             subTotal = generalCurveFixedParam.basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(generalCurveFixedParam.linearPriceSlope, fromSupply, quantity);
-            subTotal += BondingCurveLib.sigmoid2Sum(
-                generalCurveFixedParam.inflectionPoint,
-                generalCurveFixedParam.inflectionPrice,
-                fromSupply,
-                quantity
-            );
+            subTotal += BondingCurveLib.sigmoid2Sum(generalCurveFixedParam.inflectionPoint, generalCurveFixedParam.inflectionPrice, fromSupply, quantity);
         }
     }
 
@@ -314,7 +286,7 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function _safeTransferETH(address to, uint256 value) internal {
         if (value > 0) {
-            (bool success, ) = to.call{ value: value }(new bytes(0));
+            (bool success,) = to.call{ value: value }(new bytes(0));
             require(success, "ETH transfer failed");
         }
     }

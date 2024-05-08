@@ -21,15 +21,15 @@ contract BlankYieldAggregator is IYieldAggregator {
         _;
     }
 
-    fallback() external payable {}
+    fallback() external payable { }
 
-    receive() external payable {}
+    receive() external payable { }
 
     function yieldDeposit() external onlyFactory {
         _safeTransferETH(MEST_FACTORY, address(this).balance);
     }
 
-    function yieldWithdraw(uint256) external onlyFactory {}
+    function yieldWithdraw(uint256) external onlyFactory { }
 
     function yieldBalanceOf(address) external pure returns (uint256 withdrawableETHAmount) {
         return 0;
@@ -51,7 +51,7 @@ contract BlankYieldAggregator is IYieldAggregator {
      */
     function _safeTransferETH(address to, uint256 value) internal {
         if (value > 0) {
-            (bool success, ) = to.call{ value: value }(new bytes(0));
+            (bool success,) = to.call{ value: value }(new bytes(0));
             require(success, "ETH transfer failed");
         }
     }
