@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.25;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { IAavePool, IAaveGateway } from "contracts/interface/IAave.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "contracts/intf/IAave.sol";
-import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
+import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @notice This contract is designed for Aave's ETH yield farming.
@@ -13,7 +14,7 @@ import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
 contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
-    address public immutable mestFactory;
+    address public immutable MEST_FACTORY;
     address public immutable WETH;
     uint256 public yieldBuffer = 1e12;
 
@@ -26,7 +27,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     uint256 internal constant PAUSED_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF;
 
     constructor(address _mestFactory, address _weth, address _aavePool, address _aaveGateway) {
-        mestFactory = _mestFactory;
+        MEST_FACTORY = _mestFactory;
         WETH = _weth;
 
         aaveGateway = IAaveGateway(_aaveGateway);
@@ -37,7 +38,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     }
 
     modifier onlyFactory() {
-        require(msg.sender == mestFactory, "Only factory");
+        require(msg.sender == MEST_FACTORY, "Only factory");
         _;
     }
 
@@ -60,8 +61,8 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     function yieldDeposit() external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
-        if(ethAmount > 0) {
-            aaveGateway.depositETH{value: ethAmount}(address(aavePool), mestFactory, 0);
+        if (ethAmount > 0) {
+            aaveGateway.depositETH{ value: ethAmount }(address(aavePool), MEST_FACTORY, 0);
         }
     }
 
@@ -71,17 +72,17 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      */
     function yieldWithdraw(uint256 amount) external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
-        if(amount > 0) {
-            aWETH.safeTransferFrom(mestFactory, address(this), amount);
-            aaveGateway.withdrawETH(address(aavePool), amount, mestFactory);
+        if (amount > 0) {
+            aWETH.safeTransferFrom(MEST_FACTORY, address(this), amount);
+            aaveGateway.withdrawETH(address(aavePool), amount, MEST_FACTORY);
         }
     }
 
-    function yieldBalanceOf(address owner) external view returns(uint256 withdrawableETHAmount) {
+    function yieldBalanceOf(address owner) external view returns (uint256 withdrawableETHAmount) {
         return aWETH.balanceOf(owner);
     }
 
-    function yieldToken() external view returns(address yieldTokenAddr) {
+    function yieldToken() external view returns (address yieldTokenAddr) {
         yieldTokenAddr = address(aWETH);
     }
 
@@ -89,9 +90,11 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * @notice Calculate the maximum yield that the owner can claim.
      * @return maxClaimableETH max yield amount owner could get
      */
-    function yieldMaxClaimable(uint256 depositedETHAmount) external view returns(uint256 maxClaimableETH) {
-        uint256 withdrawableETHAmount = aWETH.balanceOf(mestFactory);
-        maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer ? 0 : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
+    function yieldMaxClaimable(uint256 depositedETHAmount) external view returns (uint256 maxClaimableETH) {
+        uint256 withdrawableETHAmount = aWETH.balanceOf(MEST_FACTORY);
+        maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer
+            ? 0
+            : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
     }
 
     /**
@@ -99,7 +102,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * @return bool true if Aave pool is active, false otherwise
      * @dev For more information, see: https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
      */
-    function _checkAavePoolState() internal view returns(bool) {
+    function _checkAavePoolState() internal view returns (bool) {
         uint256 configData = aavePool.getReserveData(WETH).configuration.data;
         if (!(_getActive(configData) && !_getFrozen(configData) && !_getPaused(configData))) {
             return false;

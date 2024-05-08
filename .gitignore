@@ -1,10 +1,14 @@
 .env
 
+# Compiler files
 artifacts/
 cache-hardhat/
 cache-foundry/
 cache/
 out/
+
+# Broadcast logs
+broadcast/
 
 node_modules
 

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.25;
 
-import "../TestContext.t.sol";
+import { TestContext } from "../TestContext.t.sol";
+import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 
 contract YieldAggregatorTests is TestContext {
     uint256 public defaultYieldBuffer = 1e12;
@@ -12,7 +13,7 @@ contract YieldAggregatorTests is TestContext {
         createMestFactory();
         yieldAggregator = sharesFactory.yieldAggregator();
     }
-    
+
     // Specific for aaveYieldAggregator
     function testSetYieldBuffer() public {
         assertEq(aaveYieldAggregator.yieldBuffer(), defaultYieldBuffer);
@@ -49,7 +50,7 @@ contract YieldAggregatorTests is TestContext {
         yieldAggregator.yieldWithdraw(0);
     }
 
-    function testMigrateNewYieldAggregator() public  {
+    function testMigrateNewYieldAggregator() public {
         vm.prank(owner);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
         sharesFactory.migrate(address(0));

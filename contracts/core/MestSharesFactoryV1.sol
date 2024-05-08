@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.25;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IMestShare } from "../intf/IMestShare.sol";
-import { IYieldAggregator } from "contracts/intf/IYieldAggregator.sol";
+import { IMestShare } from "../interface/IMestShare.sol";
+import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
 contract MestSharesFactoryV1 is Ownable {
@@ -19,7 +19,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 inflectionPrice;
     }
 
-    address public immutable mestERC1155;
+    address public immutable MEST_ERC1155;
 
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
@@ -52,7 +52,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 _inflectionPrice,
         uint256 _linearPriceSlope
     ) {
-        mestERC1155 = _mestERC1155;
+        MEST_ERC1155 = _mestERC1155;
 
         generalCurveFixedParam.basePrice = _basePrice; // 5000000000000000;
         generalCurveFixedParam.inflectionPoint = _inflectionPoint; // 1500;
@@ -79,7 +79,7 @@ contract MestSharesFactoryV1 is Ownable {
      * Case 2: yieldAggregator -> blank yieldAggregator, which cancels yield farming.
      * Case 3: yieldAggregator -> new yieldAggregator, which migrates to a new yield farming.
      * @param _yieldAggregator The address of the yield aggregator.
-    */
+     */
     function migrate(address _yieldAggregator) external onlyOwner {
         require(_yieldAggregator != address(0), "Invalid yieldAggregator");
 
@@ -97,7 +97,7 @@ contract MestSharesFactoryV1 is Ownable {
             // Step 3: Set the new yieldAggregator.
             _setYieldAggregator(_yieldAggregator);
 
-             // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
+            // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
             _depositAllETHToYieldToken();
         }
 
@@ -142,19 +142,18 @@ contract MestSharesFactoryV1 is Ownable {
         require(shareId < shareIndex, "Invalid shareId");
 
         address creator = sharesMap[shareId];
-        uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        (
-            uint256 buyPriceAfterFee,
-            uint256 buyPrice,
-            uint256 referralFee,
-            uint256 creatorFee
-        ) = getBuyPriceAfterFee(shareId, quantity, referral);
+        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) = getBuyPriceAfterFee(
+            shareId,
+            quantity,
+            referral
+        );
 
         require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
-        IMestShare(mestERC1155).shareMint(msg.sender, shareId, quantity);
+        IMestShare(MEST_ERC1155).shareMint(msg.sender, shareId, quantity);
         emit Trade(
             msg.sender,
             shareId,
@@ -185,35 +184,25 @@ contract MestSharesFactoryV1 is Ownable {
     /**
      * @param shareId The ID of the share.
      * @param quantity The quantity of shares.
-     * @param minETHAmount The minmum amount of ETH will be used for slippage protection.
+     * @param minETHAmount The minimum amount of ETH will be used for slippage protection.
      * @param referral The address of the referral fee recipient.
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
-        require(IMestShare(mestERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
+        require(IMestShare(MEST_ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
 
         address creator = sharesMap[shareId];
-        (
-            uint256 sellPriceAfterFee,
-            uint256 sellPrice,
-            uint256 referralFee,
-            uint256 creatorFee
-        ) = getSellPriceAfterFee(shareId, quantity, referral);
+        (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) = getSellPriceAfterFee(
+            shareId,
+            quantity,
+            referral
+        );
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
-        IMestShare(mestERC1155).shareBurn(msg.sender, shareId, quantity);
-        uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
-        emit Trade(
-            msg.sender,
-            shareId,
-            false,
-            quantity,
-            sellPriceAfterFee,
-            referralFee,
-            creatorFee,
-            fromSupply
-        );
+        IMestShare(MEST_ERC1155).shareBurn(msg.sender, shareId, quantity);
+        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        emit Trade(msg.sender, shareId, false, quantity, sellPriceAfterFee, referralFee, creatorFee, fromSupply);
 
         // Withdraw the sell price (in ETH) from the yield aggregator (e.g., Aave)
         yieldAggregator.yieldWithdraw(sellPrice);
@@ -233,18 +222,18 @@ contract MestSharesFactoryV1 is Ownable {
      * @return buyPrice The initial price of the shares.
      * @return referralFee Fee by the referral. If = address(0), there is no referral fee.
      * @return creatorFee Fee by the share's creator.
-    */
-    function getBuyPriceAfterFee(uint256 shareId, uint256 quantity, address referral)
-        public
-        view
-        returns (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee)
-    {
-        uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
+     */
+    function getBuyPriceAfterFee(
+        uint256 shareId,
+        uint256 quantity,
+        address referral
+    ) public view returns (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) {
+        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
         buyPrice = _subTotal(fromSupply, quantity);
-        referralFee = buyPrice * actualReferralFeePercent / 1 ether;
-        creatorFee = buyPrice * creatorFeePercent / 1 ether;
+        referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
+        creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
     }
 
@@ -255,25 +244,25 @@ contract MestSharesFactoryV1 is Ownable {
      * @return referralFee Fee by the referral. If = address(0), there is no referral fee.
      * @return creatorFee Fee by the share's creator.
      */
-    function getSellPriceAfterFee(uint256 shareId, uint256 quantity, address referral)
-        public
-        view
-        returns (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee)
-    {
-        uint256 fromSupply = IMestShare(mestERC1155).shareFromSupply(shareId);
+    function getSellPriceAfterFee(
+        uint256 shareId,
+        uint256 quantity,
+        address referral
+    ) public view returns (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) {
+        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
         sellPrice = _subTotal(fromSupply - quantity, quantity);
-        referralFee = sellPrice * actualReferralFeePercent / 1 ether;
-        creatorFee = sellPrice * creatorFeePercent / 1 ether;
+        referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
+        creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;
     }
 
     /**
      * @notice Sets the yieldAggregator and approves it to spend the yieldToken.
      * @param _yieldAggregator The address of the yieldAggregator.
-    */
+     */
     function _setYieldAggregator(address _yieldAggregator) internal {
         yieldAggregator = IYieldAggregator(_yieldAggregator);
 
@@ -309,7 +298,10 @@ contract MestSharesFactoryV1 is Ownable {
             subTotal = generalCurveFixedParam.basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(generalCurveFixedParam.linearPriceSlope, fromSupply, quantity);
             subTotal += BondingCurveLib.sigmoid2Sum(
-                generalCurveFixedParam.inflectionPoint, generalCurveFixedParam.inflectionPrice, fromSupply, quantity
+                generalCurveFixedParam.inflectionPoint,
+                generalCurveFixedParam.inflectionPrice,
+                fromSupply,
+                quantity
             );
         }
     }
@@ -322,7 +314,7 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function _safeTransferETH(address to, uint256 value) internal {
         if (value > 0) {
-            (bool success,) = to.call{value: value}(new bytes(0));
+            (bool success, ) = to.call{ value: value }(new bytes(0));
             require(success, "ETH transfer failed");
         }
     }
