@@ -13,5 +13,6 @@ node_modules
 *.log
 .idea
 .vscode
+.DS_Store
 coverage.json
 lcov.info
