@@ -63,8 +63,8 @@ test
 coverage
   yarn run coverage
 deploy
-  yarn run depoly:testnet
-  yarn run depoly:mainnet
+  yarn run deploy:testnet
+  yarn run deploy:mainnet
 ```
 
 ## Acknowledgement
