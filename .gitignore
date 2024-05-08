@@ -1,20 +1,18 @@
-.env
-
-# Compiler files
-artifacts/
-cache-hardhat/
-cache-foundry/
-cache/
-out/
-
-# Broadcast logs
-broadcast/
-
+# Directories
+artifacts
+cache-hardhat
+cache-foundry
+cache
+out
+broadcast
+coverage
 node_modules
 
-coverage/
+# Files
+*.env
+*.log
+.idea
+.vscode
+.DS_Store
 coverage.json
 lcov.info
-
-.vscode
-.idea
