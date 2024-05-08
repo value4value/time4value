@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 name: test
 
@@ -7,26 +7,24 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18]
+        node-version: [ 18 ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn
-      - uses: onbjerg/foundry-toolchain@v1
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - name: Cache fork requests
+        uses: actions/cache@v3
         with:
-          version: nightly
+          path: ~/.foundry/cache
+          key: "${{ runner.os }}-foundry-network-fork-${{ github.sha }}"
+          restore-keys: |
+            ${{ runner.os }}-foundry-network-fork-
       - id: forge_test
-        run: forge test --fork-url https://arbitrum.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea
+        run: forge test --fork-url https://mainnet.optimism.io
         continue-on-error: true
-      - name: Retry if fail forge test
-        if: steps.forge_test.outcome == 'failure'
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10   # Total time before giving up
-          max_attempts: 3      # Total number of attempts
-          command: forge test --fork-url https://arbitrum.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea
-          retry_wait_seconds: 60    # Delay between retries
