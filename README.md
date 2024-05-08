@@ -7,32 +7,30 @@
   <em></em>
 </pre>
 
-Mest, a payment protocol designed for creators. And it's a bridge between creators and fans, where fans can donate, sponsor, subscribe, etc. The contract provides a new way to pay where you can stake ETH by a sigmoid bonding curve and yield farming, buy what you need, and withdraw whenever you want.
+Mest, **a payment protocol designed for creators**. And it's a bridge between creators and fans, where fans can **donate, sponsor, subscribe**, etc. The contract provides a new way to pay where you can stake ETH by a **sigmoid bonding curve** and **yield farming**, buy what you need, and withdraw whenever you want.
 
--   🐦 For fans, pay early and save more
--   💵 For creators, long-term income from fees and yield
--   ⚡ Lightweight with flexible curve and yield strategies
+-   🐦 For fans, pay early and save more;
+-   💵 For creators, long-term income from fees and yield;
+-   ⚡ Lightweight with flexible curve and yield strategies;
 -   🌟 Made for creators like startups, indie hackers and KOLs.
 
 <div align="center">
-<br/>
-
+  
 | Features           | Mest  | FriendtechV1 | Patreon | Coinbase Commerce |
 | ------------------ | ----- | ------------ | ------- | ----------------- |
-| User Capacity      | > 10K | < 100        |         | N/A               |
+| User Capacity      | > 10K | < 100        | N/A    | N/A               |
 | Capital efficiency | ✅    | ❌           | ❌      | ❌                |
 | Permissionless     | ✅    | ✅           | ❌      | ❌                |
 | Tokenization       | ✅    | ❌           | ❌      | ❌                |
 
-<br/>
 </div>
-
+  
 ## How it works？
 
 The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
 
 <div align="center">
-  <img src="images/curve.gif" width="90%">
+  <img src="images/curve.gif" width="80%">
 </div>
 
 ## Contracts
