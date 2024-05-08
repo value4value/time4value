@@ -7,14 +7,13 @@
   "scripts": {
     "build": "forge build",
     "compile": "forge compile",
-    "clean": "rm -rf artifacts broadcast cache cache-foundry docs out-optimized out",
+    "test": "forge test --fork-url https://mainnet.optimism.io",
     "coverage": "forge coverage --fork-url https://mainnet.optimism.io",
-    "integration": "npx hardhat test",
-    "verify": "npx hardhat verify",
-    "test": "forge test -vvv --fork-url https://mainnet.optimism.io",
-    "lint": "solhint 'contracts/**/*.sol'",
+    "deploy:testnet": "make deploy-testnet",
+    "deploy:mainnet": "make deploy-mainnet",
     "fmt": "forge fmt --check && solhint \"{scripts,contracts,test}/**/*.sol\"",
-    "deploy": "source .env && forge script script/Deploy.s.sol:DeployScript --rpc-url $OPTIMISM_SEPOLIA_RPC --broadcast --verify -vvvv"
+    "lint": "solhint 'contracts/**/*.sol'",
+    "clean": "rm -rf artifacts broadcast cache cache-foundry docs out-optimized out"
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
@@ -43,4 +42,3 @@
     ]
   }
 }
-

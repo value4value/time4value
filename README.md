@@ -55,16 +55,15 @@ YieldAggregator is a yield strategy contract that provides a common interface fo
 We use foundry and hardhat to build tests and deploy.
 
 ```bash
-unit tests
-  forge test --fork-url [RPC]
+intall
+  yarn install
+test
+  yarn run test
 coverage
-  forge coverage --fork-url [RPC]
-compile
-  npx hardhat compile
+  yarn run coverage
 deploy
-  npx hardhat run scripts/deploy.ts
-verify
-  npx hardhat verify
+  yarn run deplpy:testnet
+  yarn run deplpy:mainnet
 ```
 
 ## Acknowledgement
