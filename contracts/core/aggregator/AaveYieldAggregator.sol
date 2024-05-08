@@ -18,8 +18,8 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     address public immutable WETH;
     uint256 public yieldBuffer = 1e12;
 
-    IAavePool public aavePool;
-    IAaveGateway public aaveGateway;
+    IAavePool public immutable AAVE_POOL;
+    IAaveGateway public immutable AAVE_WETH_GATEWAY;
     IERC20 public aWETH;
 
     uint256 internal constant ACTIVE_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFF;
@@ -30,11 +30,11 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         MEST_FACTORY = _mestFactory;
         WETH = _weth;
 
-        aaveGateway = IAaveGateway(_aaveGateway);
-        aavePool = IAavePool(_aavePool);
+        AAVE_WETH_GATEWAY = IAaveGateway(_aaveGateway);
+        AAVE_POOL = IAavePool(_aavePool);
 
-        aWETH = IERC20(aavePool.getReserveData(WETH).aTokenAddress);
-        aWETH.safeApprove(address(aaveGateway), type(uint256).max);
+        aWETH = IERC20(AAVE_POOL.getReserveData(WETH).aTokenAddress);
+        aWETH.safeApprove(address(AAVE_WETH_GATEWAY), type(uint256).max);
     }
 
     modifier onlyFactory() {
@@ -62,7 +62,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
         if (ethAmount > 0) {
-            aaveGateway.depositETH{ value: ethAmount }(address(aavePool), MEST_FACTORY, 0);
+            AAVE_WETH_GATEWAY.depositETH{ value: ethAmount }(address(AAVE_POOL), MEST_FACTORY, 0);
         }
     }
 
@@ -74,7 +74,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         require(_checkAavePoolState(), "Aave paused");
         if (amount > 0) {
             aWETH.safeTransferFrom(MEST_FACTORY, address(this), amount);
-            aaveGateway.withdrawETH(address(aavePool), amount, MEST_FACTORY);
+            AAVE_WETH_GATEWAY.withdrawETH(address(AAVE_POOL), amount, MEST_FACTORY);
         }
     }
 
@@ -103,7 +103,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * @dev For more information, see: https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
      */
     function _checkAavePoolState() internal view returns (bool) {
-        uint256 configData = aavePool.getReserveData(WETH).configuration.data;
+        uint256 configData = AAVE_POOL.getReserveData(WETH).configuration.data;
         if (!(_getActive(configData) && !_getFrozen(configData) && !_getPaused(configData))) {
             return false;
         }
