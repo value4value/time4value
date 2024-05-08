@@ -7,9 +7,7 @@
   <em></em>
 </pre>
 
-Mest, a payment protocol designed for creators. And it's a bridge between creators and fans, where fans can donate, sponsor, subscribe, etc.
-
-The contract provides a new way to pay where you can stake ETH by an sigmoid bonding curve and yield farming, buy what you need, and withdraw whenever you want.
+Mest, a payment protocol designed for creators. And it's a bridge between creators and fans, where fans can donate, sponsor, subscribe, etc. The contract provides a new way to pay where you can stake ETH by a sigmoid bonding curve and yield farming, buy what you need, and withdraw whenever you want.
 
 -   🐦 For fans, pay early and save more
 -   💵 For creators, long-term income from fees and yield
@@ -31,7 +29,7 @@ The contract provides a new way to pay where you can stake ETH by an sigmoid bon
 
 ## How it works？
 
-The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. And the staked ETH is allocated in an interest rate market to generate sustainable rewards, which are then redistributed to the creators.
+The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
 
 <div align="center">
   <img src="images/curve.gif" width="90%">
@@ -51,12 +49,12 @@ SharesFactory is the core contract that contains the bonding curve and yield agg
 
 YieldAggregator is a yield strategy contract that provides a common interface for SharesFactory to use, such as deposit, withdraw, and claimable. However, the underlying logic can be any yield strategy, such as Aave, Pendle and LRT, or nothing at all.
 
-## Test And Depoly
+## Test and Deploy
 
 We use foundry to build tests and deploy.
 
 ```bash
-intall
+install
   yarn install
 test
   yarn run test
