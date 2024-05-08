@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.16;
-
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface IAToken is IERC20 {
-
-}
+pragma solidity 0.8.25;
 
 interface IAavePool {
+    // https://docs.aave.com/developers/core-contracts/pool
     struct ReserveConfigurationMap {
         //bit 0-15: LTV
         //bit 16-31: Liq. threshold
@@ -20,17 +15,14 @@ interface IAavePool {
         //bit 59: stable rate borrowing enabled
         //bit 60: asset is paused
         //bit 61: borrowing in isolation mode is enabled
-        //bit 62: siloed borrowing enabled
-        //bit 63: flashloaning enabled
+        //bit 62-63: reserved
         //bit 64-79: reserve factor
-        //bit 80-115 borrow cap in whole tokens, borrowCap == 0 => no cap
-        //bit 116-151 supply cap in whole tokens, supplyCap == 0 => no cap
-        //bit 152-167 liquidation protocol fee
-        //bit 168-175 eMode category
-        //bit 176-211 unbacked mint cap in whole tokens, unbackedMintCap == 0 => minting disabled
-        //bit 212-251 debt ceiling for isolation mode with (ReserveConfiguration::DEBT_CEILING_DECIMALS) decimals
-        //bit 252-255 unused
-
+        //bit 80-115: borrow cap in whole tokens, 0 ⇒ no cap
+        //bit 116-151: supply cap in whole tokens, 0 ⇒ no cap
+        //bit 152-167: liquidation protocol fee
+        //bit 168-175: eMode category
+        //bit 176-211: unbacked mint cap in whole tokens, 0 ⇒ no cap
+        //bit 212-251: debt ceiling for isolation mode with decimals bit 252-255: unused
         uint256 data;
     }
 
@@ -72,5 +64,6 @@ interface IAavePool {
 
 interface IAaveGateway {
     function withdrawETH(address, uint256 amount, address to) external;
+
     function depositETH(address, address onBehalfOf, uint16 referralCode) external payable;
 }

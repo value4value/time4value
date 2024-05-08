@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity 0.8.25;
 
-import "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 
 contract TestPlus is Test {
     /// @dev Returns a pseudorandom random number from [0 .. 2**256 - 1] (inclusive).
@@ -29,7 +29,7 @@ contract TestPlus is Test {
 
             // Do some biased sampling for more robust tests.
             // prettier-ignore
-            for {} 1 {} {
+            for { } 1 { } {
                 let d := byte(0, r)
                 // With a 1/256 chance, randomly set `r` to any of 0,1,2.
                 if iszero(d) {
@@ -62,28 +62,20 @@ contract TestPlus is Test {
     }
 
     /// @dev Alias to `_hem`.
-    function _bound(
-        uint256 x,
-        uint256 min,
-        uint256 max
-    ) internal pure virtual returns (uint256 result) {
+    function _bound(uint256 x, uint256 min, uint256 max) internal pure virtual override returns (uint256 result) {
         result = _hem(x, min, max);
     }
 
     /// @dev Adapted from `bound`:
     /// https://github.com/foundry-rs/forge-std/blob/ff4bf7db008d096ea5a657f2c20516182252a3ed/src/StdUtils.sol#L10
     /// Differentially fuzzed tested against the original implementation.
-    function _hem(
-        uint256 x,
-        uint256 min,
-        uint256 max
-    ) internal pure virtual returns (uint256 result) {
+    function _hem(uint256 x, uint256 min, uint256 max) internal pure virtual returns (uint256 result) {
         require(min <= max, "Max is less than min.");
 
         /// @solidity memory-safe-assembly
         assembly {
             // prettier-ignore
-            for {} 1 {} {
+            for { } 1 { } {
                 // If `x` is between `min` and `max`, return `x` directly.
                 // This is to ensure that dictionary values
                 // do not get shifted if the min is nonzero.
@@ -129,5 +121,5 @@ contract TestPlus is Test {
         }
     }
 
-    function testSuccess() public {}
+    function testSuccess() public { }
 }

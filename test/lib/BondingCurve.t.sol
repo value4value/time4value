@@ -1,30 +1,20 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.25;
 
-import "../TestPlus.sol";
+import { TestPlus } from "../TestPlus.sol";
 import { BondingCurveLib } from "contracts/lib/BondingCurveLib.sol";
-import { FixedPointMathLib } from "contracts/lib/FixedPointMathLib.sol";
+import { FixedPointMathLib } from "solady/utils/FixedPointMathLib.sol";
 
 contract BondingCurveTests is TestPlus {
-
-    function testSigmoid2Sum(
-        uint128 inflectionPrice,
-        uint32 fromSupply,
-        uint32 quantity
-    ) public {
+    function testSigmoid2Sum(uint128 inflectionPrice, uint32 fromSupply, uint32 quantity) public {
         uint32 inflectionPoint = uint32(type(uint32).max);
         quantity = uint32(_bound(quantity, 0, 256));
         uint256 sum = _sigmoid2Sum(inflectionPoint, inflectionPrice, fromSupply, quantity);
         assertEq(sum, _mockSigmoid2Sum(inflectionPoint, inflectionPrice, fromSupply, quantity));
     }
 
-    function testSigmoidMultiPurchase(
-        uint32 g,
-        uint96 h,
-        uint32 s,
-        uint8 q
-    ) public {
+    function testSigmoidMultiPurchase(uint32 g, uint96 h, uint32 s, uint8 q) public {
         vm.assume(s <= type(uint32).max - q);
 
         uint256 sum;
@@ -36,12 +26,7 @@ contract BondingCurveTests is TestPlus {
         assertTrue(multi == sum);
     }
 
-    function testSigmoidMultiSell(
-        uint32 g,
-        uint96 h,
-        uint32 s,
-        uint8 q
-    ) public {
+    function testSigmoidMultiSell(uint32 g, uint96 h, uint32 s, uint8 q) public {
         vm.assume(s >= q);
 
         uint256 sum;
@@ -69,7 +54,7 @@ contract BondingCurveTests is TestPlus {
         }
     }
 
-    function testSigmoidBrutailzed() public {
+    function testSigmoidBrutalized() public {
         // Edge case tests
         // Test with inflection point at 0 and high inflection price
         _sigmoid2Brutalized(0, 5 * 1e16, 10, 1, 0);
@@ -97,6 +82,17 @@ contract BondingCurveTests is TestPlus {
     function testLinearSum() public {
         uint256 sum = BondingCurveLib.linearSum(500000000000000, 0, 2);
         assertEq(sum, 1500000000000000);
+    }
+
+    function testFromSupplyGreaterThanQuantity() public {
+        // fromSupply + quantity + 1 > inflectionPoint
+        uint256 sum = BondingCurveLib.sigmoid2Sum(1500, 500000000000000, 1500, 1);
+        assertEq(sum, 500000000000000);
+    }
+
+    function testFromSupplyLessThanQuantity() public {
+        uint256 sum = BondingCurveLib.sigmoid2Sum(1495, 500000000000000, 1497, 1);
+        assertEq(sum, 501672240802675);
     }
 
     function _mockSigmoid2Sum(
