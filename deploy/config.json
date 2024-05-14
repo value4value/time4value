@@ -1,0 +1,16 @@
+{
+    "optimism-sepolia": {
+        "rpcUrl": "https://public.stackup.sh/api/v1/node/optimism-sepolia",
+        "mestBaseUrl": "https://mest.io/share/",
+        "weth": "0x4200000000000000000000000000000000000006",
+        "scanUrl": "https://api-sepolia-optimism.etherscan.io/api",
+        "aavePool": "0xb50201558B00496A145fE76f7424749556E326D8",
+        "aaveGateWay": "0x589750BA8aF186cE5B55391B0b7148cAD43a1619",
+        "curveSetting": {
+            "basePrice": "5000000000000000",
+            "inflectionPoint": "1500",
+            "inflectionPrice": "102500000000000000",
+            "linearPriceSlope": "0"
+        }
+    }
+}
