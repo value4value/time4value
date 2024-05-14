@@ -100,7 +100,8 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     /**
      * @notice Check Aave pool state
      * @return bool true if Aave pool is active, false otherwise
-     * @dev For more information, see: https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
+     * @dev For more information, see:
+     * https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
      */
     function _checkAavePoolState() internal view returns (bool) {
         uint256 configData = AAVE_POOL.getReserveData(WETH).configuration.data;

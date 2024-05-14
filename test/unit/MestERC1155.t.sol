@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.25;
 
-import { TestContext } from "../TestContext.t.sol";
+import {BaseTest} from "../BaseTest.t.sol";
 
-contract MestERC1155Tests is TestContext {
+contract MestERC1155Tests is BaseTest {
     address private mockFactory = address(1);
     address private mockUser = address(2);
 
@@ -12,7 +12,7 @@ contract MestERC1155Tests is TestContext {
         createFactory();
     }
 
-    function testSetURI() public {
+    function test_setURI() public {
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
         sharesNFT.setURI(BASE_URI);
 
@@ -23,7 +23,7 @@ contract MestERC1155Tests is TestContext {
         assertEq(shareUri, "https://mest.io/shares/0");
     }
 
-    function testSetFactory() public {
+    function test_setFactory() public {
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
         sharesNFT.setFactory(mockFactory);
 
@@ -37,7 +37,7 @@ contract MestERC1155Tests is TestContext {
         assertEq(mockUserBal, 10);
     }
 
-    function testShareMint() public {
+    function test_shareMint() public {
         vm.prank(address(sharesFactory));
         sharesNFT.shareMint(mockUser, 0, 10);
 
@@ -45,7 +45,7 @@ contract MestERC1155Tests is TestContext {
         assertEq(mockUserBal, 10);
     }
 
-    function testShareBurn() public {
+    function test_shareBurn() public {
         vm.startPrank(address(sharesFactory));
         sharesNFT.shareMint(mockUser, 0, 10);
         sharesNFT.shareBurn(mockUser, 0, 10);
