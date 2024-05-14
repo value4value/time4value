@@ -80,7 +80,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 _linearPriceSlope
     ) external onlyOwner {
         require(!curvesMap[_curveType].exists, "Curve already initialized");
-        Curve newCurve = Curve({
+        Curve memory newCurve = Curve({
             basePrice: _basePrice,
             inflectionPoint: _inflectionPoint,
             inflectionPrice: _inflectionPrice,
@@ -184,7 +184,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         // Mint shares to the buyer
         IMestShare(ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Buy(msg.sender, shareId, quantity, buyPriceAfterFee);
+        emit Buy(shareId, msg.sender quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
@@ -222,7 +222,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         // Burn shares from the seller
         IMestShare(ERC1155).shareBurn(msg.sender, shareId, quantity);
-        emit Sell(msg.sender, shareId, quantity, sellPriceAfterFee);
+        emit Sell(shareId, msg.sender, quantity, sellPriceAfterFee);
 
         // Withdraw the sell price (in ETH) from the yield aggregator (e.g. Aave)
         yieldAggregator.yieldWithdraw(sellPrice);
@@ -320,11 +320,11 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 quantity,
         uint8 curveType
     ) internal view returns (uint256 subTotal) {
-        Curve memory Curve = curvesMap[curveType];
+        Curve memory curve = curvesMap[curveType];
         unchecked {
-            subTotal = Curve.basePrice * quantity;
-            subTotal += BondingCurveLib.linearSum(Curve.linearPriceSlope, fromSupply, quantity);
-            subTotal += BondingCurveLib.sigmoid2Sum(Curve.inflectionPoint, Curve.inflectionPrice, fromSupply, quantity);
+            subTotal = curve.basePrice * quantity;
+            subTotal += BondingCurveLib.linearSum(curve.linearPriceSlope, fromSupply, quantity);
+            subTotal += BondingCurveLib.sigmoid2Sum(curve.inflectionPoint, curve.inflectionPrice, fromSupply, quantity);
         }
     }
 
