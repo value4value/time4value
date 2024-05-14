@@ -10,7 +10,7 @@ contract YieldAggregatorTests is TestContext {
     IYieldAggregator public yieldAggregator;
 
     function setUp() public {
-        createMestFactory();
+        createFactory();
         yieldAggregator = sharesFactory.yieldAggregator();
     }
 
@@ -27,7 +27,7 @@ contract YieldAggregatorTests is TestContext {
     }
 
     // Specific for aaveYieldAggregator
-    function testYieldMaxClaimable() public {
+    function testYieldMaxClaimable() public view {
         uint256 depositedETHAmount = sharesFactory.depositedETHAmount();
         assertEq(aaveYieldAggregator.yieldMaxClaimable(depositedETHAmount), 0);
     }

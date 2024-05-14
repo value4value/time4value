@@ -7,13 +7,14 @@ import { TestContext } from "../TestContext.t.sol";
 import { console } from "forge-std/console.sol";
 
 contract YieldAggregatorTests is TestContext {
+    uint8 public curveType = 0;
     address public addrAlice = address(1);
     address public addrBob = address(2);
     address public referralReceiver = address(3);
     uint256 public defaultYieldBuffer = 1e12;
 
     function setUp() public {
-        createMestFactory();
+        createFactory();
     }
 
     function testMigrateNewYieldAggregator() public {
@@ -89,7 +90,7 @@ contract YieldAggregatorTests is TestContext {
     }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, curveType, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }

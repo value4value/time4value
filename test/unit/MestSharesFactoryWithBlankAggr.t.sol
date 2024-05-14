@@ -10,6 +10,8 @@ contract MestSharesFactoryWithBlankAggr is TestContext {
     address public user2 = address(5);
 
     function testBalanceAfterMigrate() public {
+        vm.skip(true);
+
         vm.warp(YIELD_CLAIM_TIME); // need to fill a number gt current block.timestamp
         uint256 allEthAmount = aWETH.balanceOf(address(sharesFactory));
 

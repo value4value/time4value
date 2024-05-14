@@ -12,52 +12,53 @@ import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 contract MestSharesFactoryV1 is Ownable {
     using SafeERC20 for IERC20;
 
-    struct CurveFixedParam {
+    struct Curve {
         uint256 basePrice;
         uint256 linearPriceSlope;
         uint256 inflectionPoint;
         uint256 inflectionPrice;
+        bool exists;
     }
 
-    address public immutable MEST_ERC1155;
+    struct Share {
+        address creator;
+        uint8 curveType;
+    }
 
+    mapping(uint256 shareId => Share share) public sharesMap;
+    mapping(uint8 curveType => Curve curve) public curvesMap;
+
+    address public immutable ERC1155;
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
     uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
-
-    CurveFixedParam public generalCurveFixedParam;
     IYieldAggregator public yieldAggregator;
-
-    mapping(uint256 => address) public sharesMap;
 
     event ClaimYield(uint256 amount, address indexed to);
     event MigrateYield(address indexed yieldAggregator);
-    event Create(uint256 indexed shareId, address indexed creator);
-    event Trade(
-        address indexed trader,
-        uint256 indexed shareId,
-        bool isBuy,
-        uint256 quantity,
-        uint256 totalPrice,
-        uint256 referralFee,
-        uint256 creatorFee,
-        uint256 newSupply
-    );
+    event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
+    event Buy(uint256 indexed id, address indexed buyer, uint256 quantity, uint256 totalPrice);
+    event Sell(uint256 indexed id, address indexed seller, uint256 quantity, uint256 totalPrice);
 
     constructor(
-        address _mestERC1155,
+        address _ERC1155,
         uint256 _basePrice,
         uint256 _inflectionPoint,
         uint256 _inflectionPrice,
         uint256 _linearPriceSlope
     ) {
-        MEST_ERC1155 = _mestERC1155;
+        // Set ERC1155 address
+        ERC1155 = _ERC1155;
 
-        generalCurveFixedParam.basePrice = _basePrice; // 5000000000000000;
-        generalCurveFixedParam.inflectionPoint = _inflectionPoint; // 1500;
-        generalCurveFixedParam.inflectionPrice = _inflectionPrice; // 102500000000000000;
-        generalCurveFixedParam.linearPriceSlope = _linearPriceSlope; // 0;
+        // Set default curve params
+        curvesMap[0] = Curve({
+            basePrice: _basePrice, // 5000000000000000;
+            inflectionPoint: _inflectionPoint, // 1500;
+            inflectionPrice: _inflectionPrice, // 102500000000000000;
+            linearPriceSlope: _linearPriceSlope, // 0;
+            exists: true
+        });
     }
 
     fallback() external payable { }
@@ -70,6 +71,25 @@ contract MestSharesFactoryV1 is Ownable {
 
     function setCreatorFeePercent(uint256 _feePercent) external onlyOwner {
         creatorFeePercent = _feePercent;
+    }
+
+    function setCurveType(
+        uint8 _curveType,
+        uint256 _basePrice,
+        uint256 _inflectionPoint,
+        uint256 _inflectionPrice,
+        uint256 _linearPriceSlope
+    ) external onlyOwner {
+        require(!curvesMap[_curveType].exists, "Curve already initialized");
+        Curve memory newCurve = Curve({
+            basePrice: _basePrice,
+            inflectionPoint: _inflectionPoint,
+            inflectionPrice: _inflectionPrice,
+            linearPriceSlope: _linearPriceSlope,
+            exists: true
+        });
+
+        curvesMap[_curveType] = newCurve;
     }
 
     /**
@@ -120,14 +140,27 @@ contract MestSharesFactoryV1 is Ownable {
     }
 
     /**
-     * @notice Creates a share with an auto-incremented ID.
-     * @param creator The address of the creator, which will be used as creator fee recipient.
+     * @notice Mint a share and buy it in one transaction.
+     * @param curveType The type of the curve.
+     * @param quantity The quantity of shares.
+     * @param referral The address of the referral fee recipient.
+     */
+    function mintAndBuyShare(uint8 curveType, uint256 quantity, address referral) public payable {
+        mintShare(curveType);
+        buyShare(shareIndex - 1, quantity, referral);
+    }
+
+    /**
+     * @notice Mint a share with an auto-incremented ID.
      * @dev The share ID is identical to the ERC1155 ID.
      */
-    function createShare(address creator) public {
-        sharesMap[shareIndex] = creator;
+    function mintShare(uint8 curveType) public {
+        require(curvesMap[curveType].exists, "Invalid curveType");
 
-        emit Create(shareIndex, creator);
+        Share memory newShare = Share({ creator: msg.sender, curveType: curveType });
+        sharesMap[shareIndex] = newShare;
+
+        emit Mint(shareIndex, msg.sender, curveType);
 
         shareIndex++;
     }
@@ -141,19 +174,17 @@ contract MestSharesFactoryV1 is Ownable {
         require(address(yieldAggregator) != address(0), "Invalid yieldAggregator");
         require(shareId < shareIndex, "Invalid shareId");
 
-        address creator = sharesMap[shareId];
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
-        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) =
-            getBuyPriceAfterFee(shareId, quantity, referral);
+        Share memory share = sharesMap[shareId];
+        address creator = share.creator;
+        uint8 curveType = share.curveType;
 
-        require(fromSupply > 0 || msg.sender == creator, "First buyer must be creator");
+        (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) =
+            getBuyPriceAfterFee(shareId, curveType, quantity, referral);
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
-        IMestShare(MEST_ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Trade(
-            msg.sender, shareId, true, quantity, buyPriceAfterFee, referralFee, creatorFee, fromSupply + quantity
-        );
+        IMestShare(ERC1155).shareMint(msg.sender, shareId, quantity);
+        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
@@ -179,19 +210,21 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
-        require(IMestShare(MEST_ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
+        require(IMestShare(ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
 
-        address creator = sharesMap[shareId];
+        Share memory share = sharesMap[shareId];
+        address creator = share.creator;
+        uint8 curveType = share.curveType;
+
         (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) =
-            getSellPriceAfterFee(shareId, quantity, referral);
+            getSellPriceAfterFee(shareId, curveType, quantity, referral);
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
-        IMestShare(MEST_ERC1155).shareBurn(msg.sender, shareId, quantity);
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
-        emit Trade(msg.sender, shareId, false, quantity, sellPriceAfterFee, referralFee, creatorFee, fromSupply);
+        IMestShare(ERC1155).shareBurn(msg.sender, shareId, quantity);
+        emit Sell(shareId, msg.sender, quantity, sellPriceAfterFee);
 
-        // Withdraw the sell price (in ETH) from the yield aggregator (e.g., Aave)
+        // Withdraw the sell price (in ETH) from the yield aggregator (e.g. Aave)
         yieldAggregator.yieldWithdraw(sellPrice);
         depositedETHAmount -= sellPrice;
 
@@ -212,13 +245,14 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function getBuyPriceAfterFee(
         uint256 shareId,
+        uint8 curveType,
         uint256 quantity,
         address referral
     ) public view returns (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) {
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        buyPrice = _subTotal(fromSupply, quantity);
+        buyPrice = _subTotal(fromSupply, quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -233,14 +267,15 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function getSellPriceAfterFee(
         uint256 shareId,
+        uint8 curveType,
         uint256 quantity,
         address referral
     ) public view returns (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) {
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = _subTotal(fromSupply - quantity, quantity);
+        sellPrice = _subTotal(fromSupply - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;
@@ -280,13 +315,16 @@ contract MestSharesFactoryV1 is Ownable {
      * @param quantity The number of shares to be minted.
      * @return subTotal The area under the bonding curve.
      */
-    function _subTotal(uint256 fromSupply, uint256 quantity) internal view returns (uint256 subTotal) {
+    function _subTotal(
+        uint256 fromSupply,
+        uint256 quantity,
+        uint8 curveType
+    ) internal view returns (uint256 subTotal) {
+        Curve memory curve = curvesMap[curveType];
         unchecked {
-            subTotal = generalCurveFixedParam.basePrice * quantity;
-            subTotal += BondingCurveLib.linearSum(generalCurveFixedParam.linearPriceSlope, fromSupply, quantity);
-            subTotal += BondingCurveLib.sigmoid2Sum(
-                generalCurveFixedParam.inflectionPoint, generalCurveFixedParam.inflectionPrice, fromSupply, quantity
-            );
+            subTotal = curve.basePrice * quantity;
+            subTotal += BondingCurveLib.linearSum(curve.linearPriceSlope, fromSupply, quantity);
+            subTotal += BondingCurveLib.sigmoid2Sum(curve.inflectionPoint, curve.inflectionPrice, fromSupply, quantity);
         }
     }
 
