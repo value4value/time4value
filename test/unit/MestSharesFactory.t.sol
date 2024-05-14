@@ -2,7 +2,7 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
-import {BaseTest} from "../BaseTest.t.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { IMestShare } from "contracts/interface/IMestShare.sol";
 
