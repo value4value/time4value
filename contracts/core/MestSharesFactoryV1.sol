@@ -183,7 +183,7 @@ contract MestSharesFactoryV1 is Ownable {
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
-        IMestShare(MEST_ERC1155).shareMint(msg.sender, shareId, quantity);
+        IMestShare(ERC1155).shareMint(msg.sender, shareId, quantity);
         emit Buy(msg.sender, shareId, quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
@@ -210,7 +210,7 @@ contract MestSharesFactoryV1 is Ownable {
      */
     function sellShare(uint256 shareId, uint256 quantity, uint256 minETHAmount, address referral) public {
         require(shareId < shareIndex, "Invalid shareId");
-        require(IMestShare(MEST_ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
+        require(IMestShare(ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity, "Insufficient shares");
 
         Share memory share = sharesMap[shareId];
         address creator = share.creator;
@@ -221,7 +221,7 @@ contract MestSharesFactoryV1 is Ownable {
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
-        IMestShare(MEST_ERC1155).shareBurn(msg.sender, shareId, quantity);
+        IMestShare(ERC1155).shareBurn(msg.sender, shareId, quantity);
         emit Sell(msg.sender, shareId, quantity, sellPriceAfterFee);
 
         // Withdraw the sell price (in ETH) from the yield aggregator (e.g. Aave)
@@ -249,7 +249,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 quantity,
         address referral
     ) public view returns (uint256 buyPriceAfterFee, uint256 buyPrice, uint256 referralFee, uint256 creatorFee) {
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
         buyPrice = _subTotal(fromSupply, quantity, curveType);
@@ -271,7 +271,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 quantity,
         address referral
     ) public view returns (uint256 sellPriceAfterFee, uint256 sellPrice, uint256 referralFee, uint256 creatorFee) {
-        uint256 fromSupply = IMestShare(MEST_ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
