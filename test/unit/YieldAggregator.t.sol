@@ -3,7 +3,7 @@
 pragma solidity 0.8.25;
 
 import { MestSharesFactoryV1 } from "contracts/core/MestSharesFactoryV1.sol";
-import {BaseTest} from "../BaseTest.t.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 import { console } from "forge-std/console.sol";
 
 contract YieldAggregatorTests is BaseTest {

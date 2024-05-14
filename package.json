@@ -19,7 +19,7 @@
     "ds-test": "github:dapphub/ds-test#master",
     "forge-std": "github:foundry-rs/forge-std#v1.8.1",
     "prettier": "^3.2.5",
-    "solhint": "^4.5.4"
+    "solhint": "^5.0.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6",
