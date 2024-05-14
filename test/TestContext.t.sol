@@ -21,21 +21,18 @@ contract TestContext is Test {
     address public owner = address(1);
 
     /**
-     * @dev belows are the related token/contract address on optimism mainnet.
-     *      for other chain/testnet please replace with the correct address.
+     * @dev Below are the related token/contract addresses on the Optimism mainnet.
+     *      For other chains/testnets, please replace them with the correct addresses.
      *
-     *      for POOL, WETH_GATEWAY checkout https://github.com/bgd-labs/aave-address-book/blob/main/src/AaveV3Arbitrum.sol
+     *      Checkout https://search.onaave.com
      *      POOL -> aavePool
      *      WETH_GATEWAY -> aaveGateway
-     *
-     *      for WETH
-     *      checkout https://api.coingecko.com/api/v3/coins/weth and find address in correct platform
      */
     address public constant WETH = 0x4200000000000000000000000000000000000006;
     address public constant AAVE_POOL = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     address public constant AAVE_WETH_GATEWAY = 0xe9E52021f4e11DEAD8661812A0A6c8627abA2a54;
-    // Speed up time to claim yield
-    // 2029-11-01 00:00:30
+
+    // Speed up time to claim yield, 2029-11-01 00:00:30
     uint256 public constant YIELD_CLAIM_TIME = 1930488030;
 
     // aTokenAddress: associated token address
@@ -47,15 +44,11 @@ contract TestContext is Test {
     uint256 public constant INFLECTION_PRICE = 102500000000000000;
     uint256 public constant LINEAR_PRICE_SLOPE = 0;
 
-    function createMestFactory() public {
+    function createFactory() public {
         sharesNFT = new MestERC1155(BASE_URI);
 
         sharesFactory = new MestSharesFactoryV1(
-            address(sharesNFT),
-            BASE_PRICE, // basePrice,
-            INFLECTION_POINT, // inflectionPoint,
-            INFLECTION_PRICE, // inflectionPrice
-            LINEAR_PRICE_SLOPE // linearPriceSlope,
+            address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE, true
         );
 
         aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);

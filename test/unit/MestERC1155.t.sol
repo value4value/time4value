@@ -9,7 +9,7 @@ contract MestERC1155Tests is TestContext {
     address private mockUser = address(2);
 
     function setUp() public {
-        createMestFactory();
+        createFactory();
     }
 
     function testSetURI() public {

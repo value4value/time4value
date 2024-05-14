@@ -7,14 +7,14 @@ import { BondingCurveLib } from "contracts/lib/BondingCurveLib.sol";
 import { FixedPointMathLib } from "solady/utils/FixedPointMathLib.sol";
 
 contract BondingCurveTests is TestPlus {
-    function testSigmoid2Sum(uint128 inflectionPrice, uint32 fromSupply, uint32 quantity) public {
+    function testSigmoid2Sum(uint128 inflectionPrice, uint32 fromSupply, uint32 quantity) public pure {
         uint32 inflectionPoint = uint32(type(uint32).max);
         quantity = uint32(_bound(quantity, 0, 256));
         uint256 sum = _sigmoid2Sum(inflectionPoint, inflectionPrice, fromSupply, quantity);
         assertEq(sum, _mockSigmoid2Sum(inflectionPoint, inflectionPrice, fromSupply, quantity));
     }
 
-    function testSigmoidMultiPurchase(uint32 g, uint96 h, uint32 s, uint8 q) public {
+    function testSigmoidMultiPurchase(uint32 g, uint96 h, uint32 s, uint8 q) public pure {
         vm.assume(s <= type(uint32).max - q);
 
         uint256 sum;
@@ -26,7 +26,7 @@ contract BondingCurveTests is TestPlus {
         assertTrue(multi == sum);
     }
 
-    function testSigmoidMultiSell(uint32 g, uint96 h, uint32 s, uint8 q) public {
+    function testSigmoidMultiSell(uint32 g, uint96 h, uint32 s, uint8 q) public pure {
         vm.assume(s >= q);
 
         uint256 sum;
@@ -39,7 +39,7 @@ contract BondingCurveTests is TestPlus {
     }
 
     // Check that the sum is monotonically increasing with the supply
-    function testSigmoidMonotony(uint32 g, uint96 h) public {
+    function testSigmoidMonotony(uint32 g, uint96 h) public pure {
         unchecked {
             if (g < 3) g = 3;
             if (h == 0) h++;
@@ -79,18 +79,18 @@ contract BondingCurveTests is TestPlus {
         _sigmoid2Brutalized(1500, 102500000000000000, 1501, 2, 205409999999999999);
     }
 
-    function testLinearSum() public {
+    function testLinearSum() public pure {
         uint256 sum = BondingCurveLib.linearSum(500000000000000, 0, 2);
         assertEq(sum, 1500000000000000);
     }
 
-    function testFromSupplyGreaterThanQuantity() public {
+    function testFromSupplyGreaterThanQuantity() public pure {
         // fromSupply + quantity + 1 > inflectionPoint
         uint256 sum = BondingCurveLib.sigmoid2Sum(1500, 500000000000000, 1500, 1);
         assertEq(sum, 500000000000000);
     }
 
-    function testFromSupplyLessThanQuantity() public {
+    function testFromSupplyLessThanQuantity() public pure {
         uint256 sum = BondingCurveLib.sigmoid2Sum(1495, 500000000000000, 1497, 1);
         assertEq(sum, 501672240802675);
     }
