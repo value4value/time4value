@@ -12,7 +12,6 @@
     ],
     "contract-name-camelcase": "off",
     "const-name-snakecase": "off",
-    "custom-errors": "off",
     "func-name-mixedcase": "off",
     "func-visibility": [
       "error",
@@ -28,6 +27,7 @@
     "no-empty-blocks": "off",
     "not-rely-on-time": "off",
     "one-contract-per-file": "off",
-    "var-name-mixedcase": "off"
+    "var-name-mixedcase": "off",
+    "gas-custom-errors": "off"
   }
 }
