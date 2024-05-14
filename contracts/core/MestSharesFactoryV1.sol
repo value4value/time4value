@@ -25,16 +25,15 @@ contract MestSharesFactoryV1 is Ownable {
         uint8 curveType;
     }
 
+    mapping(uint256 shareId => Share share) public sharesMap;
+    mapping(uint8 curveType => Curve curve) public curvesMap;
+
     address public immutable ERC1155;
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
     uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
-
     IYieldAggregator public yieldAggregator;
-
-    mapping(uint256 => Share) public sharesMap;
-    mapping(uint8 => Curve) public curvesMap;
 
     event ClaimYield(uint256 amount, address indexed to);
     event MigrateYield(address indexed yieldAggregator);
