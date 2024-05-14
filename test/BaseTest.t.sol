@@ -10,7 +10,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { MestERC1155 } from "contracts/core/MestERC1155.sol";
 import { IAavePool } from "contracts/interface/IAave.sol";
 
-contract TestContext is Test {
+contract BaseTest is Test {
     MestSharesFactoryV1 public sharesFactory;
     MestERC1155 public sharesNFT;
 
@@ -48,7 +48,7 @@ contract TestContext is Test {
         sharesNFT = new MestERC1155(BASE_URI);
 
         sharesFactory = new MestSharesFactoryV1(
-            address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE, true
+            address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE
         );
 
         aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);
