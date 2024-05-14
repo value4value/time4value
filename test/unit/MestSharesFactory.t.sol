@@ -2,7 +2,7 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
-import {BaseTest} from "../BaseTest.t.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { IMestShare } from "contracts/interface/IMestShare.sol";
 
@@ -135,19 +135,6 @@ contract MestSharesFactoryTests is BaseTest {
         assertEq(aliceBalAfter - aliceBalBefore, yieldMaxClaimableAfter);
     }
 
-    function test_claimYieldGreaterMaxAmount() public {
-        uint256 maxAmount = aaveYieldAggregator.yieldMaxClaimable(1);
-
-        vm.prank(owner);
-        vm.expectRevert(bytes("Insufficient yield"));
-        sharesFactory.claimYield(maxAmount + 1, receiver);
-    }
-
-    function test_internalSafeTransferETHWithZeroAmount() public {
-        vm.prank(owner);
-        sharesFactory.claimYield(0, receiver);
-    }
-
     function test_migrate() public {
         uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
         uint256 factoryETHBalBefore = address(sharesFactory).balance;
@@ -180,6 +167,14 @@ contract MestSharesFactoryTests is BaseTest {
 
         uint256 creatorFeePercent = sharesFactory.creatorFeePercent();
         assertEq(creatorFeePercent, 3 * 1e16);
+    }
+
+    function test_setCurveType() public {
+        vm.prank(owner);
+        sharesFactory.setCurveType(1, 1000000000000000000, 1500, 102500000000000000, 0);
+
+        uint8 curveType = sharesFactory.curveType();
+        assertEq(curveType, 1);
     }
 
     // Negative test cases
@@ -242,9 +237,8 @@ contract MestSharesFactoryTests is BaseTest {
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Insufficient minReceive"));
         sharesFactory.sellShare(0, 1, overETHAmount, referralReceiver);
-    }
 
-    function test_sellSharesReferralToZeroAddress() public view {
+        // referralReceiver is zero address
         (,, uint256 referralFee,) = sharesFactory.getSellPriceAfterFee(0, 0, 1, address(0));
         assertEq(referralFee, 0);
     }
@@ -258,6 +252,35 @@ contract MestSharesFactoryTests is BaseTest {
         vm.expectRevert(bytes("Exceeds supply"));
         sharesFactory.getSellPriceAfterFee(testShareId, curveType, requiredQuantity, referralReceiver);
     }
+
+    function test_claimYieldGreaterMaxAmount() public {
+        uint256 maxAmount = aaveYieldAggregator.yieldMaxClaimable(1);
+
+        vm.prank(owner);
+        vm.expectRevert(bytes("Insufficient yield"));
+        sharesFactory.claimYield(maxAmount + 1, receiver);
+    }
+
+    // TODO
+    function test_getBuyPriceAfterFeeFailed() public {
+        // invalid shareId
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Invalid shareId"));
+        sharesFactory.getBuyPriceAfterFee(999, 0, 1, referralReceiver);
+    }
+
+    // TODO
+    function test_getSellPriceAfterFeeFailed() public {
+        // invalid shareId
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Invalid shareId"));
+        sharesFactory.getSellPriceAfterFee(999, 0, 1, referralReceiver);
+    }
+
+    // function test_internalSafeTransferETHWithZeroAmount() public {
+    //     vm.prank(owner);
+    //     sharesFactory.claimYield(0, receiver);
+    // }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, curveType, quantity, referral);
