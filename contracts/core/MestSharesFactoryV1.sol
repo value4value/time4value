@@ -43,7 +43,6 @@ contract MestSharesFactoryV1 is Ownable {
 
     constructor(
         address _ERC1155,
-        address _yieldAggregator,
         uint256 _basePrice,
         uint256 _inflectionPoint,
         uint256 _inflectionPrice,
@@ -51,9 +50,6 @@ contract MestSharesFactoryV1 is Ownable {
     ) {
         // Set ERC1155 address
         ERC1155 = _ERC1155;
-
-        // Set default yield aggregator
-        _setYieldAggregator(_yieldAggregator);
 
         // Set default curve params
         curvesMap[0] = Curve({
