@@ -56,8 +56,9 @@ contract MestSharesFactoryV1 is Ownable {
             basePrice: _basePrice, // 5000000000000000;
             inflectionPoint: _inflectionPoint, // 1500;
             inflectionPrice: _inflectionPrice, // 102500000000000000;
-            linearPriceSlope: _linearPriceSlope // 0;
-         });
+            linearPriceSlope: _linearPriceSlope, // 0;
+            exists: true
+        });
     }
 
     fallback() external payable { }
@@ -151,7 +152,6 @@ contract MestSharesFactoryV1 is Ownable {
 
     /**
      * @notice Mint a share with an auto-incremented ID.
-     * @param creator The address of the creator, which will be used as creator fee recipient.
      * @dev The share ID is identical to the ERC1155 ID.
      */
     function mintShare(uint8 curveType) public {
@@ -184,7 +184,7 @@ contract MestSharesFactoryV1 is Ownable {
 
         // Mint shares to the buyer
         IMestShare(ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Buy(shareId, msg.sender quantity, buyPriceAfterFee);
+        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
