@@ -90,7 +90,7 @@ contract YieldAggregatorTests is BaseTest {
     }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, curveType, quantity, referral);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }

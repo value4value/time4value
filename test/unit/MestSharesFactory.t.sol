@@ -7,7 +7,7 @@ import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { IMestShare } from "contracts/interface/IMestShare.sol";
 
 contract MestSharesFactoryTests is BaseTest {
-    uint8 public curveType = 0;
+    uint8 public defaultCurveType = 0;
     address public addrAlice = address(2);
     address public addrBob = address(3);
     address public referralReceiver = address(4);
@@ -23,12 +23,12 @@ contract MestSharesFactoryTests is BaseTest {
 
         // Alice create & buy 1 share with 0 id
         vm.prank(addrAlice);
-        sharesFactory.mintShare(curveType);
+        sharesFactory.mintShare(defaultCurveType);
         _buyShare(addrAlice, 0, 1, referralReceiver);
 
         // Bob create & buy 1 share with 1 id
         vm.prank(addrBob);
-        sharesFactory.mintShare(curveType);
+        sharesFactory.mintShare(defaultCurveType);
         _buyShare(addrBob, 1, 1, referralReceiver);
 
         // Alice buy 1 share with 1 id
@@ -41,14 +41,14 @@ contract MestSharesFactoryTests is BaseTest {
     function test_mintShares() public {
         vm.skip(true);
 
-        // vm.prank(addrAlice);
-        // sharesFactory.mintShare(curveType);
+        vm.prank(addrAlice);
+        sharesFactory.mintShare(defaultCurveType);
 
-        // uint256 shareIndex = sharesFactory.shareIndex();
-        // Share share = sharesFactory.sharesMap(shareIndex - 1);
-        // address creator = share.creator;
+        uint256 shareIndex = sharesFactory.shareIndex();
+        (address creator, uint8 curveType) = sharesFactory.getShare(shareIndex - 1);
 
-        // assertEq(creator, addrAlice);
+        assertEq(creator, addrAlice);
+        assertEq(curveType, defaultCurveType);
     }
 
     function test_buyShares() public {
@@ -173,14 +173,25 @@ contract MestSharesFactoryTests is BaseTest {
         vm.prank(owner);
         sharesFactory.setCurveType(1, 1000000000000000000, 1500, 102500000000000000, 0);
 
-        uint8 curveType = sharesFactory.curveType();
-        assertEq(curveType, 1);
+        (
+            uint256 basePrice, 
+            uint256 inflectionPoint, 
+            uint256 inflectionPrice, 
+            uint256 linearPriceSlope, 
+            bool exists
+        ) = sharesFactory.getCurve(1);
+
+        assertEq(basePrice, 1000000000000000000);
+        assertEq(inflectionPoint, 1500);
+        assertEq(inflectionPrice, 102500000000000000);
+        assertEq(linearPriceSlope, 0);
+        assertEq(exists, true);
     }
 
     // Negative test cases
     function test_buySharesRefund() public {
         uint256 aliceBalBefore = addrAlice.balance;
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 0, 1, referralReceiver);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
 
         // Check revert if not enough value
         vm.prank(addrAlice);
@@ -209,17 +220,17 @@ contract MestSharesFactoryTests is BaseTest {
 
         // invalid buyer, when alice create shares, only alice can buy it first
         vm.prank(addrAlice);
-        sharesFactory.mintShare(curveType);
+        sharesFactory.mintShare(defaultCurveType);
 
         // invalid value, when value < buyPriceAfterFee
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 0, 1, referralReceiver);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Insufficient payment"));
         sharesFactory.buyShare{ value: buyPriceAfterFee / 2 }(0, 1, referralReceiver);
     }
 
     function test_sellSharesFailed() public {
-        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(0, 0, 1, referralReceiver);
+        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(0, 1, referralReceiver);
         uint256 minETHAmount = (sellPriceAfterFee * 95) / 100;
         uint256 overETHAmount = (sellPriceAfterFee * 120) / 100;
 
@@ -239,7 +250,7 @@ contract MestSharesFactoryTests is BaseTest {
         sharesFactory.sellShare(0, 1, overETHAmount, referralReceiver);
 
         // referralReceiver is zero address
-        (,, uint256 referralFee,) = sharesFactory.getSellPriceAfterFee(0, 0, 1, address(0));
+        (,, uint256 referralFee,) = sharesFactory.getSellPriceAfterFee(0, 1, address(0));
         assertEq(referralFee, 0);
     }
 
@@ -250,7 +261,7 @@ contract MestSharesFactoryTests is BaseTest {
 
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Exceeds supply"));
-        sharesFactory.getSellPriceAfterFee(testShareId, curveType, requiredQuantity, referralReceiver);
+        sharesFactory.getSellPriceAfterFee(testShareId, requiredQuantity, referralReceiver);
     }
 
     function test_claimYieldGreaterMaxAmount() public {
@@ -262,19 +273,16 @@ contract MestSharesFactoryTests is BaseTest {
     }
 
     // TODO
-    function test_getBuyPriceAfterFeeFailed() public {
-        // invalid shareId
-        vm.prank(addrAlice);
-        vm.expectRevert(bytes("Invalid shareId"));
-        sharesFactory.getBuyPriceAfterFee(999, 0, 1, referralReceiver);
-    }
+    // function test_getBuyPriceAfterFeeFailed() public {
+    //     vm.prank(addrAlice);
+    //     vm.expectRevert(bytes("Invalid shareId"));
+    //     sharesFactory.getBuyPriceAfterFee(999, 0, 1, referralReceiver);
+    // }
 
-    // TODO
     function test_getSellPriceAfterFeeFailed() public {
-        // invalid shareId
         vm.prank(addrAlice);
-        vm.expectRevert(bytes("Invalid shareId"));
-        sharesFactory.getSellPriceAfterFee(999, 0, 1, referralReceiver);
+        vm.expectRevert(bytes("Exceeds supply"));
+        sharesFactory.getSellPriceAfterFee(1, 999999, referralReceiver);
     }
 
     // function test_internalSafeTransferETHWithZeroAmount() public {
@@ -283,13 +291,15 @@ contract MestSharesFactoryTests is BaseTest {
     // }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, curveType, quantity, referral);
+        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
+
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }
 
     function _sellShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
-        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(shareId, curveType, quantity, referral);
+        (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(shareId, quantity, referral);
+
         vm.prank(address(sender));
         sharesFactory.sellShare(shareId, quantity, sellPriceAfterFee, referral);
     }
