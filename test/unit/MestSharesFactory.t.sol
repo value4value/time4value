@@ -2,11 +2,11 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
-import { TestContext } from "../TestContext.t.sol";
+import {BaseTest} from "../BaseTest.t.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { IMestShare } from "contracts/interface/IMestShare.sol";
 
-contract MestSharesFactoryTests is TestContext {
+contract MestSharesFactoryTests is BaseTest {
     uint8 public curveType = 0;
     address public addrAlice = address(2);
     address public addrBob = address(3);
@@ -38,7 +38,7 @@ contract MestSharesFactoryTests is TestContext {
         _buyShare(addrBob, 0, 1, referralReceiver);
     }
 
-    function testMintShares() public {
+    function test_mintShares() public {
         vm.skip(true);
 
         // vm.prank(addrAlice);
@@ -51,7 +51,7 @@ contract MestSharesFactoryTests is TestContext {
         // assertEq(creator, addrAlice);
     }
 
-    function testBuyShares() public {
+    function test_buyShares() public {
         uint256 aliceBalBefore = addrAlice.balance;
         uint256 bobBalBefore = addrBob.balance;
         uint256 referrerBalBefore = referralReceiver.balance;
@@ -76,7 +76,7 @@ contract MestSharesFactoryTests is TestContext {
         assertEq(bobShareBal, 2);
     }
 
-    function testSellShares() public {
+    function test_sellShares() public {
         uint256 aliceBalBefore = addrAlice.balance;
         uint256 bobBalBefore = addrBob.balance;
         uint256 referrerBalBefore = referralReceiver.balance;
@@ -101,7 +101,7 @@ contract MestSharesFactoryTests is TestContext {
         assertEq(aliceShareBal, 0);
     }
 
-    function testClaimYield() public {
+    function test_claimYield() public {
         uint256 aliceBalBefore = addrAlice.balance;
 
         // check MaxClaimableYield < yieldBuffer
@@ -135,7 +135,7 @@ contract MestSharesFactoryTests is TestContext {
         assertEq(aliceBalAfter - aliceBalBefore, yieldMaxClaimableAfter);
     }
 
-    function testClaimYieldGreaterMaxAmount() public {
+    function test_claimYieldGreaterMaxAmount() public {
         uint256 maxAmount = aaveYieldAggregator.yieldMaxClaimable(1);
 
         vm.prank(owner);
@@ -143,12 +143,12 @@ contract MestSharesFactoryTests is TestContext {
         sharesFactory.claimYield(maxAmount + 1, receiver);
     }
 
-    function testInternalSafeTransferETHWithZeroAmount() public {
+    function test_internalSafeTransferETHWithZeroAmount() public {
         vm.prank(owner);
         sharesFactory.claimYield(0, receiver);
     }
 
-    function testMigrate() public {
+    function test_migrate() public {
         uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
         uint256 factoryETHBalBefore = address(sharesFactory).balance;
 
@@ -166,7 +166,7 @@ contract MestSharesFactoryTests is TestContext {
         // switch back
     }
 
-    function testSetReferralFeePercent() public {
+    function test_setReferralFeePercent() public {
         vm.prank(owner);
         sharesFactory.setReferralFeePercent(2 * 1e16);
 
@@ -174,7 +174,7 @@ contract MestSharesFactoryTests is TestContext {
         assertEq(referralFeePercent, 2 * 1e16);
     }
 
-    function testSetCreatorFeePercent() public {
+    function test_setCreatorFeePercent() public {
         vm.prank(owner);
         sharesFactory.setCreatorFeePercent(3 * 1e16);
 
@@ -183,7 +183,7 @@ contract MestSharesFactoryTests is TestContext {
     }
 
     // Negative test cases
-    function testBuySharesRefund() public {
+    function test_buySharesRefund() public {
         uint256 aliceBalBefore = addrAlice.balance;
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 0, 1, referralReceiver);
 
@@ -200,7 +200,7 @@ contract MestSharesFactoryTests is TestContext {
         assertEq(aliceBalBefore - aliceBalAfter, buyPriceAfterFee);
     }
 
-    function testBuySharesFailed() public {
+    function test_buySharesFailed() public {
         // invalid shareId, when id >= shareIndex
         uint256 shareIndex = sharesFactory.shareIndex();
 
@@ -223,7 +223,7 @@ contract MestSharesFactoryTests is TestContext {
         sharesFactory.buyShare{ value: buyPriceAfterFee / 2 }(0, 1, referralReceiver);
     }
 
-    function testSellSharesFailed() public {
+    function test_sellSharesFailed() public {
         (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(0, 0, 1, referralReceiver);
         uint256 minETHAmount = (sellPriceAfterFee * 95) / 100;
         uint256 overETHAmount = (sellPriceAfterFee * 120) / 100;
@@ -244,12 +244,12 @@ contract MestSharesFactoryTests is TestContext {
         sharesFactory.sellShare(0, 1, overETHAmount, referralReceiver);
     }
 
-    function testSellSharesReferralToZeroAddress() public view {
+    function test_sellSharesReferralToZeroAddress() public view {
         (,, uint256 referralFee,) = sharesFactory.getSellPriceAfterFee(0, 0, 1, address(0));
         assertEq(referralFee, 0);
     }
 
-    function testExceedsSupply() public {
+    function test_exceedsSupply() public {
         uint256 testShareId = 0;
         uint256 fromSupply = IMestShare(sharesNFT).shareFromSupply(testShareId);
         uint256 requiredQuantity = fromSupply + 1;
