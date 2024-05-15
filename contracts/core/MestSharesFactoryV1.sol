@@ -68,6 +68,7 @@ contract MestSharesFactoryV1 is Ownable {
     receive() external payable { }
 
     function getShare(uint256 shareId) public view returns (address creator, uint8 curveType) {
+        require(shareId < shareIndex, "Invalid shareId");
         Share memory share = sharesMap[shareId];
         return (share.creator, share.curveType);
     }
@@ -83,6 +84,7 @@ contract MestSharesFactoryV1 is Ownable {
             bool exists
         )
     {
+        require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
         return (
             curve.basePrice,
@@ -379,7 +381,7 @@ contract MestSharesFactoryV1 is Ownable {
         uint256 fromSupply,
         uint256 quantity,
         uint8 curveType
-    ) internal view returns (uint256 subTotal) {
+    ) public view returns (uint256 subTotal) {
         (
             uint256 basePrice,
             uint256 inflectionPoint,
