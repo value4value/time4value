@@ -148,20 +148,20 @@ contract MestSharesFactoryTests is BaseTest {
 
     function test_migrate() public {
         uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
-        uint256 factoryETHBalBefore = address(sharesFactory).balance;
 
+        // Migrate to blankYieldAggregator
         vm.prank(owner);
         sharesFactory.migrate(address(blankYieldAggregator));
+        assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
+        assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
+        assertEq(address(sharesFactory).balance, factoryaWETHBalBefore);
 
-        address newYieldAggregator = address(sharesFactory.yieldAggregator());
-        uint256 factoryaWETHBalAfter = aWETH.balanceOf(address(sharesFactory));
-        uint256 factoryETHBalAfter = address(sharesFactory).balance;
-
-        assertEq(newYieldAggregator, address(blankYieldAggregator));
-        assertEq(factoryaWETHBalBefore - factoryaWETHBalAfter, factoryaWETHBalBefore);
-        assertEq(factoryETHBalAfter - factoryETHBalBefore, factoryaWETHBalBefore);
-
-        // switch back
+        // Migrate back to aaveYieldAggregator
+        vm.prank(owner);
+        sharesFactory.migrate(address(aaveYieldAggregator));
+        assertEq(address(sharesFactory.yieldAggregator()), address(aaveYieldAggregator));
+        assertEq(aWETH.balanceOf(address(sharesFactory)), factoryaWETHBalBefore);
+        assertEq(address(sharesFactory).balance, 0);
     }
 
     function test_getShare() public {
@@ -295,6 +295,12 @@ contract MestSharesFactoryTests is BaseTest {
         assertEq(referralFee, 0);
     }
 
+    function test_migrateFailed() public {
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        sharesFactory.migrate(address(blankYieldAggregator));
+    }
+
     function test_exceedsSupply() public {
         uint256 testShareId = 0;
         uint256 fromSupply = IMestShare(sharesNFT).shareFromSupply(testShareId);
@@ -313,23 +319,55 @@ contract MestSharesFactoryTests is BaseTest {
         sharesFactory.claimYield(maxAmount + 1, receiver);
     }
 
-    // TODO
-    // function test_getBuyPriceAfterFeeFailed() public {
-    //     vm.prank(addrAlice);
-    //     vm.expectRevert(bytes("Invalid shareId"));
-    //     sharesFactory.getBuyPriceAfterFee(999, 0, 1, referralReceiver);
-    // }
+    function test_getBuyPriceAfterFeeFailed() public {
+        vm.expectRevert(bytes("Invalid shareId"));
+        sharesFactory.getBuyPriceAfterFee(999, 0, referralReceiver);
 
-    function test_getSellPriceAfterFeeFailed() public {
-        vm.prank(addrAlice);
-        vm.expectRevert(bytes("Exceeds supply"));
-        sharesFactory.getSellPriceAfterFee(1, 999999, referralReceiver);
+        // if quantity is zero, buyPriceAfterFee is zero
+        (
+            uint256 buyPriceAfterFee, 
+            uint256 buyPrice, 
+            uint256 creatorFee, 
+            uint256 referralFee
+        ) = sharesFactory.getBuyPriceAfterFee(1, 0, referralReceiver);
+        assertEq(buyPriceAfterFee, 0);
+        assertEq(buyPrice, 0);
+        assertEq(creatorFee, 0);
+        assertEq(referralFee, 0);
     }
 
-    // function test_internalSafeTransferETHWithZeroAmount() public {
-    //     vm.prank(owner);
-    //     sharesFactory.claimYield(0, receiver);
-    // }
+    function test_getSellPriceAfterFeeFailed() public {
+        vm.expectRevert(bytes("Invalid shareId"));
+        sharesFactory.getSellPriceAfterFee(999, 999999, referralReceiver);
+
+        vm.expectRevert(bytes("Exceeds supply"));
+        sharesFactory.getSellPriceAfterFee(1, 999999, referralReceiver);
+
+        // if quantity is zero, sellPriceAfterFee is zero
+        (
+            uint256 sellPriceAfterFee, 
+            uint256 sellPrice, 
+            uint256 creatorFee, 
+            uint256 referralFee
+        ) = sharesFactory.getSellPriceAfterFee(1, 0, referralReceiver);
+        assertEq(sellPriceAfterFee, 0);
+        assertEq(sellPrice, 0);
+        assertEq(creatorFee, 0);
+        assertEq(referralFee, 0);
+    }
+
+    function testFuzz_getBuyPriceAfterFee(uint256 quantity, address referral) public view {
+        sharesFactory.getBuyPriceAfterFee(0, quantity, referral);
+    }
+
+    function testFuzz_getSellPriceAfterFee(uint256 quantity, address referral) public view {
+        sharesFactory.getSellPriceAfterFee(0, quantity, referral);
+    }
+
+    function test_internalSafeTransferETHWithZeroAmount() public {
+        vm.prank(owner);
+        sharesFactory.claimYield(0, receiver);
+    }
 
     function _mintAndBuyShare(address sender, uint8 curveType, uint256 quantity, address referral) internal {
         uint256 buyPrice = sharesFactory._subTotal(0, quantity, curveType);
