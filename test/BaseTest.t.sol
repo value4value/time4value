@@ -4,10 +4,10 @@ pragma solidity 0.8.25;
 
 import { Test } from "forge-std/Test.sol";
 import { MestSharesFactoryV1 } from "contracts/core/MestSharesFactoryV1.sol";
+import { MestERC1155 } from "contracts/core/MestERC1155.sol";
 import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { MestERC1155 } from "contracts/core/MestERC1155.sol";
 import { IAavePool } from "contracts/interface/IAave.sol";
 
 contract BaseTest is Test {
@@ -48,7 +48,11 @@ contract BaseTest is Test {
         sharesNFT = new MestERC1155(BASE_URI);
 
         sharesFactory = new MestSharesFactoryV1(
-            address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE
+            address(sharesNFT), 
+            BASE_PRICE, 
+            INFLECTION_POINT, 
+            INFLECTION_PRICE, 
+            LINEAR_PRICE_SLOPE
         );
 
         aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);

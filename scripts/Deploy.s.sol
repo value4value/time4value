@@ -5,10 +5,10 @@ pragma solidity 0.8.25;
 import "forge-std/Script.sol";
 import "contracts/core/MestSharesFactoryV1.sol";
 import "contracts/core/aggregator/AaveYieldAggregator.sol";
-import {MestERC1155} from "contracts/core/MestERC1155.sol";
-import {BlankYieldAggregator} from "contracts/core/aggregator/BlankYieldAggregator.sol";
-import {IYieldAggregator} from "contracts/interface/IYieldAggregator.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { MestERC1155 } from "contracts/core/MestERC1155.sol";
+import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
+import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract DeployScript is Script {
     MestSharesFactoryV1 public sharesFactory;
@@ -29,8 +29,7 @@ contract DeployScript is Script {
     // address public aavePool = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     // address public aaveGateway = 0xe9E52021f4e11DEAD8661812A0A6c8627abA2a54;
 
-    IERC20 public aWETH =
-        IERC20(IAavePool(aavePool).getReserveData(weth).aTokenAddress);
+    IERC20 public aWETH = IERC20(IAavePool(aavePool).getReserveData(weth).aTokenAddress);
 
     string public baseURI = "https://mest.io/shares/";
 
@@ -48,17 +47,8 @@ contract DeployScript is Script {
             0 // inflectionPrice
         );
 
-        aaveYieldAggregator = new AaveYieldAggregator(
-            address(sharesFactory),
-            weth,
-            aavePool,
-            aaveGateway
-        );
-
-        blankYieldAggregator = new BlankYieldAggregator(
-            address(sharesFactory),
-            weth
-        );
+        aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), weth, aavePool, aaveGateway);
+        blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), weth);
 
         sharesNFT.setFactory(address(sharesFactory));
         sharesNFT.transferOwnership(owner);
