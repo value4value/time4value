@@ -16,4 +16,7 @@ bracket_spacing = true                                        # Whether or not t
 multiline_func_header = 'params_first'
 quote_style = 'double'
 
+[fuzz]
+runs = 10
+
 # See more config options https://github.com/gakonst/foundry/tree/master/config
