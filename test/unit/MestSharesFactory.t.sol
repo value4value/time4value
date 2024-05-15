@@ -21,15 +21,14 @@ contract MestSharesFactoryTests is BaseTest {
         vm.deal(addrAlice, 10 ether);
         vm.deal(addrBob, 10 ether);
 
-        // Alice create & buy 1 share with 0 id
+        // Alice mint & buy 1 share with 0 id
         vm.prank(addrAlice);
         sharesFactory.mintShare(defaultCurveType);
         _buyShare(addrAlice, 0, 1, referralReceiver);
 
-        // Bob create & buy 1 share with 1 id
+        // Bob mintAndBuy 1 share with 1 id
         vm.prank(addrBob);
-        sharesFactory.mintShare(defaultCurveType);
-        _buyShare(addrBob, 1, 1, referralReceiver);
+        _mintAndBuyShare(addrBob, defaultCurveType, 1, referralReceiver);
 
         // Alice buy 1 share with 1 id
         _buyShare(addrAlice, 1, 1, referralReceiver);
@@ -38,9 +37,7 @@ contract MestSharesFactoryTests is BaseTest {
         _buyShare(addrBob, 0, 1, referralReceiver);
     }
 
-    function test_mintShares() public {
-        vm.skip(true);
-
+    function test_mintShare() public {
         vm.prank(addrAlice);
         sharesFactory.mintShare(defaultCurveType);
 
@@ -49,6 +46,20 @@ contract MestSharesFactoryTests is BaseTest {
 
         assertEq(creator, addrAlice);
         assertEq(curveType, defaultCurveType);
+    }
+
+    function test_minAndBuyShare() public {
+        vm.prank(addrBob);
+        vm.deal(addrBob, 100 ether);
+        _mintAndBuyShare(addrBob, defaultCurveType, 99, referralReceiver);
+
+        uint256 shareId = sharesFactory.shareIndex() - 1;
+        uint256 bobShareBal = sharesNFT.shareBalanceOf(addrBob, shareId);
+        (address creator, uint8 curveType) = sharesFactory.getShare(shareId);
+
+        assertEq(creator, addrBob);
+        assertEq(curveType, defaultCurveType);
+        assertEq(bobShareBal, 99);
     }
 
     function test_buyShares() public {
@@ -153,6 +164,36 @@ contract MestSharesFactoryTests is BaseTest {
         // switch back
     }
 
+    function test_getShare() public {
+        (address creator, uint8 curveType) = sharesFactory.getShare(0);
+        assertEq(creator, addrAlice);
+        assertEq(curveType, defaultCurveType);
+
+        vm.expectRevert(bytes("Invalid shareId"));
+        sharesFactory.getShare(299);
+    }
+
+    function test_getCurve() public {
+        // default curveType
+        (
+            uint256 basePrice, 
+            uint256 inflectionPoint, 
+            uint256 inflectionPrice, 
+            uint256 linearPriceSlope, 
+            bool exists
+        ) = sharesFactory.getCurve(0);
+
+        assertEq(exists, true);
+        assertEq(basePrice, 5000000000000000);
+        assertEq(inflectionPoint, 1500);
+        assertEq(inflectionPrice, 102500000000000000);
+        assertEq(linearPriceSlope, 0);
+
+        // invalid curveType
+        vm.expectRevert(bytes("Invalid curveType"));
+        sharesFactory.getCurve(99);
+    }
+
     function test_setReferralFeePercent() public {
         vm.prank(owner);
         sharesFactory.setReferralFeePercent(2 * 1e16);
@@ -181,11 +222,11 @@ contract MestSharesFactoryTests is BaseTest {
             bool exists
         ) = sharesFactory.getCurve(1);
 
+        assertEq(exists, true);
         assertEq(basePrice, 1000000000000000000);
         assertEq(inflectionPoint, 1500);
         assertEq(inflectionPrice, 102500000000000000);
         assertEq(linearPriceSlope, 0);
-        assertEq(exists, true);
     }
 
     // Negative test cases
@@ -289,6 +330,13 @@ contract MestSharesFactoryTests is BaseTest {
     //     vm.prank(owner);
     //     sharesFactory.claimYield(0, receiver);
     // }
+
+    function _mintAndBuyShare(address sender, uint8 curveType, uint256 quantity, address referral) internal {
+        uint256 buyPrice = sharesFactory._subTotal(0, quantity, curveType);
+
+        vm.prank(address(sender));
+        sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, referral);
+    }
 
     function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
