@@ -14,7 +14,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
-    address public immutable MEST_FACTORY;
+    address public immutable FACTORY;
     address public immutable WETH;
     uint256 public yieldBuffer = 1e12;
 
@@ -26,8 +26,8 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     uint256 internal constant FROZEN_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFF;
     uint256 internal constant PAUSED_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF;
 
-    constructor(address _mestFactory, address _weth, address _aavePool, address _aaveGateway) {
-        MEST_FACTORY = _mestFactory;
+    constructor(address _factory, address _weth, address _aavePool, address _aaveGateway) {
+        FACTORY = _factory;
         WETH = _weth;
 
         AAVE_WETH_GATEWAY = IAaveGateway(_aaveGateway);
@@ -38,7 +38,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     }
 
     modifier onlyFactory() {
-        require(msg.sender == MEST_FACTORY, "Only factory");
+        require(msg.sender == FACTORY, "Only factory");
         _;
     }
 
@@ -62,7 +62,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
         if (ethAmount > 0) {
-            AAVE_WETH_GATEWAY.depositETH{ value: ethAmount }(address(AAVE_POOL), MEST_FACTORY, 0);
+            AAVE_WETH_GATEWAY.depositETH{ value: ethAmount }(address(AAVE_POOL), FACTORY, 0);
         }
     }
 
@@ -73,8 +73,8 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     function yieldWithdraw(uint256 amount) external onlyFactory {
         require(_checkAavePoolState(), "Aave paused");
         if (amount > 0) {
-            aWETH.safeTransferFrom(MEST_FACTORY, address(this), amount);
-            AAVE_WETH_GATEWAY.withdrawETH(address(AAVE_POOL), amount, MEST_FACTORY);
+            aWETH.safeTransferFrom(FACTORY, address(this), amount);
+            AAVE_WETH_GATEWAY.withdrawETH(address(AAVE_POOL), amount, FACTORY);
         }
     }
 
@@ -91,7 +91,7 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * @return maxClaimableETH max yield amount owner could get
      */
     function yieldMaxClaimable(uint256 depositedETHAmount) external view returns (uint256 maxClaimableETH) {
-        uint256 withdrawableETHAmount = aWETH.balanceOf(MEST_FACTORY);
+        uint256 withdrawableETHAmount = aWETH.balanceOf(FACTORY);
         maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer
             ? 0
             : withdrawableETHAmount - depositedETHAmount - yieldBuffer;

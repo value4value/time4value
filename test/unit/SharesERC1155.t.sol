@@ -4,7 +4,7 @@ pragma solidity 0.8.25;
 
 import { BaseTest } from "../BaseTest.t.sol";
 
-contract MestERC1155Tests is BaseTest {
+contract ERC1155Tests is BaseTest {
     address private mockFactory = address(1);
     address private mockUser = address(2);
 
@@ -20,7 +20,7 @@ contract MestERC1155Tests is BaseTest {
         sharesNFT.setURI(BASE_URI);
 
         string memory shareUri = sharesNFT.uri(0);
-        assertEq(shareUri, "https://mest.io/shares/0");
+        assertEq(shareUri, "https://v4v.com/shares/uri/0");
     }
 
     function test_setFactory() public {
