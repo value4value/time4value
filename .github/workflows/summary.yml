@@ -14,4 +14,4 @@ jobs:
         id: slither
         with:
           slither-config: 'slither.config.json'
-          slither-args: '--filter-paths @openzeppelin/solady --print contract-summary'
+          slither-args: '--print contract-summary'
