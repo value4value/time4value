@@ -18,19 +18,10 @@
   "devDependencies": {
     "ds-test": "github:dapphub/ds-test#master",
     "forge-std": "github:foundry-rs/forge-std#v1.8.1",
-    "prettier": "^3.2.5",
     "solhint": "^5.0.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6",
     "solady": "^0.0.198"
-  },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 4,
-    "useTabs": false,
-    "semi": true,
-    "singleQuote": false,
-    "bracketSpacing": true
   }
 }
