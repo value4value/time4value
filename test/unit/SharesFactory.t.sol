@@ -4,9 +4,8 @@ pragma solidity 0.8.25;
 import { console } from "forge-std/console.sol";
 import { BaseTest } from "../BaseTest.t.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
-import { IMestShare } from "contracts/interface/IMestShare.sol";
 
-contract MestSharesFactoryTests is BaseTest {
+contract SharesFactoryTests is BaseTest {
     uint8 public defaultCurveType = 0;
     address public addrAlice = address(2);
     address public addrBob = address(3);
@@ -399,7 +398,7 @@ contract MestSharesFactoryTests is BaseTest {
                 assertGe(total, 0);
             }
         } catch Error(string memory reason) {
-            console.log('testFuzz_setCurveTypeAndSubTotal:_subTotal', reason);
+            console.log("testFuzz_setCurveTypeAndSubTotal:_subTotal", reason);
         }
     }
 

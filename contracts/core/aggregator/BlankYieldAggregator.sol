@@ -8,16 +8,16 @@ import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
  * @notice This is an empty contract, i.e., it does not do any yield farming as a fallback.
  */
 contract BlankYieldAggregator is IYieldAggregator {
-    address public immutable MEST_FACTORY;
+    address public immutable FACTORY;
     address public immutable WETH;
 
-    constructor(address _mestFactory, address _weth) {
-        MEST_FACTORY = _mestFactory;
+    constructor(address _factory, address _weth) {
+        FACTORY = _factory;
         WETH = _weth;
     }
 
     modifier onlyFactory() {
-        require(msg.sender == MEST_FACTORY, "Only factory");
+        require(msg.sender == FACTORY, "Only factory");
         _;
     }
 
@@ -26,7 +26,7 @@ contract BlankYieldAggregator is IYieldAggregator {
     receive() external payable { }
 
     function yieldDeposit() external onlyFactory {
-        _safeTransferETH(MEST_FACTORY, address(this).balance);
+        _safeTransferETH(FACTORY, address(this).balance);
     }
 
     function yieldWithdraw(uint256) external onlyFactory { }

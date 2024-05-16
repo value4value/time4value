@@ -5,11 +5,11 @@ pragma solidity 0.8.25;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IMestShare } from "../interface/IMestShare.sol";
+import { IShare } from "../interface/IShare.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
-contract MestSharesFactoryV1 is Ownable {
+contract SharesFactoryV1 is Ownable {
     using SafeERC20 for IERC20;
 
     struct Curve {
@@ -217,7 +217,7 @@ contract MestSharesFactoryV1 is Ownable {
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
         // Mint shares to the buyer
-        IMestShare(ERC1155).shareMint(msg.sender, shareId, quantity);
+        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
         emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
@@ -251,7 +251,7 @@ contract MestSharesFactoryV1 is Ownable {
     ) public {
         require(shareId < shareIndex, "Invalid shareId");
         require(
-            IMestShare(ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity,
+            IShare(ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity,
             "Insufficient shares"
         );
 
@@ -264,7 +264,7 @@ contract MestSharesFactoryV1 is Ownable {
         require(sellPriceAfterFee >= minETHAmount, "Insufficient minReceive");
 
         // Burn shares from the seller
-        IMestShare(ERC1155).shareBurn(msg.sender, shareId, quantity);
+        IShare(ERC1155).shareBurn(msg.sender, shareId, quantity);
         emit Sell(shareId, msg.sender, quantity, sellPriceAfterFee);
 
         // Withdraw the sell price (in ETH) from the yield aggregator (e.g. Aave)
@@ -302,7 +302,7 @@ contract MestSharesFactoryV1 is Ownable {
         )
     {
         (, uint8 curveType) = getShare(shareId);
-        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
         buyPrice = _subTotal(fromSupply, quantity, curveType);
@@ -333,7 +333,7 @@ contract MestSharesFactoryV1 is Ownable {
         )
     {
         (, uint8 curveType) = getShare(shareId);
-        uint256 fromSupply = IMestShare(ERC1155).shareFromSupply(shareId);
+        uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
@@ -355,7 +355,7 @@ contract MestSharesFactoryV1 is Ownable {
     }
 
     /**
-     * @notice Withdraws all yieldToken into the MestSharesFactory as ETH.
+     * @notice Withdraws all yieldToken into the SharesFactory as ETH.
      */
     function _withdrawAllYieldTokenToETH() internal {
         uint256 withdrawableETHAmount = yieldAggregator.yieldBalanceOf(address(this));

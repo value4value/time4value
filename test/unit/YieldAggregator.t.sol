@@ -2,9 +2,8 @@
 
 pragma solidity 0.8.25;
 
-import { MestSharesFactoryV1 } from "contracts/core/MestSharesFactoryV1.sol";
+import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { BaseTest } from "../BaseTest.t.sol";
-import { console } from "forge-std/console.sol";
 
 contract YieldAggregatorTests is BaseTest {
     uint8 public curveType = 0;
@@ -28,7 +27,7 @@ contract YieldAggregatorTests is BaseTest {
 
     function test_withoutInitialYieldAggregator() public {
         // test before set yieldAggregator buy fail
-        MestSharesFactoryV1 newSharesFactory = new MestSharesFactoryV1(
+        SharesFactoryV1 newSharesFactory = new SharesFactoryV1(
             address(sharesNFT),
             BASE_PRICE, // basePrice,
             INFLECTION_POINT, // inflectionPoint,
