@@ -2,32 +2,19 @@
   "extends": "solhint:recommended",
   "rules": {
     "avoid-low-level-calls": "off",
-    "code-complexity": [
-      "error",
-      8
-    ],
-    "compiler-version": [
-      "error",
-      ">=0.8.19"
-    ],
+    "code-complexity": ["error", 8],
+    "compiler-version": ["error", ">=0.8.19"],
     "contract-name-camelcase": "off",
     "const-name-snakecase": "off",
     "func-name-mixedcase": "off",
-    "func-visibility": [
-      "error",
-      {
-        "ignoreConstructors": true
-      }
-    ],
-    "max-line-length": [
-      "error",
-      123
-    ],
+    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "max-line-length": ["error", 123],
     "named-parameters-mapping": "warn",
     "no-empty-blocks": "off",
     "not-rely-on-time": "off",
     "one-contract-per-file": "off",
     "var-name-mixedcase": "off",
-    "gas-custom-errors": "off"
+    "gas-custom-errors": "off",
+    "no-console": "off"
   }
 }
