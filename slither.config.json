@@ -5,5 +5,11 @@
   "exclude_low": true,
   "exclude_optimization": true,
   "fail_on": "none",
-  "filter_paths": "(node_modules|@openzeppelin|solady|test)"
+  "filter_paths": [
+    "test/",
+    "node_modules/",
+    "@openzeppelin/",
+    "forge-std/",
+    "solady/"
+  ]
 }
