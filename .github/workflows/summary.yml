@@ -13,6 +13,6 @@ jobs:
         continue-on-error: true
         id: slither
         with:
-          target: 'src/'
+          target: 'contracts/'
           slither-config: 'slither.config.json'
-          slither-args: '--filter-paths src/test --print contract-summary'
+          slither-args: '--filter-paths contracts/test --print contract-summary'
