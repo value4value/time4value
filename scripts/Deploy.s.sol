@@ -2,12 +2,11 @@
 
 pragma solidity 0.8.25;
 
-import "forge-std/Script.sol";
+import { Script } from "forge-std/Script.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { SharesERC1155 } from "contracts/core/SharesERC1155.sol";
 import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
-import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IAavePool } from "contracts/interface/IAave.sol";
 
