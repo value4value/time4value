@@ -7,12 +7,11 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import "forge-std/Test.sol";
 
 /**
  * @notice This contract is designed for Aave's ETH yield farming.
  */
-contract AaveYieldAggregator is Ownable, IYieldAggregator, Test {
+contract AaveYieldAggregator is Ownable, IYieldAggregator {
     using SafeERC20 for IERC20;
 
     address public immutable FACTORY;

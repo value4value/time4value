@@ -36,6 +36,7 @@ library BondingCurveLib {
                 // In practice, `h` (units: wei) will be set to be much greater than `g * g`.
                 uint256 a = FixedPointMathLib.rawDiv(h, g * g);
                 // Use the closed form to compute the sum.
+                // sum(i ^2)/ g^2 considered as infinitesimal and use taylor series
                 sum = ((n * (n + 1) * ((n << 1) + 1) - k * (k + 1) * ((k << 1) + 1)) / 6) * a;
                 s = quadraticEnd;
             }
