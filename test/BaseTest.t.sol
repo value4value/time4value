@@ -2,9 +2,15 @@
 
 pragma solidity 0.8.25;
 
+<<<<<<< HEAD
 import { Test } from "forge-std/Test.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { SharesERC1155 } from "contracts/core/SharesERC1155.sol";
+=======
+import "forge-std/Test.sol";
+import { MestSharesFactoryV1 } from "contracts/core/MestSharesFactoryV1.sol";
+import { MestERC1155 } from "contracts/core/MestERC1155.sol";
+>>>>>>> 35e87f1 (refactor: fix bondingCurveLib paramters)
 import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -39,10 +45,10 @@ contract BaseTest is Test {
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 
     string public constant BASE_URI = "https://v4v.com/shares/uri/";
-    uint256 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
-    uint256 public constant INFLECTION_POINT = 1500;
-    uint256 public constant INFLECTION_PRICE = 102500000000000000;
-    uint256 public constant LINEAR_PRICE_SLOPE = 0;
+    uint96 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
+    uint32 public constant INFLECTION_POINT = 1500;
+    uint128 public constant INFLECTION_PRICE = 102500000000000000;
+    uint128 public constant LINEAR_PRICE_SLOPE = 0;
 
     function createFactory() public {
         sharesNFT = new SharesERC1155(BASE_URI);

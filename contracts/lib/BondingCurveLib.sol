@@ -6,10 +6,10 @@ import { FixedPointMathLib } from "solady/utils/FixedPointMathLib.sol";
 
 library BondingCurveLib {
     function sigmoid2Sum(
-        uint256 inflectionPoint,
-        uint256 inflectionPrice,
-        uint256 fromSupply,
-        uint256 quantity
+        uint32 inflectionPoint,
+        uint128 inflectionPrice,
+        uint32 fromSupply,
+        uint32 quantity
     ) internal pure returns (uint256 sum) {
         // We don't need checked arithmetic for the sum.
         // The max possible sum for the quadratic region is capped at:
@@ -36,7 +36,6 @@ library BondingCurveLib {
                 // In practice, `h` (units: wei) will be set to be much greater than `g * g`.
                 uint256 a = FixedPointMathLib.rawDiv(h, g * g);
                 // Use the closed form to compute the sum.
-                // sum(i ^2)/ g^2 considered as infinitesimal and use taylor series
                 sum = ((n * (n + 1) * ((n << 1) + 1) - k * (k + 1) * ((k << 1) + 1)) / 6) * a;
                 s = quadraticEnd;
             }
@@ -53,9 +52,9 @@ library BondingCurveLib {
     }
 
     function linearSum(
-        uint256 linearPriceSlope,
-        uint256 fromSupply,
-        uint256 quantity
+        uint128 linearPriceSlope,
+        uint32 fromSupply,
+        uint32 quantity
     ) internal pure returns (uint256 sum) {
         // We don't need checked arithmetic for the sum because the max possible
         // intermediate value is capped at:

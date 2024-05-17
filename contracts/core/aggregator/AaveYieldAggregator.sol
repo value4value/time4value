@@ -7,11 +7,12 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import "forge-std/Test.sol";
 
 /**
  * @notice This contract is designed for Aave's ETH yield farming.
  */
-contract AaveYieldAggregator is Ownable, IYieldAggregator {
+contract AaveYieldAggregator is Ownable, IYieldAggregator, Test {
     using SafeERC20 for IERC20;
 
     address public immutable FACTORY;
@@ -95,6 +96,30 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer
             ? 0
             : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
+        
+        */
+        uint256 withdrawableETHAmount = aWETH.balanceOf(MEST_FACTORY);
+
+        try this._calculateMaxClaimableETH(withdrawableETHAmount, depositedETHAmount, yieldBuffer) returns (uint256 result) {
+            maxClaimableETH = result;
+        } catch Error(string memory reason){
+           console.log("atoken error:", depositedETHAmount - withdrawableETHAmount); // 处理异常情况
+        }
+        
+    }
+
+    function _calculateMaxClaimableETH(uint256 _withdrawableETHAmount, uint256 _depositedETHAmount, uint256 _yieldBuffer) public pure returns (uint256) {
+        if (_withdrawableETHAmount < _depositedETHAmount) {
+            revert("withdrawableETHAmount is less than depositedETHAmount");
+        }
+
+        uint256 difference = _withdrawableETHAmount - _depositedETHAmount;
+
+        if (difference < _yieldBuffer) {
+            return 0;
+        } else {
+            return difference - _yieldBuffer;
+        }
     }
 
     /**

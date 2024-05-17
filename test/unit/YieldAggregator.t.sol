@@ -88,7 +88,7 @@ contract YieldAggregatorTests is BaseTest {
         assertEq(bobShareBal, 2);
     }
 
-    function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
+    function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);

@@ -13,10 +13,10 @@ contract SharesFactoryV1 is Ownable {
     using SafeERC20 for IERC20;
 
     struct Curve {
-        uint256 basePrice;
-        uint256 linearPriceSlope;
-        uint256 inflectionPoint;
-        uint256 inflectionPrice;
+        uint96 basePrice;
+        uint128 linearPriceSlope;
+        uint32 inflectionPoint;
+        uint128 inflectionPrice;
         bool exists;
     }
 
@@ -45,10 +45,10 @@ contract SharesFactoryV1 is Ownable {
 
     constructor(
         address _ERC1155,
-        uint256 _basePrice,
-        uint256 _inflectionPoint,
-        uint256 _inflectionPrice,
-        uint256 _linearPriceSlope
+        uint96 _basePrice,
+        uint32 _inflectionPoint,
+        uint128 _inflectionPrice,
+        uint128 _linearPriceSlope
     ) {
         // Set ERC1155 address
         ERC1155 = _ERC1155;
@@ -77,10 +77,10 @@ contract SharesFactoryV1 is Ownable {
         public
         view
         returns (
-            uint256 basePrice,
-            uint256 inflectionPoint,
-            uint256 inflectionPrice,
-            uint256 linearPriceSlope,
+            uint96 basePrice,
+            uint32 inflectionPoint,
+            uint128 inflectionPrice,
+            uint128 linearPriceSlope,
             bool exists
         )
     {
@@ -107,10 +107,10 @@ contract SharesFactoryV1 is Ownable {
 
     function setCurveType(
         uint8 _curveType,
-        uint256 _basePrice,
-        uint256 _inflectionPoint,
-        uint256 _inflectionPrice,
-        uint256 _linearPriceSlope
+        uint96 _basePrice,
+        uint32 _inflectionPoint,
+        uint128 _inflectionPrice,
+        uint128 _linearPriceSlope
     ) external onlyOwner {
         require(!curvesMap[_curveType].exists, "Curve already initialized");
 
@@ -179,7 +179,7 @@ contract SharesFactoryV1 is Ownable {
      * @param quantity The quantity of shares.
      * @param referral The address of the referral fee recipient.
      */
-    function mintAndBuyShare(uint8 curveType, uint256 quantity, address referral) public payable {
+    function mintAndBuyShare(uint8 curveType, uint32 quantity, address referral) public payable {
         mintShare(curveType);
         buyShare(shareIndex - 1, quantity, referral);
     }
@@ -204,7 +204,7 @@ contract SharesFactoryV1 is Ownable {
      * @param quantity The quantity of shares.
      * @param referral The address of the referral fee recipient.
      */
-    function buyShare(uint256 shareId, uint256 quantity, address referral) public payable {
+    function buyShare(uint256 shareId, uint32 quantity, address referral) public payable {
         require(address(yieldAggregator) != address(0), "Invalid yieldAggregator");
         require(shareId < shareIndex, "Invalid shareId");
 
@@ -245,7 +245,7 @@ contract SharesFactoryV1 is Ownable {
      */
     function sellShare(
         uint256 shareId,
-        uint256 quantity,
+        uint32 quantity,
         uint256 minETHAmount,
         address referral
     ) public {
@@ -289,7 +289,7 @@ contract SharesFactoryV1 is Ownable {
      */
     function getBuyPriceAfterFee(
         uint256 shareId,
-        uint256 quantity,
+        uint32 quantity,
         address referral
     )
         public
@@ -305,7 +305,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        buyPrice = _subTotal(fromSupply, quantity, curveType);
+        buyPrice = _subTotal(uint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -320,7 +320,7 @@ contract SharesFactoryV1 is Ownable {
      */
     function getSellPriceAfterFee(
         uint256 shareId,
-        uint256 quantity,
+        uint32 quantity,
         address referral
     )
         public
@@ -337,7 +337,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = _subTotal(fromSupply - quantity, quantity, curveType);
+        sellPrice = _subTotal(uint32(fromSupply) - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;
@@ -378,15 +378,15 @@ contract SharesFactoryV1 is Ownable {
      * @return subTotal The area under the bonding curve.
      */
     function _subTotal(
-        uint256 fromSupply,
-        uint256 quantity,
+        uint32 fromSupply,
+        uint32 quantity,
         uint8 curveType
     ) public view returns (uint256 subTotal) {
         (
-            uint256 basePrice,
-            uint256 inflectionPoint,
-            uint256 inflectionPrice,
-            uint256 linearPriceSlope,
+            uint96 basePrice,
+            uint32 inflectionPoint,
+            uint128 inflectionPrice,
+            uint128 linearPriceSlope,
         ) = getCurve(curveType);
 
         unchecked {
