@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.25;
 
-//import { BaseTest } from "../BaseTest.t.sol";
-import "../BaseTest.t.sol";
+import { console } from "forge-std/console.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 
 contract SharesFactoryTests is BaseTest {
@@ -13,7 +13,7 @@ contract SharesFactoryTests is BaseTest {
 
     function setUp() public {
         createFactory();
-        //_setUpShare();
+        _setUpShare();
     }
 
     function _setUpShare() internal {
@@ -112,7 +112,6 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_claimYield() public {
-        _setUpShare();
         uint256 aliceBalBefore = addrAlice.balance;
 
         // check MaxClaimableYield < yieldBuffer

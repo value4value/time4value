@@ -2,15 +2,9 @@
 
 pragma solidity 0.8.25;
 
-<<<<<<< HEAD
 import { Test } from "forge-std/Test.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { SharesERC1155 } from "contracts/core/SharesERC1155.sol";
-=======
-import "forge-std/Test.sol";
-import { MestSharesFactoryV1 } from "contracts/core/MestSharesFactoryV1.sol";
-import { MestERC1155 } from "contracts/core/MestERC1155.sol";
->>>>>>> 35e87f1 (refactor: fix bondingCurveLib paramters)
 import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";

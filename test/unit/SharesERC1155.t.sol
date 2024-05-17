@@ -2,8 +2,7 @@
 
 pragma solidity 0.8.25;
 
-//import { BaseTest } from "../BaseTest.t.sol";
-import "../BaseTest.t.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 
 contract ERC1155Tests is BaseTest {
     address private mockFactory = address(1);

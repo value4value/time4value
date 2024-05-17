@@ -96,30 +96,6 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator, Test {
         maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer
             ? 0
             : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
-        
-        */
-        uint256 withdrawableETHAmount = aWETH.balanceOf(MEST_FACTORY);
-
-        try this._calculateMaxClaimableETH(withdrawableETHAmount, depositedETHAmount, yieldBuffer) returns (uint256 result) {
-            maxClaimableETH = result;
-        } catch Error(string memory reason){
-           console.log("atoken error:", depositedETHAmount - withdrawableETHAmount); // 处理异常情况
-        }
-        
-    }
-
-    function _calculateMaxClaimableETH(uint256 _withdrawableETHAmount, uint256 _depositedETHAmount, uint256 _yieldBuffer) public pure returns (uint256) {
-        if (_withdrawableETHAmount < _depositedETHAmount) {
-            revert("withdrawableETHAmount is less than depositedETHAmount");
-        }
-
-        uint256 difference = _withdrawableETHAmount - _depositedETHAmount;
-
-        if (difference < _yieldBuffer) {
-            return 0;
-        } else {
-            return difference - _yieldBuffer;
-        }
     }
 
     /**
