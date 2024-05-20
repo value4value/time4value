@@ -73,26 +73,15 @@ contract SharesFactoryV1 is Ownable {
         return (share.creator, share.curveType);
     }
 
-    function getCurve(uint8 curveType)
-        public
-        view
-        returns (
-            uint96 basePrice,
-            uint32 inflectionPoint,
-            uint128 inflectionPrice,
-            uint128 linearPriceSlope,
-            bool exists
-        )
-    {
+    function getCurve(uint8 curveType) public view returns (uint96 basePrice, uint32 inflectionPoint, uint128 inflectionPrice, uint128 linearPriceSlope, bool exists) {
         require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
-        return (
-            curve.basePrice,
-            curve.inflectionPoint,
-            curve.inflectionPrice,
-            curve.linearPriceSlope,
-            curve.exists
-        );
+        return (curve.basePrice, curve.inflectionPoint, curve.inflectionPrice, curve.linearPriceSlope, curve.exists);
+    }
+
+    function getSubTotal(uint256 fromSupply, uint256 quantity, uint8 curveType) public view returns (uint256) {
+        (uint256 basePrice, uint256 inflectionPoint, uint256 inflectionPrice, uint256 linearPriceSlope,) = getCurve(curveType);
+        return _subTotal(fromSupply, quantity, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope);
     }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
@@ -305,7 +294,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        buyPrice = _subTotal(uint32(fromSupply), quantity, curveType);
+        buyPrice = getSubTotal(uint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -337,7 +326,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = _subTotal(uint32(fromSupply) - quantity, quantity, curveType);
+        sellPrice = getSubTotal(uint32(fromSupply) - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;

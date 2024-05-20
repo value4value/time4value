@@ -176,8 +176,8 @@ contract SharesFactoryTests is BaseTest {
         // default curveType
         (
             uint256 basePrice, 
-            uint256 inflectionPoint, 
-            uint256 inflectionPrice, 
+            uint256 inflectionPoint,
+            uint256 inflectionPrice,
             uint256 linearPriceSlope, 
             bool exists
         ) = sharesFactory.getCurve(0);
@@ -215,9 +215,9 @@ contract SharesFactoryTests is BaseTest {
 
         (
             uint256 basePrice, 
-            uint256 inflectionPoint, 
-            uint256 inflectionPrice, 
-            uint256 linearPriceSlope, 
+            uint256 inflectionPoint,
+            uint256 inflectionPrice,
+            uint256 linearPriceSlope,
             bool exists
         ) = sharesFactory.getCurve(1);
 
@@ -375,30 +375,32 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function testFuzz_setCurveTypeAndSubTotal(
-        uint8 curveType, 
-        uint16 basePrice, 
-        uint16 inflectionPoint, 
-        uint32 inflectionPrice, 
+        uint8 curveType,
+        uint16 basePrice,
+        uint16 inflectionPoint,
+        uint32 inflectionPrice,
         uint32 linearPriceSlope,
-        uint16 fromSupply, 
+        uint16 fromSupply,
         uint16 quantity
     ) public {
         vm.prank(owner);
-        try sharesFactory.setCurveType(curveType, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope) {
+        try sharesFactory.setCurveType(curveType, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope) 
+        {
             (, , , , bool exists) = sharesFactory.getCurve(curveType);
             assertEq(exists, true);
         } catch Error(string memory reason) {
             assertEq(reason, "Curve already initialized");
         }
 
-        try sharesFactory._subTotal(fromSupply, quantity, curveType) returns (uint256 total) {
+        try sharesFactory.getSubTotal(fromSupply, quantity, curveType) returns (uint256 total) 
+        {
             if (quantity == 0) {
                 assertEq(total, 0);
             } else {
                 assertGe(total, 0);
             }
         } catch Error(string memory reason) {
-            console.log("testFuzz_setCurveTypeAndSubTotal:_subTotal", reason);
+            console.log("testFuzz_setCurveTypeAndSubTotal:getSubTotal", reason);
         }
     }
 
@@ -424,7 +426,7 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function _mintAndBuyShare(address sender, uint8 curveType, uint32 quantity, address referral) internal {
-        uint256 buyPrice = sharesFactory._subTotal(0, quantity, curveType);
+        uint256 buyPrice = sharesFactory.getSubTotal(0, quantity, curveType);
 
         vm.prank(address(sender));
         sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, referral);
