@@ -1,28 +1,32 @@
 <samp>
-<div align="center">
-  <br />
-  <em>A NEW WAY TO PAY.</em> <br />
-  <em>Payment via the bonding curve and yield farming.</em>
-  <br />
-</div>
+  <sub><em>Value4Value</em></sub>
+
+  <div align="center">
+    <br />
+    <em>A NEW WAY TO PAY.</em> <br />
+    <em>Payment via the bonding curve and yield farming.</em>
+    <br />
+  </div>
 </samp>
 
 ##
 
-A payment protocol designed for creators. <span style="color:gray">It bridges creators and fans, where fans can </span>donate, sponsor, subscribe<span style="color:gray">, and more, while creators receive sustainable income. </span>Stake what you need, and withdraw when you want.
+**A payment protocol designed for creators**, it bridges the gap between creators and fans, where fans can **donate, sponsor, subscribe**, and more, while creators receive **fees and yield**. <sup>Stake what you need, and withdraw when you want.</sup>
+
+## Features
+
+| Features           | V4V   | Friendtech | Patreon | Coinbase Commerce |
+|--------------------|-------|------------|---------|-------------------|
+| Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
+| Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
+| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★☆☆☆☆             |
+| Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
 
 -   🐦 For fans, pay early and earn more;
 -   💵 For creators, long-term income from fees and yield;
 -   💨 Lightweight with flexible curve and yield strategies;
 -   🌟 Made for creators like startups, indie hackers and KOLs.
 
-| Features           | ★ V4V | Friendtech | Patreon | Coinbase Commerce |
-|--------------------|-------|------------|---------|-------------------|
-| Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
-| Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
-| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★☆☆☆☆             |
-| Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
-  
 ## How it works？
 
 The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
