@@ -11,21 +11,22 @@
 
 ##
 
-**A payment protocol designed for creators**, it bridges the gap between creators and fans, where fans can **donate, sponsor, subscribe**, and more, while creators receive **fees and yield**. <sup>Stake what you need, and withdraw when you want.</sup>
+**A payment protocol designed for creators**, it bridges the gap between creators and fans, where fans can **donate, sponsor, subscribe**, and more, while creators receive **fees and yield**.
 
 ## Features
 
-| Features           | V4V   | Friendtech | Patreon | Coinbase Commerce |
+|                    | V4V   | Friendtech | Patreon | Coinbase Commerce |
 |--------------------|-------|------------|---------|-------------------|
 | Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
-| Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
-| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★☆☆☆☆             |
+| Capital efficiency | ★★★★☆ | ★★☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
+| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★★☆☆☆             |
 | Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
 
--   🐦 For fans, pay early and earn more;
--   💵 For creators, long-term income from fees and yield;
--   💨 Lightweight with flexible curve and yield strategies;
--   🌟 Made for creators like startups, indie hackers and KOLs.
+- For fans, pay early and earn more;
+- For creators, long-term income from fees and yield;
+- Lightweight with flexible curve and yield strategies;
+- Stake what you need, and withdraw when you want;
+- Made for creators like startups, indie hackers and KOLs.
 
 ## How it works？
 
@@ -67,4 +68,4 @@ deploy
 
 ## Acknowledgement
 
-Thanks to [Simon de la Rouviere](https://docs.google.com/document/d/1VNkBjjGhcZUV9CyC0ccWYbqeOoVKT2maqX0rK3yXB20), whose ideas inspired Mest to combine curated market with bonding curves, and to the ideal S-curve model from [sound protocol](https://github.com/soundxyz/sound-protocol), we’ve also learned the principle of minimalism from [friend tech](https://www.friend.tech) and [bodhi](https://bodhi.wtf).
+Thanks to [Simon de la Rouviere](https://docs.google.com/document/d/1VNkBjjGhcZUV9CyC0ccWYbqeOoVKT2maqX0rK3yXB20), whose ideas inspired *V4V* to combine curated market with bonding curves, and to the ideal S-curve model from [sound protocol](https://github.com/soundxyz/sound-protocol), we’ve also learned the principle of minimalism from [friend tech](https://www.friend.tech) and [bodhi](https://bodhi.wtf).
