@@ -1,29 +1,27 @@
 <pre align="center">
   <em></em>
-  <img src="images/banner.png" width="300">
-  <em></em>
   <em>A NEW WAY TO PAY.</em>
   <em>Payment via the bonding curve and yield farming.</em>
   <em></em>
 </pre>
 
-Mest, **a payment protocol designed for creators**. And it's a bridge between creators and fans, where fans can **donate, sponsor, subscribe**, etc. The contract provides a new way to pay where you can stake ETH by a **sigmoid bonding curve** and **yield farming**, buy what you need, and withdraw whenever you want.
+**A payment protocol designed for creators.** It bridges creators and fans, where fans can donate, sponsor, subscribe, and more, while creators receive sustainable income. **Stake what you need, and withdraw when you want.**
 
--   🐦 For fans, pay early and save more;
+-   🐦 For fans, pay early and earn more;
 -   💵 For creators, long-term income from fees and yield;
 -   ⚡ Lightweight with flexible curve and yield strategies;
 -   🌟 Made for creators like startups, indie hackers and KOLs.
 
-<div align="center">
+<samp>
   
-| Features           | Mest  | FriendtechV1 | Patreon | Coinbase Commerce |
-| ------------------ | ----- | ------------ | ------- | ----------------- |
-| User Capacity      | > 10K | < 100        | N/A    | N/A               |
-| Capital efficiency | ✅    | ❌           | ❌      | ❌                |
-| Permissionless     | ✅    | ✅           | ❌      | ❌                |
-| Tokenization       | ✅    | ❌           | ❌      | ❌                |
+| Features           | Mest  | Friendtech | Patreon | Coinbase Commerce |
+|--------------------|-------|------------|---------|-------------------|
+| Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
+| Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
+| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★☆☆☆☆             |
+| Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
 
-</div>
+</samp>
   
 ## How it works？
 
