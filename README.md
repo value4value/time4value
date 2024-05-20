@@ -1,9 +1,13 @@
-<pre align="center">
-  <em></em>
-  <em>A NEW WAY TO PAY.</em>
+<samp>
+<div align="center">
+  <br />
+  <em>A NEW WAY TO PAY.</em> <br />
   <em>Payment via the bonding curve and yield farming.</em>
-  <em></em>
-</pre>
+  <br />
+</div>
+</samp>
+
+##
 
 **A payment protocol designed for creators.** It bridges creators and fans, where fans can donate, sponsor, subscribe, and more, while creators receive sustainable income. **Stake what you need, and withdraw when you want.**
 
@@ -12,16 +16,12 @@
 -   ⚡ Lightweight with flexible curve and yield strategies;
 -   🌟 Made for creators like startups, indie hackers and KOLs.
 
-<samp>
-  
 | Features           | Mest  | Friendtech | Patreon | Coinbase Commerce |
 |--------------------|-------|------------|---------|-------------------|
 | Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
 | Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
 | Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★☆☆☆☆             |
 | Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
-
-</samp>
   
 ## How it works？
 
