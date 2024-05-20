@@ -73,15 +73,20 @@ contract SharesFactoryV1 is Ownable {
         return (share.creator, share.curveType);
     }
 
-    function getCurve(uint8 curveType) public view returns (uint96 basePrice, uint32 inflectionPoint, uint128 inflectionPrice, uint128 linearPriceSlope, bool exists) {
+    function getCurve(uint8 curveType) public view returns (uint96, uint32, uint128, uint128, bool) {
         require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
-        return (curve.basePrice, curve.inflectionPoint, curve.inflectionPrice, curve.linearPriceSlope, curve.exists);
+        uint96 basePrice = curve.basePrice;
+        uint32 g = curve.inflectionPoint;
+        uint128 h = curve.inflectionPrice;
+        uint128 m = curve.linearPriceSlope;
+        bool exists = curve.exists;
+        return (basePrice, g, h, m, exists);
     }
 
-    function getSubTotal(uint256 fromSupply, uint256 quantity, uint8 curveType) public view returns (uint256) {
-        (uint256 basePrice, uint256 inflectionPoint, uint256 inflectionPrice, uint256 linearPriceSlope,) = getCurve(curveType);
-        return _subTotal(fromSupply, quantity, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope);
+    function getSubTotal(uint32 fromSupply, uint32 quantity, uint8 curveType) public view returns (uint256) {
+        (uint96 basePrice, uint32 g, uint128 h, uint128 m,) = getCurve(curveType);
+        return _subTotal(fromSupply, quantity, basePrice, g, h, m);
     }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
@@ -369,15 +374,11 @@ contract SharesFactoryV1 is Ownable {
     function _subTotal(
         uint32 fromSupply,
         uint32 quantity,
-        uint8 curveType
-    ) public view returns (uint256 subTotal) {
-        (
-            uint96 basePrice,
-            uint32 inflectionPoint,
-            uint128 inflectionPrice,
-            uint128 linearPriceSlope,
-        ) = getCurve(curveType);
-
+        uint96 basePrice,
+        uint32 inflectionPoint,
+        uint128 inflectionPrice,
+        uint128 linearPriceSlope
+    ) public pure returns (uint256 subTotal) {
         unchecked {
             subTotal = basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity);
