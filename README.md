@@ -9,14 +9,21 @@
 
 ##
 
-**A payment protocol designed for creators.** It bridges creators and fans, where fans can donate, sponsor, subscribe, and more, while creators receive sustainable income. **Stake what you need, and withdraw when you want.**
+<samp>
+A payment protocol designed for creators. It bridges creators and fans, where fans can donate, sponsor, subscribe, and more, while creators receive sustainable income. Stake what you need, and withdraw when you want.
+
+<br />
 
 -   🐦 For fans, pay early and earn more;
 -   💵 For creators, long-term income from fees and yield;
--   ⚡ Lightweight with flexible curve and yield strategies;
+-   💨 Lightweight with flexible curve and yield strategies;
 -   🌟 Made for creators like startups, indie hackers and KOLs.
 
-| Features           | Mest  | Friendtech | Patreon | Coinbase Commerce |
+<br />
+
+</samp>
+
+| Features           | V4V  | Friendtech | Patreon | Coinbase Commerce |
 |--------------------|-------|------------|---------|-------------------|
 | Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
 | Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
