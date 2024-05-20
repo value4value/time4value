@@ -34,6 +34,10 @@ contract SharesFactoryTests is BaseTest {
 
         // Bob buy 1 share with 0 id
         _buyShare(addrBob, 0, 1, referralReceiver);
+
+        // Mock accumulated yield
+        uint256 timestamp = block.timestamp;
+        vm.warp(timestamp + 1 minutes);
     }
 
     function test_mintShare() public {
@@ -121,11 +125,12 @@ contract SharesFactoryTests is BaseTest {
             uint256 yieldMaxClaimableBefore,
             uint256 yieldBufferBefore
         ) = _getYield();
-        assertTrue((yieldBalanceBefore - depositedETHAmountBefore) < yieldBufferBefore);
+        assertTrue(yieldBalanceBefore < (yieldBufferBefore + depositedETHAmountBefore));
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
         vm.warp(YIELD_CLAIM_TIME);
+
         (
             uint256 depositedETHAmountAfter,
             uint256 yieldBalanceAfter,
