@@ -39,10 +39,10 @@ contract BaseTest is Test {
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 
     string public constant BASE_URI = "https://v4v.com/shares/uri/";
-    uint256 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
-    uint256 public constant INFLECTION_POINT = 1500;
-    uint256 public constant INFLECTION_PRICE = 102500000000000000;
-    uint256 public constant LINEAR_PRICE_SLOPE = 0;
+    uint96 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
+    uint32 public constant INFLECTION_POINT = 1500;
+    uint128 public constant INFLECTION_PRICE = 102500000000000000;
+    uint128 public constant LINEAR_PRICE_SLOPE = 0;
 
     function createFactory() public {
         sharesNFT = new SharesERC1155(BASE_URI);

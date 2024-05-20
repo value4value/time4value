@@ -402,12 +402,19 @@ contract SharesFactoryTests is BaseTest {
         }
     }
 
-    function testFuzz_getSellPriceAfterFee(uint256 quantity, address referral) public view {
+    function testFuzz_getSellPriceAfterFee(uint32 quantity, address referral) public view {
         try sharesFactory.getSellPriceAfterFee(0, quantity, referral) returns (uint256 price, uint256, uint256, uint256) {
             assertGe(price, 0);
         } catch Error(string memory reason) {
             assertEq(reason, "Exceeds supply");
         }
+    }
+
+    function testFuzz_buyShare(uint8 quantity) public {
+        vm.deal(addrBob, 100 ether);
+
+        _mintAndBuyShare(addrBob, 0, quantity, addrAlice);
+        test_safeTransferETHWithZero();
     }
 
     /*
@@ -416,21 +423,21 @@ contract SharesFactoryTests is BaseTest {
      ********************************************************************************
      */
 
-    function _mintAndBuyShare(address sender, uint8 curveType, uint256 quantity, address referral) internal {
+    function _mintAndBuyShare(address sender, uint8 curveType, uint32 quantity, address referral) internal {
         uint256 buyPrice = sharesFactory._subTotal(0, quantity, curveType);
 
         vm.prank(address(sender));
         sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, referral);
     }
 
-    function _buyShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
+    function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
 
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }
 
-    function _sellShare(address sender, uint256 shareId, uint256 quantity, address referral) internal {
+    function _sellShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 sellPriceAfterFee,,,) = sharesFactory.getSellPriceAfterFee(shareId, quantity, referral);
 
         vm.prank(address(sender));
