@@ -37,7 +37,7 @@ contract YieldAggregatorTests is BaseTest {
         aaveYieldAggregator.setYieldBuffer(1e11);
     }
 
-    function test_yieldDepost() public {
+    function test_yieldDeposit() public {
         _depositETH2AaveYieldAggregator(10 ether);
         assertTrue(aWETH.balanceOf(address(sharesFactory)) == 10 ether);
         assertTrue(address(aaveYieldAggregator).balance == 0);
