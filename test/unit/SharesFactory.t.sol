@@ -2,15 +2,11 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
-import { BaseTest } from "../BaseTest.t.sol";
+import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 
 contract SharesFactoryTests is BaseTest {
-    uint8 public defaultCurveType = 0;
-    address public addrAlice = address(2);
-    address public addrBob = address(3);
-    address public referralReceiver = address(4);
-
     function setUp() public {
         createFactory();
         _setUpShare();
@@ -34,6 +30,10 @@ contract SharesFactoryTests is BaseTest {
 
         // Bob buy 1 share with 0 id
         _buyShare(addrBob, 0, 1, referralReceiver);
+
+        // Mock accumulated yield
+        uint256 timestamp = block.timestamp;
+        vm.warp(timestamp + 1 minutes);
     }
 
     function test_mintShare() public {
@@ -45,6 +45,9 @@ contract SharesFactoryTests is BaseTest {
 
         assertEq(creator, addrAlice);
         assertEq(curveType, defaultCurveType);
+
+        vm.expectRevert(bytes("Invalid curveType"));
+        sharesFactory.mintShare(99);
     }
 
     function test_minAndBuyShare() public {
@@ -121,11 +124,12 @@ contract SharesFactoryTests is BaseTest {
             uint256 yieldMaxClaimableBefore,
             uint256 yieldBufferBefore
         ) = _getYield();
-        assertTrue((yieldBalanceBefore - depositedETHAmountBefore) < yieldBufferBefore);
+        assertTrue(yieldBalanceBefore < (yieldBufferBefore + depositedETHAmountBefore));
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
         vm.warp(YIELD_CLAIM_TIME);
+
         (
             uint256 depositedETHAmountAfter,
             uint256 yieldBalanceAfter,
@@ -176,8 +180,8 @@ contract SharesFactoryTests is BaseTest {
         // default curveType
         (
             uint256 basePrice, 
-            uint256 inflectionPoint, 
-            uint256 inflectionPrice, 
+            uint256 inflectionPoint,
+            uint256 inflectionPrice,
             uint256 linearPriceSlope, 
             bool exists
         ) = sharesFactory.getCurve(0);
@@ -215,9 +219,9 @@ contract SharesFactoryTests is BaseTest {
 
         (
             uint256 basePrice, 
-            uint256 inflectionPoint, 
-            uint256 inflectionPrice, 
-            uint256 linearPriceSlope, 
+            uint256 inflectionPoint,
+            uint256 inflectionPrice,
+            uint256 linearPriceSlope,
             bool exists
         ) = sharesFactory.getCurve(1);
 
@@ -252,26 +256,32 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function test_buySharesFailed() public {
+        // invalid yieldAggregator, when sharesFactory not set yieldAggregator
+        SharesFactoryV1 newSharesFactory = new SharesFactoryV1(
+            address(sharesNFT),
+            BASE_PRICE,
+            INFLECTION_POINT,
+            INFLECTION_PRICE,
+            LINEAR_PRICE_SLOPE
+        );
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Invalid yieldAggregator"));
+        newSharesFactory.buyShare{ value: 1 ether }(0, 1, referralReceiver);
+
         // invalid shareId, when id >= shareIndex
         uint256 shareIndex = sharesFactory.shareIndex();
-
-        vm.prank(addrAlice);
+        vm.startPrank(addrAlice);
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.buyShare{ value: 1 ether }(shareIndex, 1, referralReceiver);
-
-        vm.prank(addrAlice);
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.buyShare{ value: 1 ether }(shareIndex * 999, 1, referralReceiver);
-
-        // invalid buyer, when alice create shares, only alice can buy it first
-        vm.prank(addrAlice);
-        sharesFactory.mintShare(defaultCurveType);
+        vm.stopPrank();
 
         // invalid value, when value < buyPriceAfterFee
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Insufficient payment"));
-        sharesFactory.buyShare{ value: buyPriceAfterFee / 2 }(0, 1, referralReceiver);
+        sharesFactory.buyShare{ value: buyPriceAfterFee }(0, 2, referralReceiver);
     }
 
     function test_sellSharesFailed() public {
@@ -319,11 +329,11 @@ contract SharesFactoryTests is BaseTest {
 
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        sharesFactory.claimYield(maxAmount, receiver);
+        sharesFactory.claimYield(maxAmount, yieldReceiver);
 
         vm.prank(owner);
         vm.expectRevert(bytes("Insufficient yield"));
-        sharesFactory.claimYield(maxAmount + 1, receiver);
+        sharesFactory.claimYield(maxAmount + 1, yieldReceiver);
     }
 
     function test_getBuyPriceAfterFeeFailed() public {
@@ -365,7 +375,7 @@ contract SharesFactoryTests is BaseTest {
 
     function test_safeTransferETHWithZero() public {
         vm.prank(owner);
-        sharesFactory.claimYield(0, receiver);
+        sharesFactory.claimYield(0, yieldReceiver);
     }
 
     /*
@@ -375,30 +385,32 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function testFuzz_setCurveTypeAndSubTotal(
-        uint8 curveType, 
-        uint16 basePrice, 
-        uint16 inflectionPoint, 
-        uint32 inflectionPrice, 
+        uint8 curveType,
+        uint16 basePrice,
+        uint16 inflectionPoint,
+        uint32 inflectionPrice,
         uint32 linearPriceSlope,
-        uint16 fromSupply, 
+        uint16 fromSupply,
         uint16 quantity
     ) public {
         vm.prank(owner);
-        try sharesFactory.setCurveType(curveType, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope) {
+        try sharesFactory.setCurveType(curveType, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope) 
+        {
             (, , , , bool exists) = sharesFactory.getCurve(curveType);
             assertEq(exists, true);
         } catch Error(string memory reason) {
             assertEq(reason, "Curve already initialized");
         }
 
-        try sharesFactory._subTotal(fromSupply, quantity, curveType) returns (uint256 total) {
+        try sharesFactory.getSubTotal(fromSupply, quantity, curveType) returns (uint256 total) 
+        {
             if (quantity == 0) {
                 assertEq(total, 0);
             } else {
                 assertGe(total, 0);
             }
         } catch Error(string memory reason) {
-            console.log("testFuzz_setCurveTypeAndSubTotal:_subTotal", reason);
+            console.log("testFuzz_setCurveTypeAndSubTotal:getSubTotal", reason);
         }
     }
 
@@ -424,7 +436,7 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function _mintAndBuyShare(address sender, uint8 curveType, uint32 quantity, address referral) internal {
-        uint256 buyPrice = sharesFactory._subTotal(0, quantity, curveType);
+        uint256 buyPrice = sharesFactory.getSubTotal(0, quantity, curveType);
 
         vm.prank(address(sender));
         sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, referral);
@@ -450,10 +462,6 @@ contract SharesFactoryTests is BaseTest {
         uint256 yieldBalance = yieldAggregator.yieldBalanceOf(address(sharesFactory));
         uint256 yieldMaxClaimable = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
         uint256 yieldBuffer = 1e12;
-        // uint256 yieldBuffer = yieldAggregator.yieldBuffer();
-        console.log("depositedETHAmount: ", depositedETHAmount);
-        console.log("yieldBalance: ", yieldBalance);
-        console.log("yieldMaxClaimable: ", yieldMaxClaimable);
         return (depositedETHAmount, yieldBalance, yieldMaxClaimable, yieldBuffer);
     }
 }

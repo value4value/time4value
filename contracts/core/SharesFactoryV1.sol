@@ -40,8 +40,8 @@ contract SharesFactoryV1 is Ownable {
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
     event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
-    event Buy(uint256 indexed id, address indexed buyer, uint256 quantity, uint256 totalPrice);
-    event Sell(uint256 indexed id, address indexed seller, uint256 quantity, uint256 totalPrice);
+    event Buy(uint256 indexed id, address indexed buyer, uint32 quantity, uint256 totalPrice);
+    event Sell(uint256 indexed id, address indexed seller, uint32 quantity, uint256 totalPrice);
 
     constructor(
         address _ERC1155,
@@ -73,26 +73,20 @@ contract SharesFactoryV1 is Ownable {
         return (share.creator, share.curveType);
     }
 
-    function getCurve(uint8 curveType)
-        public
-        view
-        returns (
-            uint96 basePrice,
-            uint32 inflectionPoint,
-            uint128 inflectionPrice,
-            uint128 linearPriceSlope,
-            bool exists
-        )
-    {
+    function getCurve(uint8 curveType) public view returns (uint96, uint32, uint128, uint128, bool) {
         require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
-        return (
-            curve.basePrice,
-            curve.inflectionPoint,
-            curve.inflectionPrice,
-            curve.linearPriceSlope,
-            curve.exists
-        );
+        uint96 basePrice = curve.basePrice;
+        uint32 g = curve.inflectionPoint;
+        uint128 h = curve.inflectionPrice;
+        uint128 m = curve.linearPriceSlope;
+        bool exists = curve.exists;
+        return (basePrice, g, h, m, exists);
+    }
+
+    function getSubTotal(uint32 fromSupply, uint32 quantity, uint8 curveType) public view returns (uint256) {
+        (uint96 basePrice, uint32 g, uint128 h, uint128 m,) = getCurve(curveType);
+        return _subTotal(fromSupply, quantity, basePrice, g, h, m);
     }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
@@ -305,7 +299,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        buyPrice = _subTotal(uint32(fromSupply), quantity, curveType);
+        buyPrice = getSubTotal(uint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -337,7 +331,7 @@ contract SharesFactoryV1 is Ownable {
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = _subTotal(uint32(fromSupply) - quantity, quantity, curveType);
+        sellPrice = getSubTotal(uint32(fromSupply) - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;
@@ -380,15 +374,11 @@ contract SharesFactoryV1 is Ownable {
     function _subTotal(
         uint32 fromSupply,
         uint32 quantity,
-        uint8 curveType
-    ) public view returns (uint256 subTotal) {
-        (
-            uint96 basePrice,
-            uint32 inflectionPoint,
-            uint128 inflectionPrice,
-            uint128 linearPriceSlope,
-        ) = getCurve(curveType);
-
+        uint96 basePrice,
+        uint32 inflectionPoint,
+        uint128 inflectionPrice,
+        uint128 linearPriceSlope
+    ) public pure returns (uint256 subTotal) {
         unchecked {
             subTotal = basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity);
