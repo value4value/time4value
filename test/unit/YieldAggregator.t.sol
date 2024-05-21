@@ -2,6 +2,8 @@
 
 pragma solidity 0.8.25;
 
+import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
+import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
 import { BaseTest } from "../BaseTest.t.sol";
 
 contract YieldAggregatorTests is BaseTest {
@@ -9,6 +11,20 @@ contract YieldAggregatorTests is BaseTest {
 
     function setUp() public {
         createFactory();
+    }
+
+    function test_newAggregator() public {
+        AaveYieldAggregator aave = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);
+        assertEq(aave.yieldBuffer(), defaultYieldBuffer);
+        assertEq(aave.FACTORY(), address(sharesFactory));
+        assertEq(aave.WETH(), WETH);
+        assertEq(address(aave.AAVE_POOL()), AAVE_POOL);
+        assertEq(address(aave.AAVE_WETH_GATEWAY()), AAVE_WETH_GATEWAY);
+        assertEq(address(aave.aWETH()), address(aWETH));
+
+        BlankYieldAggregator blank = new BlankYieldAggregator(address(sharesFactory), WETH);
+        assertEq(blank.FACTORY(), address(sharesFactory));
+        assertEq(blank.WETH(), WETH);
     }
 
     function test_setYieldBuffer() public {
