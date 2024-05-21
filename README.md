@@ -13,20 +13,25 @@
 
 **A payment protocol designed for creators**, it bridges the gap between creators and fans, where fans can **donate, sponsor, subscribe**, and more, while creators receive **fees and yield**.
 
-## Features
-
-|                    | V4V   | Friendtech | Patreon | Coinbase Commerce |
-|--------------------|-------|------------|---------|-------------------|
-| Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
-| Capital efficiency | ★★★★☆ | ★★☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
-| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★★☆☆☆             |
-| Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
-
 - For fans, pay early and earn more;
 - For creators, long-term income from fees and yield;
 - Lightweight with flexible curve and yield strategies;
+- No protocol fee, any client can be charged via referral fee;
 - Stake what you need, and withdraw when you want;
 - Made for creators like startups, indie hackers and KOLs.
+
+## Why *V4V* is better?
+<div align="center">
+
+| Features           | V4V   | Friendtech | Patreon | Coinbase Commerce |
+|--------------------|-------|------------|---------|-------------------|
+| Flexible strategy  | ★★★★★ | ★★★☆☆      | ★★★☆☆   | ★☆☆☆☆             |
+| Capital efficiency | ★★★☆☆ | ★☆☆☆☆      | ★☆☆☆☆   | ★☆☆☆☆             |
+| Permissionless     | ★★★★★ | ★★★★★      | ☆☆☆☆☆   | ★★★☆☆             |
+| Tokenization       | ★★★★★ | ★★★☆☆      | ☆☆☆☆☆   | ☆☆☆☆☆             |
+| Protocol Fee       | ★★★★☆ | ★★☆☆☆      | ★☆☆☆☆   | ★★★☆☆             |
+
+</div>
 
 ## How it works？
 
