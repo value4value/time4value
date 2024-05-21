@@ -40,8 +40,8 @@ contract SharesFactoryV1 is Ownable {
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
     event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
-    event Buy(uint256 indexed id, address indexed buyer, uint256 quantity, uint256 totalPrice);
-    event Sell(uint256 indexed id, address indexed seller, uint256 quantity, uint256 totalPrice);
+    event Buy(uint256 indexed id, address indexed buyer, uint32 quantity, uint256 totalPrice);
+    event Sell(uint256 indexed id, address indexed seller, uint32 quantity, uint256 totalPrice);
 
     constructor(
         address _ERC1155,
