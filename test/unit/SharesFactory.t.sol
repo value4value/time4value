@@ -7,11 +7,6 @@ import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BaseTest } from "../BaseTest.t.sol";
 
 contract SharesFactoryTests is BaseTest {
-    uint8 public defaultCurveType = 0;
-    address public addrAlice = address(2);
-    address public addrBob = address(3);
-    address public referralReceiver = address(4);
-
     function setUp() public {
         createFactory();
         _setUpShare();
@@ -331,11 +326,11 @@ contract SharesFactoryTests is BaseTest {
 
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        sharesFactory.claimYield(maxAmount, receiver);
+        sharesFactory.claimYield(maxAmount, yieldReceiver);
 
         vm.prank(owner);
         vm.expectRevert(bytes("Insufficient yield"));
-        sharesFactory.claimYield(maxAmount + 1, receiver);
+        sharesFactory.claimYield(maxAmount + 1, yieldReceiver);
     }
 
     function test_getBuyPriceAfterFeeFailed() public {
@@ -377,7 +372,7 @@ contract SharesFactoryTests is BaseTest {
 
     function test_safeTransferETHWithZero() public {
         vm.prank(owner);
-        sharesFactory.claimYield(0, receiver);
+        sharesFactory.claimYield(0, yieldReceiver);
     }
 
     /*

@@ -17,8 +17,12 @@ contract BaseTest is Test {
     AaveYieldAggregator public aaveYieldAggregator;
     BlankYieldAggregator public blankYieldAggregator;
 
-    address public receiver = address(999);
-    address public owner = address(1);
+    uint8 public defaultCurveType = 0;
+    address public owner = makeAddr("owner");
+    address public addrAlice = makeAddr("addrAlice");
+    address public addrBob = makeAddr("addrBob");
+    address public referralReceiver = makeAddr("referralReceiver");
+    address public yieldReceiver = makeAddr("yieldReceiver");
 
     /**
      * @dev Below are the related token/contract addresses on the Optimism mainnet.

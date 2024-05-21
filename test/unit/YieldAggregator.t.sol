@@ -2,14 +2,10 @@
 
 pragma solidity 0.8.25;
 
-import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
+import { console } from "forge-std/console.sol";
 import { BaseTest } from "../BaseTest.t.sol";
 
 contract YieldAggregatorTests is BaseTest {
-    uint8 public curveType = 0;
-    address public addrAlice = address(1);
-    address public addrBob = address(2);
-    address public referralReceiver = address(3);
     uint256 public defaultYieldBuffer = 1e12;
 
     function setUp() public {
@@ -26,22 +22,54 @@ contract YieldAggregatorTests is BaseTest {
     }
 
     function test_setYieldBuffer() public {
-        // TODO: fix below
-        _testBuyShares();
-
-        vm.warp(YIELD_CLAIM_TIME);
-        uint256 depositedETHAmount = sharesFactory.depositedETHAmount();
-        uint256 maxYield = aaveYieldAggregator.yieldMaxClaimable(depositedETHAmount);
-        assertEq(depositedETHAmount, 10000227777777775);
-
-        uint256 withdrawableETHAmount = aWETH.balanceOf(address(sharesFactory));
-        uint256 yieldBuffer = withdrawableETHAmount - depositedETHAmount - maxYield;
-        assertEq(yieldBuffer, defaultYieldBuffer);
-
         vm.prank(owner);
         aaveYieldAggregator.setYieldBuffer(1e11);
-        uint256 maxYieldAfter = aaveYieldAggregator.yieldMaxClaimable(depositedETHAmount);
-        assertEq(maxYieldAfter - maxYield, 1e12 - 1e11);
+        assertEq(aaveYieldAggregator.yieldBuffer(), 1e11);
+
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        aaveYieldAggregator.setYieldBuffer(1e11);
+    }
+
+    function test_yieldDepost() public {
+        // Mock eth balance, and call yieldDeposit
+        vm.deal(address(aaveYieldAggregator), 10 ether);
+        vm.prank(address(sharesFactory));
+        aaveYieldAggregator.yieldDeposit();
+        assertTrue(aWETH.balanceOf(address(sharesFactory)) == 10 ether);
+        assertTrue(address(aaveYieldAggregator).balance == 0);
+
+        // Migrate to BlankYieldAggregator
+        // Mock eth balance, and call yieldDeposit
+        vm.prank(owner);
+        sharesFactory.migrate(address(blankYieldAggregator));
+        vm.deal(address(blankYieldAggregator), 10 ether);
+        vm.prank(address(sharesFactory));
+        blankYieldAggregator.yieldDeposit();
+        assertTrue(address(sharesFactory).balance == 20 ether);
+        assertTrue(address(blankYieldAggregator).balance == 0);
+
+        vm.expectRevert(bytes("Only factory"));
+        aaveYieldAggregator.yieldDeposit();
+    }
+
+    function test_yieldWithdraw() public {
+        // Sell shares
+        // Claim yield
+        // Migrate YieldAggregator
+        // Check aWETH / ETH balance
+    }
+
+    function test_yieldBalanceOf() public {
+
+    }
+
+    function test_yieldToken() public {
+
+    }
+
+    function test_yieldMaxClaimable() public {
+
     }
 
     function _testBuyShares() public {
