@@ -150,11 +150,15 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrate() public {
-        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
-
         // Migrate to blankYieldAggregator
         vm.prank(owner);
         sharesFactory.migrate(address(blankYieldAggregator));
+        uint256 timestamp = block.timestamp;
+        vm.warp(timestamp + 3 days);
+
+        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
+        vm.prank(owner);
+        sharesFactory.completeMigration();
         assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
         assertEq(address(sharesFactory).balance, factoryaWETHBalBefore);
@@ -162,6 +166,10 @@ contract SharesFactoryTests is BaseTest {
         // Migrate back to aaveYieldAggregator
         vm.prank(owner);
         sharesFactory.migrate(address(aaveYieldAggregator));
+        timestamp = block.timestamp;
+        vm.warp(timestamp + 3 days);
+        vm.prank(owner);
+        sharesFactory.completeMigration();
         assertEq(address(sharesFactory.yieldAggregator()), address(aaveYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), factoryaWETHBalBefore);
         assertEq(address(sharesFactory).balance, 0);
@@ -320,8 +328,13 @@ contract SharesFactoryTests is BaseTest {
 
         // Revert if address isn't implemented IYieldAggregator
         vm.prank(owner);
-        vm.expectRevert(bytes(""));
         sharesFactory.migrate(address(1));
+
+        uint256 timestamp = block.timestamp;
+        vm.warp(timestamp + 3 days);
+        vm.prank(owner);
+        vm.expectRevert(bytes(""));
+        sharesFactory.completeMigration();
     }
 
     function test_claimYieldFailed() public {
