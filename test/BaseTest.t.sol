@@ -69,4 +69,6 @@ contract BaseTest is Test {
         sharesFactory.transferOwnership(owner);
         aaveYieldAggregator.transferOwnership(owner);
     }
+
+    function testSuccess() public { }
 }

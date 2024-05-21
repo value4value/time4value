@@ -36,6 +36,17 @@ contract SharesFactoryTests is BaseTest {
         vm.warp(timestamp + 1 minutes);
     }
 
+    function test_constructor() public view { 
+        assertEq(aaveYieldAggregator.FACTORY(), address(sharesFactory));
+        assertEq(aaveYieldAggregator.WETH(), WETH);
+        assertEq(address(aaveYieldAggregator.aWETH()), address(aWETH));
+        assertEq(address(aaveYieldAggregator.AAVE_POOL()), AAVE_POOL);
+        assertEq(address(aaveYieldAggregator.AAVE_WETH_GATEWAY()), AAVE_WETH_GATEWAY);
+
+        assertEq(blankYieldAggregator.FACTORY(), address(sharesFactory));
+        assertEq(blankYieldAggregator.WETH(), WETH);
+    }
+
     function test_mintShare() public {
         vm.prank(addrAlice);
         sharesFactory.mintShare(defaultCurveType);
