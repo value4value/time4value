@@ -2,8 +2,9 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
-import { BaseTest } from "../BaseTest.t.sol";
+import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
+import { BaseTest } from "../BaseTest.t.sol";
 
 contract SharesFactoryTests is BaseTest {
     uint8 public defaultCurveType = 0;
@@ -257,26 +258,32 @@ contract SharesFactoryTests is BaseTest {
      */
 
     function test_buySharesFailed() public {
+        // invalid yieldAggregator, when sharesFactory not set yieldAggregator
+        SharesFactoryV1 newSharesFactory = new SharesFactoryV1(
+            address(sharesNFT),
+            BASE_PRICE,
+            INFLECTION_POINT,
+            INFLECTION_PRICE,
+            LINEAR_PRICE_SLOPE
+        );
+        vm.prank(addrAlice);
+        vm.expectRevert(bytes("Invalid yieldAggregator"));
+        newSharesFactory.buyShare{ value: 1 ether }(0, 1, referralReceiver);
+
         // invalid shareId, when id >= shareIndex
         uint256 shareIndex = sharesFactory.shareIndex();
-
-        vm.prank(addrAlice);
+        vm.startPrank(addrAlice);
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.buyShare{ value: 1 ether }(shareIndex, 1, referralReceiver);
-
-        vm.prank(addrAlice);
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.buyShare{ value: 1 ether }(shareIndex * 999, 1, referralReceiver);
-
-        // invalid buyer, when alice create shares, only alice can buy it first
-        vm.prank(addrAlice);
-        sharesFactory.mintShare(defaultCurveType);
+        vm.stopPrank();
 
         // invalid value, when value < buyPriceAfterFee
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Insufficient payment"));
-        sharesFactory.buyShare{ value: buyPriceAfterFee / 2 }(0, 1, referralReceiver);
+        sharesFactory.buyShare{ value: buyPriceAfterFee }(0, 2, referralReceiver);
     }
 
     function test_sellSharesFailed() public {

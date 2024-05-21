@@ -64,9 +64,6 @@ contract BaseTest is Test {
         sharesNFT.transferOwnership(owner);
         sharesFactory.transferOwnership(owner);
         aaveYieldAggregator.transferOwnership(owner);
-
-        // vm.prank(owner);
-        // sharesFactory.migrate(address(aaveYieldAggregator));
     }
 
     function testSuccess() public { }

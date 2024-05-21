@@ -25,29 +25,11 @@ contract YieldAggregatorTests is BaseTest {
         sharesFactory.migrate(address(aaveYieldAggregator));
     }
 
-    function test_withoutInitialYieldAggregator() public {
-        // test before set yieldAggregator buy fail
-        SharesFactoryV1 newSharesFactory = new SharesFactoryV1(
-            address(sharesNFT),
-            BASE_PRICE, // basePrice,
-            INFLECTION_POINT, // inflectionPoint,
-            INFLECTION_PRICE, // inflectionPrice
-            LINEAR_PRICE_SLOPE // linearPriceSlope,
-        );
-
-        vm.deal(addrAlice, 10 ether);
-        vm.prank(addrAlice);
-        vm.expectRevert(bytes("Invalid yieldAggregator"));
-        newSharesFactory.buyShare{ value: 5500050111111109 }(0, 1, referralReceiver);
-    }
-
     function test_setYieldBuffer() public {
-        vm.skip(true);
-
         // TODO: fix below
         _testBuyShares();
 
-        vm.warp(YIELD_CLAIM_TIME); // need to fill a number gt current block.timestamp
+        vm.warp(YIELD_CLAIM_TIME);
         uint256 depositedETHAmount = sharesFactory.depositedETHAmount();
         uint256 maxYield = aaveYieldAggregator.yieldMaxClaimable(depositedETHAmount);
         assertEq(depositedETHAmount, 10000227777777775);
