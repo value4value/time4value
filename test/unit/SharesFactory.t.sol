@@ -47,7 +47,7 @@ contract SharesFactoryTests is BaseTest {
         assertEq(curveType, defaultCurveType);
 
         vm.expectRevert(bytes("Invalid curveType"));
-        sharesFactory.mintShare(999);
+        sharesFactory.mintShare(99);
     }
 
     function test_minAndBuyShare() public {
@@ -462,10 +462,6 @@ contract SharesFactoryTests is BaseTest {
         uint256 yieldBalance = yieldAggregator.yieldBalanceOf(address(sharesFactory));
         uint256 yieldMaxClaimable = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
         uint256 yieldBuffer = 1e12;
-        // uint256 yieldBuffer = yieldAggregator.yieldBuffer();
-        console.log("depositedETHAmount: ", depositedETHAmount);
-        console.log("yieldBalance: ", yieldBalance);
-        console.log("yieldMaxClaimable: ", yieldMaxClaimable);
         return (depositedETHAmount, yieldBalance, yieldMaxClaimable, yieldBuffer);
     }
 }
