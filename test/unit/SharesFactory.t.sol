@@ -33,7 +33,7 @@ contract SharesFactoryTests is BaseTest {
 
         // Mock accumulated yield
         uint256 timestamp = block.timestamp;
-        vm.warp(timestamp + 1 minutes);
+        vm.warp(timestamp + 1);
     }
 
     function test_mintShare() public {
@@ -427,6 +427,23 @@ contract SharesFactoryTests is BaseTest {
 
         _mintAndBuyShare(addrBob, 0, quantity, addrAlice);
         test_safeTransferETHWithZero();
+    }
+
+    function testFuzz_buyAndSellShareInOneBlock(uint8 quantity) public {
+        vm.deal(addrBob, 100 ether);
+
+        // sell all share
+        _sellShare(addrBob, 0, 1, addrAlice);
+        _sellShare(addrBob, 1, 1, addrAlice);
+        _sellShare(addrAlice, 0, 1, addrAlice);
+        _sellShare(addrAlice, 1, 1, addrAlice);
+
+        (uint256 depositedAmount,,,) = _getYield();
+        assertEq(depositedAmount, 0);
+
+        // Bob mintAndBuy 1 share with 2 id
+        _mintAndBuyShare(addrBob, 0, quantity, addrAlice);
+        _sellShare(addrBob, 2, quantity, addrAlice);
     }
 
     /*
