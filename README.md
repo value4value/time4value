@@ -20,7 +20,15 @@
 - Stake what you need, and withdraw when you want;
 - Made for creators like startups, indie hackers and KOLs.
 
-## Why *V4V* is better?
+## How it works？
+
+The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
+
+<div align="center">
+  <img src="images/curve.gif" width="80%">
+</div>
+
+## Why it is better?
 <div align="center">
 
 | Features           | V4V   | Friendtech | Patreon | Coinbase Commerce |
@@ -33,27 +41,34 @@
 
 </div>
 
-## How it works？
-
-The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
-
-<div align="center">
-  <img src="images/curve.gif" width="80%">
-</div>
-
-## Contracts
+## Smart Contracts
 
 ### NFT
 
-The token is a standard ERC1155 contract, with NFTs acting as shares in the bonding curve. When you trade shares, NFTs are minted or burned.
+> The token is a standard ERC1155 contract, with NFTs acting as shares in the bonding curve. When you trade shares, NFTs are minted or burned.
+
+| Network          | Address                                    |
+|------------------|--------------------------------------------|
+| Optimism Mainnet | N/A                                        |
+| Optimism Sepolia | 0x07cB2490DfBFd63613318F87156D935ddAcb62F4 |
 
 ### Shares
 
-SharesFactory is the core contract that contains the bonding curve and yield aggregator logic where you can mint, buy, and sell shares, as well as change yield strategies and claim yields.
+> SharesFactory is the core contract that contains the bonding curve and yield aggregator logic where you can mint, buy, and sell shares, as well as change yield strategies and claim yields.
+
+| Network          | Address                                    |
+|------------------|--------------------------------------------|
+| Optimism Mainnet | N/A                                        |
+| Optimism Sepolia | 0x5F31921A68eA5b350baF141536933Cc7d70EBAEa |
 
 ### Yield
 
-YieldAggregator is a yield strategy contract that provides a common interface for SharesFactory to use, such as deposit, withdraw, and claimable. However, the underlying logic can be any yield strategy, such as Aave, Pendle and LRT, or nothing at all.
+> YieldAggregator is a yield strategy contract that provides a common interface for SharesFactory to use, such as deposit, withdraw, and claimable. However, the underlying logic can be any yield strategy, such as Aave, Pendle and LRT, or nothing at all.
+
+| Network          | Address                                    |
+|------------------|--------------------------------------------|
+| Optimism Mainnet | N/A                                        |
+| Optimism Sepolia | 0x2c1414c3F442AA7a4E531E2891009Dd1a8744b59 |
 
 ## Test and Deploy
 
