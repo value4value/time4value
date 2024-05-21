@@ -45,6 +45,9 @@ contract SharesFactoryTests is BaseTest {
 
         assertEq(creator, addrAlice);
         assertEq(curveType, defaultCurveType);
+
+        vm.expectRevert(bytes("Invalid curveType"));
+        sharesFactory.mintShare(999);
     }
 
     function test_minAndBuyShare() public {
