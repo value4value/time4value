@@ -80,7 +80,23 @@ contract YieldAggregatorTests is BaseTest {
     }
 
     function test_yieldMaxClaimable() public {
+        _depositETH2AaveYieldAggregator(10 ether);
+        uint256 yieldBuffer = aaveYieldAggregator.yieldBuffer();
 
+        // Initial state, return 0
+        uint256 expectedClaimableBefore = 0;
+        uint256 actualClaimableBefore = aaveYieldAggregator.yieldMaxClaimable(10 ether);
+        assertEq(actualClaimableBefore, expectedClaimableBefore);
+
+        // Mock time to 2029-11-01 00:00:30, return yield
+        vm.warp(YIELD_CLAIM_TIME);
+        uint256 withdrawableETHAmount = aWETH.balanceOf(address(sharesFactory));
+        uint256 expectedClaimableAfter = withdrawableETHAmount - 10 ether - yieldBuffer;
+        uint256 actualClaimableAfter = aaveYieldAggregator.yieldMaxClaimable(10 ether);
+        assertEq(actualClaimableAfter, expectedClaimableAfter);
+
+        // BlankYieldAggregator always return 0
+        assertEq(blankYieldAggregator.yieldMaxClaimable(0), 0);
     }
 
     function _depositETH2AaveYieldAggregator(uint256 amount) internal {
