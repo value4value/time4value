@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.25;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IShare } from "../interface/IShare.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
-contract SharesFactoryV1 is Ownable {
+contract SharesFactoryV1 is Ownable2Step {
     using SafeERC20 for IERC20;
 
     struct Curve {

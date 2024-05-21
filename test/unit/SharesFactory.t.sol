@@ -378,6 +378,22 @@ contract SharesFactoryTests is BaseTest {
         sharesFactory.claimYield(0, yieldReceiver);
     }
 
+    function test_changeOwner() public {
+        address newOwner = address(111);
+        assertEq(owner, sharesFactory.owner());
+
+        //transferOwnership
+        vm.prank(owner);
+        sharesFactory.transferOwnership(newOwner);
+        // before acceptance, owner won't change
+        assertEq(owner, sharesFactory.owner());
+
+        // new owner accept
+        vm.prank(newOwner);
+        sharesFactory.acceptOwnership();
+        assertEq(newOwner, sharesFactory.owner());
+    }
+
     /*
      ********************************************************************************
      * Fuzz Tests
