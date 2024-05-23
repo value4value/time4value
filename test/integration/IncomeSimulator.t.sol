@@ -37,8 +37,8 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     }
 
     function testFuzz_SimulateLinearCurveParams(uint256 _seed) public {
-        uint96 minBasePrice = 0.02 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 minBasePrice = 0.015 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -51,8 +51,8 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     }
 
     function testFuzz_SimulateSigmoidCurveParams(uint256 _seed) public {
-        uint96 minBasePrice = 0.02 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 minBasePrice = 0.015 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -75,7 +75,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     function testFuzz_SimulateExclusiveSigmoidCurveParams(uint256 _seed) public {
         // @dev exclusive sigmoid curve params has extreme high inflectionPoint
         uint96 minBasePrice = 0.015 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -152,7 +152,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             _inflectionPrice.toString()
         );
         string memory results =
-            _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
+                        _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
         _logSummary("sigmoid_curve_params", _contactString(params, results));
     }
 
@@ -187,21 +187,21 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             _inflectionPrice.toString()
         );
         string memory results =
-            _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
+                        _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
         _logSummary("exclusive_sigmoid_curve_params", _contactString(params, results));
     }
 
     function _simulateClaimableAmountAndFee(
-        // curve params
+    // curve params
         uint96 _basePrice,
         uint128 _linearPriceSlope,
         uint32 _inflectionPoint,
         uint128 _inflectionPrice,
-        // target supply
+    // target supply
         uint32 _targetSupply,
-        // buy duration
+    // buy duration
         uint256 _buyDuration,
-        // yield duration
+    // yield duration
         uint256 _yieldDuration
     ) public returns (uint256 income, uint8 reachTargetInDays) {
         reachTargetInDays = 0;
@@ -232,7 +232,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             //            _logSummary(_contactString("Total supply: ", i.toString(), ", CurrentClaimableAmount:", currentClaimableAmount.toString()));
             // once claimableAmount >  targetIncome
             if (currentClaimableAmount > TARGET_INCOME && reachTargetInDays == 0) {
-                reachTargetInDays = uint8((i * _buyDuration) / (1 days));
+                reachTargetInDays = uint8((block.timestamp - startBlockTime) / (1 days));
                 console.log("This params earn income after days: ", reachTargetInDays);
             }
         }
@@ -252,7 +252,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
 
             // once claimableAmount >  targetIncome
             if (currentClaimableAmount > TARGET_INCOME && reachTargetInDays == 0) {
-                reachTargetInDays = uint8((i * _buyDuration) / (1 days));
+                reachTargetInDays = uint8((block.timestamp - startBlockTime) / (1 days));
                 console.log("This params earn income after days: ", reachTargetInDays);
             }
         }
@@ -298,7 +298,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
         return uint128(_random(_seed, min, max) % (2**128));
     }
 
-    // TODO:
+    // TODO: log graph data using point x y for data visualization
     function _logGraphData(string memory _filename, uint _x, uint _y) internal {
         string memory filename = _contactString("reports/", _filename, ".txt");
         _logToFile(filename, _contactString(_x.toString(), ",", _y.toString()));
