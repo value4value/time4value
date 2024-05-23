@@ -29,20 +29,21 @@ contract SharesFactoryV1 is Ownable2Step {
     mapping(uint8 curveType => Curve curve) public curvesMap;
 
     address public immutable ERC1155;
+    uint256 public constant TIMELOCK_DURATION = 3 days;
+
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
     uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
-    uint256 public timeLockDuration = 3 days;
     uint256 public migrationDeadline;
 
     IYieldAggregator public yieldAggregator;
     address public pendingAggregator;
     address public blankAggregator;
 
+    event QueueMigrateYield(address indexed newAggregator, uint256 deadline);
+    event MigrateYield(address indexed newAggregator, uint256 timestamp);
     event ClaimYield(uint256 amount, address indexed to);
-    event MigrateYield(address indexed yieldAggregator, uint256 timestamp);
-    event MigrationInitiated(address indexed newAggregator, uint256 deadline);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
     event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
@@ -127,13 +128,13 @@ contract SharesFactoryV1 is Ownable2Step {
     }
 
     /**
-     * @notice reset yieldAggregator. Initial setting and migrate only to blank aggregator
-     * Case 1: address(0) -> yieldAggregator, which initializes yield farming.
-     * Case 2: yieldAggregator -> blank yieldAggregator, which cancels yield farming.
+     * @notice Reset yieldAggregator, always fallback to blankAggregator.
+     * Case 1: address(0) -> yieldAggregator, make the blankAggregator as default yieldAggregator.
+     * Case 2: yieldAggregator -> blankAggregator, which cancels yield farming.
     */
     function resetYield(address _yieldAggregator) external onlyOwner {
+        require(_yieldAggregator != address(0), "Invalid yieldAggregator");
         if (address(yieldAggregator) == address(0)) {
-            require(_yieldAggregator != address(0), "Invalid yieldAggregator");
             blankAggregator = _yieldAggregator;
             _setYieldAggregator(_yieldAggregator);
         } else {
@@ -142,19 +143,23 @@ contract SharesFactoryV1 is Ownable2Step {
     }
 
     /**
-     * @notice Ask for migrating the yieldAggregator. Migrates to a new yield farming with timelock protection
+     * @notice Ask to migrate a new yield aggregator with timelock.
      * @param _yieldAggregator The address of the yield aggregator.
      */
     function queueMigrateYield(address _yieldAggregator) external onlyOwner {
         require(_yieldAggregator != address(0), "Invalid yieldAggregator");
         pendingAggregator = _yieldAggregator;
-        migrationDeadline = block.timestamp + timeLockDuration;
-        emit MigrationInitiated(_yieldAggregator, migrationDeadline);
+        migrationDeadline = block.timestamp + TIMELOCK_DURATION;
+        emit QueueMigrateYield(_yieldAggregator, migrationDeadline);
     }
-
+    
+    /**
+     * @notice Migrate a new yield aggregator after timelock.
+     */
     function executeMigrateYield() external onlyOwner {
-        require(pendingAggregator != address(0), "No pending aggregator to migrate to");
-        require(block.timestamp >= migrationDeadline, "Time lock has not expired yet");  
+        require(pendingAggregator != address(0), "Invalid pendingAggregator");
+        require(migrationDeadline != 0, "Invalid migrationDeadline");
+        require(block.timestamp >= migrationDeadline, "Timelock not expired");  
 
         _migrate(pendingAggregator);
 
