@@ -37,7 +37,7 @@ contract YieldAggregatorTests is BaseTest {
         aaveYieldAggregator.setYieldBuffer(1e11);
     }
 
-    function test_yieldDepost() public {
+    function test_yieldDeposit() public {
         _depositETH2AaveYieldAggregator(10 ether);
         assertTrue(aWETH.balanceOf(address(sharesFactory)) == 10 ether);
         assertTrue(address(aaveYieldAggregator).balance == 0);
@@ -104,8 +104,8 @@ contract YieldAggregatorTests is BaseTest {
         uint256 actualClaimableBefore = aaveYieldAggregator.yieldMaxClaimable(10 ether);
         assertEq(actualClaimableBefore, expectedClaimableBefore);
 
-        // Mock time to 2029-11-01 00:00:30, return yield
-        vm.warp(YIELD_CLAIM_TIME);
+        // Speed up time to claim yield
+        vm.warp(block.timestamp + 365 days);
         uint256 withdrawableETHAmount = aWETH.balanceOf(address(sharesFactory));
         uint256 expectedClaimableAfter = withdrawableETHAmount - 10 ether - yieldBuffer;
         uint256 actualClaimableAfter = aaveYieldAggregator.yieldMaxClaimable(10 ether);
@@ -123,6 +123,6 @@ contract YieldAggregatorTests is BaseTest {
 
     function _migrate2BlankYieldAggregator() internal {
         vm.prank(owner);
-        sharesFactory.migrate(address(blankYieldAggregator));
+        sharesFactory.resetYield(address(blankYieldAggregator));
     }
 }

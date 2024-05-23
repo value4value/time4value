@@ -36,13 +36,10 @@ contract BaseTest is Test {
     address public constant AAVE_POOL = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     address public constant AAVE_WETH_GATEWAY = 0xe9E52021f4e11DEAD8661812A0A6c8627abA2a54;
 
-    // Speed up time to claim yield, 2029-11-01 00:00:30
-    uint256 public constant YIELD_CLAIM_TIME = 1930488030;
-
     // aTokenAddress: associated token address
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 
-    string public constant BASE_URI = "https://v4v.com/shares/uri/";
+    string public constant BASE_URI = "https://vv.meme/shares/uri/";
     uint96 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
     uint32 public constant INFLECTION_POINT = 1500;
     uint128 public constant INFLECTION_PRICE = 102500000000000000;
@@ -63,12 +60,23 @@ contract BaseTest is Test {
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
 
         sharesNFT.setFactory(address(sharesFactory));
-        sharesFactory.migrate(address(aaveYieldAggregator));
+        sharesFactory.resetYield(address(blankYieldAggregator));
         
         sharesNFT.transferOwnership(owner);
-        sharesFactory.transferOwnership(owner);
         aaveYieldAggregator.transferOwnership(owner);
+
+        // SharesFactory transfer ownership with 2-step process
+        sharesFactory.transferOwnership(owner);
+        vm.prank(owner);
+        sharesFactory.acceptOwnership();
+
+        // Migrate yield from BlankYieldAggregator to AaveYieldAggregator with 3 days delay
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 3 days);
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
     }
 
-    function testSuccess() public { }
+    function test_success() public { }
 }

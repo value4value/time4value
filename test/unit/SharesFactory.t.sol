@@ -33,7 +33,7 @@ contract SharesFactoryTests is BaseTest {
 
         // Mock accumulated yield
         uint256 timestamp = block.timestamp;
-        vm.warp(timestamp + 1 minutes);
+        vm.warp(timestamp + 1);
     }
 
     function test_mintShare() public {
@@ -128,7 +128,7 @@ contract SharesFactoryTests is BaseTest {
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
-        vm.warp(YIELD_CLAIM_TIME);
+        vm.warp(block.timestamp + 365 days);
 
         (
             uint256 depositedETHAmountAfter,
@@ -150,21 +150,35 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrate() public {
-        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
+        vm.deal(addrAlice, 1000 ether);
+        _buyShare(addrAlice, 0, 1000, referralReceiver);
 
-        // Migrate to blankYieldAggregator
+        // Reset to blankYieldAggregator
+        uint256 factoryBalBefore = aWETH.balanceOf(address(sharesFactory));
         vm.prank(owner);
-        sharesFactory.migrate(address(blankYieldAggregator));
+        sharesFactory.resetYield(address(blankYieldAggregator));
         assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
-        assertEq(address(sharesFactory).balance, factoryaWETHBalBefore);
+        assertEq(address(sharesFactory).balance, factoryBalBefore);
 
-        // Migrate back to aaveYieldAggregator
-        vm.prank(owner);
-        sharesFactory.migrate(address(aaveYieldAggregator));
+        // Migrate to aaveYieldAggregator
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 3 days);
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
         assertEq(address(sharesFactory.yieldAggregator()), address(aaveYieldAggregator));
-        assertEq(aWETH.balanceOf(address(sharesFactory)), factoryaWETHBalBefore);
         assertEq(address(sharesFactory).balance, 0);
+        assertEq(aWETH.balanceOf(address(sharesFactory)), factoryBalBefore);
+
+        // Reset to blankYieldAggregator
+        vm.warp(block.timestamp + 90 days);
+        uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
+        vm.prank(owner);
+        sharesFactory.resetYield(address(blankYieldAggregator));
+        assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
+        assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
+        assertEq(address(sharesFactory).balance, factoryBalAfter);
     }
 
     function test_getShare() public {
@@ -310,18 +324,41 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrateFailed() public {
-        vm.prank(addrAlice);
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        sharesFactory.migrate(address(blankYieldAggregator));
+        sharesFactory.queueMigrateYield(address(blankYieldAggregator));
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        sharesFactory.executeMigrateYield();
 
-        vm.prank(owner);
+        // Revert if aggreegator not set or address is zero
+        vm.startPrank(owner);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
-        sharesFactory.migrate(address(0));
+        sharesFactory.queueMigrateYield(address(0));
+        vm.expectRevert(bytes("Invalid yieldAggregator"));
+        sharesFactory.resetYield(address(0));
+        vm.stopPrank();
+
+        // Revert if no initial queueMigrrateYield
+        vm.startPrank(owner);
+        vm.expectRevert(bytes("Invalid pendingAggregator"));
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
+
+        // Revert if timelock not reached
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 2 days);
+        vm.expectRevert(bytes("Timelock not expired"));
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
 
         // Revert if address isn't implemented IYieldAggregator
-        vm.prank(owner);
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(1));
+
+        vm.warp(block.timestamp + 3 days);
         vm.expectRevert(bytes(""));
-        sharesFactory.migrate(address(1));
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
     }
 
     function test_claimYieldFailed() public {
@@ -378,6 +415,22 @@ contract SharesFactoryTests is BaseTest {
         sharesFactory.claimYield(0, yieldReceiver);
     }
 
+    function test_changeOwner() public {
+        address newOwner = address(111);
+        assertEq(owner, sharesFactory.owner());
+
+        //transferOwnership
+        vm.prank(owner);
+        sharesFactory.transferOwnership(newOwner);
+        // before acceptance, owner won't change
+        assertEq(owner, sharesFactory.owner());
+
+        // new owner accept
+        vm.prank(newOwner);
+        sharesFactory.acceptOwnership();
+        assertEq(newOwner, sharesFactory.owner());
+    }
+
     /*
      ********************************************************************************
      * Fuzz Tests
@@ -429,6 +482,23 @@ contract SharesFactoryTests is BaseTest {
         test_safeTransferETHWithZero();
     }
 
+    function testFuzz_buyAndSellShareInOneBlock(uint8 quantity) public {
+        vm.deal(addrBob, 100 ether);
+
+        // sell all share
+        _sellShare(addrBob, 0, 1, addrAlice);
+        _sellShare(addrBob, 1, 1, addrAlice);
+        _sellShare(addrAlice, 0, 1, addrAlice);
+        _sellShare(addrAlice, 1, 1, addrAlice);
+
+        (uint256 depositedAmount,,,) = _getYield();
+        assertEq(depositedAmount, 0);
+
+        // Bob mintAndBuy 1 share with 2 id
+        _mintAndBuyShare(addrBob, 0, quantity, addrAlice);
+        _sellShare(addrBob, 2, quantity, addrAlice);
+    }
+
     /*
      ********************************************************************************
      * Private Tests
@@ -444,7 +514,7 @@ contract SharesFactoryTests is BaseTest {
 
     function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
-
+        // console.log("buyPriceAfterFee", buyPriceAfterFee, shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }

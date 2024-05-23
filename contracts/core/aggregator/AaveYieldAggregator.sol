@@ -92,9 +92,11 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      */
     function yieldMaxClaimable(uint256 depositedETHAmount) external view returns (uint256 maxClaimableETH) {
         uint256 withdrawableETHAmount = aWETH.balanceOf(FACTORY);
-        maxClaimableETH = (withdrawableETHAmount - depositedETHAmount) < yieldBuffer
-            ? 0
-            : withdrawableETHAmount - depositedETHAmount - yieldBuffer;
+        if (withdrawableETHAmount <= depositedETHAmount + yieldBuffer) {
+            return 0;
+        } else {
+            return withdrawableETHAmount - depositedETHAmount - yieldBuffer;
+        }
     }
 
     /**

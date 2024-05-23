@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.25;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IShare } from "../interface/IShare.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
-contract SharesFactoryV1 is Ownable {
+contract SharesFactoryV1 is Ownable2Step {
     using SafeERC20 for IERC20;
 
     struct Curve {
@@ -29,14 +29,21 @@ contract SharesFactoryV1 is Ownable {
     mapping(uint8 curveType => Curve curve) public curvesMap;
 
     address public immutable ERC1155;
+    uint256 public constant TIMELOCK_DURATION = 3 days;
+
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
     uint256 public referralFeePercent = 5 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
-    IYieldAggregator public yieldAggregator;
+    uint256 public migrationDeadline;
 
+    IYieldAggregator public yieldAggregator;
+    address public pendingAggregator;
+    address public blankAggregator;
+
+    event QueueMigrateYield(address indexed newAggregator, uint256 deadline);
+    event MigrateYield(address indexed newAggregator, uint256 timestamp);
     event ClaimYield(uint256 amount, address indexed to);
-    event MigrateYield(address indexed yieldAggregator);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
     event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
@@ -121,41 +128,48 @@ contract SharesFactoryV1 is Ownable {
     }
 
     /**
-     * @notice Migrates the yieldAggregator.
-     * There are three cases:
-     * Case 1: address(0) -> yieldAggregator, which initializes yield farming.
-     * Case 2: yieldAggregator -> blank yieldAggregator, which cancels yield farming.
-     * Case 3: yieldAggregator -> new yieldAggregator, which migrates to a new yield farming.
-     * @param _yieldAggregator The address of the yield aggregator.
-     */
-    function migrate(address _yieldAggregator) external onlyOwner {
+     * @notice Reset yieldAggregator, always fallback to blankAggregator.
+     * Case 1: address(0) -> yieldAggregator, make the blankAggregator as default yieldAggregator.
+     * Case 2: yieldAggregator -> blankAggregator, which cancels yield farming.
+    */
+    function resetYield(address _yieldAggregator) external onlyOwner {
         require(_yieldAggregator != address(0), "Invalid yieldAggregator");
-
-        // Case 1 if yieldAggregator is empty, else Case 2 or 3.
         if (address(yieldAggregator) == address(0)) {
+            blankAggregator = _yieldAggregator;
             _setYieldAggregator(_yieldAggregator);
         } else {
-            // Step 1: Withdraw all yieldToken into ETH.
-            _withdrawAllYieldTokenToETH();
-
-            // Step 2: Revoke the approval of the old yieldAggregator.
-            address yieldToken = yieldAggregator.yieldToken();
-            IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
-
-            // Step 3: Set the new yieldAggregator.
-            _setYieldAggregator(_yieldAggregator);
-
-            // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
-            _depositAllETHToYieldToken();
+            _migrate(blankAggregator);
         }
+    }
 
-        emit MigrateYield(_yieldAggregator);
+    /**
+     * @notice Ask to migrate a new yield aggregator with timelock.
+     * @param _yieldAggregator The address of the yield aggregator.
+     */
+    function queueMigrateYield(address _yieldAggregator) external onlyOwner {
+        require(_yieldAggregator != address(0), "Invalid yieldAggregator");
+        pendingAggregator = _yieldAggregator;
+        migrationDeadline = block.timestamp + TIMELOCK_DURATION;
+        emit QueueMigrateYield(_yieldAggregator, migrationDeadline);
+    }
+    
+    /**
+     * @notice Migrate a new yield aggregator after timelock.
+     */
+    function executeMigrateYield() external onlyOwner {
+        require(pendingAggregator != address(0), "Invalid pendingAggregator");
+        require(block.timestamp >= migrationDeadline, "Timelock not expired");  
+
+        _migrate(pendingAggregator);
+
+        delete pendingAggregator; // Reset pending aggregator
+        delete migrationDeadline; // Reset migration deadline
     }
 
     /**
      * @notice Only for owner to claim a specific yield amount.
      * @param amount The yield amount the owner claims.
-     * @param to The address receiving the yield.
+     * @param to The address will be a smart contract to distribute yield to creators.
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
         uint256 maxAmount = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
@@ -210,10 +224,6 @@ contract SharesFactoryV1 is Ownable {
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
-        // Mint shares to the buyer
-        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
-
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
         yieldAggregator.yieldDeposit();
@@ -229,6 +239,10 @@ contract SharesFactoryV1 is Ownable {
         if (refundAmount > 0) {
             _safeTransferETH(msg.sender, refundAmount);
         }
+
+        // Mint shares to the buyer
+        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
+        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
     }
 
     /**
@@ -346,6 +360,27 @@ contract SharesFactoryV1 is Ownable {
 
         address yieldToken = yieldAggregator.yieldToken();
         IERC20(yieldToken).safeApprove(_yieldAggregator, type(uint256).max);
+    }
+
+    /**
+     * @notice Migrate yield aggregator
+     * @param _yieldAggregator The address of the yieldAggregator
+     */
+    function _migrate(address _yieldAggregator) internal {
+        // Step 1: Withdraw all yieldToken into ETH.
+        _withdrawAllYieldTokenToETH();
+
+        // Step 2: Revoke the approval of the old yieldAggregator.
+        address yieldToken = yieldAggregator.yieldToken();
+        IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
+
+        // Step 3: Set the new yieldAggregator.
+        _setYieldAggregator(_yieldAggregator);
+
+        // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
+        _depositAllETHToYieldToken();
+
+        emit MigrateYield(address(_yieldAggregator), block.timestamp);
     }
 
     /**
