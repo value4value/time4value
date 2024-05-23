@@ -24,7 +24,9 @@ library BondingCurveLib {
             uint256 h = inflectionPrice;
 
             // Early return to save gas if either `g` or `h` is zero.
-            if (g * h == 0) return 0;
+            if (g * h == 0) {
+                return 0;
+            }
 
             uint256 s = uint256(fromSupply) + 1;
             uint256 end = s + uint256(quantity);

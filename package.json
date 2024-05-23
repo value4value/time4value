@@ -7,8 +7,11 @@
   "scripts": {
     "build": "forge build",
     "compile": "forge compile",
-    "test": "forge test --fork-url https://mainnet.optimism.io",
-    "coverage": "forge coverage --fork-url https://mainnet.optimism.io",
+    "test": "forge test -vvv --mp \"test/unit/**/*.sol\" --fork-url https://mainnet.optimism.io",
+    "test:integration": "forge test -vvv --mp \"test/integration/*/*.sol\" --fork-url https://mainnet.optimism.io ",
+    "test:invariant": "forge test -vvv --mc BaseInvariantTest --fork-url https://optimism.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea ",
+    "test:income": "forge test -vvvv --mp \"test/integration/IncomeSimulator.t.sol\" --fork-url https://mainnet.optimism.io ",
+    "coverage": "forge coverage --mp \"test/unit/**/*.sol\" --fork-url https://mainnet.optimism.io ",
     "deploy:testnet": "make deploy-testnet",
     "deploy:mainnet": "make deploy-mainnet",
     "fmt": "forge fmt --check && solhint \"{scripts,contracts,test}/**/*.sol\"",
