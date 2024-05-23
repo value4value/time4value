@@ -1,7 +1,8 @@
 {
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "[solidity]": {
     "editor.defaultFormatter": "JuanBlanco.solidity" 
   },
   "solidity.formatter": "forge",
+  "solidity.compileUsingRemoteVersion": "v0.8.25+commit.b61c2a91",
 }

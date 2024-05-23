@@ -559,11 +559,6 @@ prettier@^2.8.3:
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
   integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
 
-prettier@^3.2.5:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.2.5.tgz#e52bc3090586e824964a8813b09aba6233b28368"
-  integrity sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==
-
 proto-list@~1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/proto-list/-/proto-list-1.2.4.tgz#212d5bfe1318306a420f6402b8e26ff39647a849"
@@ -646,10 +641,10 @@ solady@^0.0.198:
   resolved "https://registry.yarnpkg.com/solady/-/solady-0.0.198.tgz#fabcf4a6d679ba11137a0e16d8d26f5aa7b0f2b0"
   integrity sha512-zK3B9vJM8NBL3kicwnVzNxkRI0bCIEipxhQHf67vnU54oZxlZxOUrFSbtYYz11WwZsjm5MfGc7jMZ+AGqlHjEQ==
 
-solhint@^4.5.4:
-  version "4.5.4"
-  resolved "https://registry.yarnpkg.com/solhint/-/solhint-4.5.4.tgz#171cf33f46c36b8499efe60c0e425f6883a54e50"
-  integrity sha512-Cu1XiJXub2q1eCr9kkJ9VPv1sGcmj3V7Zb76B0CoezDOB9bu3DxKIFFH7ggCl9fWpEPD6xBmRLfZrYijkVmujQ==
+solhint@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/solhint/-/solhint-5.0.1.tgz#f0f783bd9d945e5a27b102295a3f28edba241d6c"
+  integrity sha512-QeQLS9HGCnIiibt+xiOa/+MuP7BWz9N7C5+Mj9pLHshdkNhuo3AzCpWmjfWVZBUuwIUO3YyCRVIcYLR3YOKGfg==
   dependencies:
     "@solidity-parser/parser" "^0.18.0"
     ajv "^6.12.6"

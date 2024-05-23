@@ -6,9 +6,9 @@ import { ERC1155 } from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import { ERC1155Supply } from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
-import { IMestShare } from "../interface/IMestShare.sol";
+import { IShare } from "../interface/IShare.sol";
 
-contract MestERC1155 is ERC1155Supply, Ownable, IMestShare {
+contract SharesERC1155 is ERC1155Supply, Ownable, IShare {
     address public _FACTORY_;
     string private _baseURI;
 

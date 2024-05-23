@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.25;
 
-interface IMestShare {
+interface IShare {
     function shareMint(address to, uint256 id, uint256 amount) external;
 
     function shareBurn(address from, uint256 id, uint256 amount) external;

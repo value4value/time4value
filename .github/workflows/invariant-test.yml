@@ -1,9 +1,9 @@
-on: [ push, pull_request ]
+on: [ workflow_dispatch ]
 
-name: test
+name: invariant-test
 
 jobs:
-  test:
+  invariant-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,13 +18,7 @@ jobs:
       - run: yarn
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-      - name: Cache fork requests
-        uses: actions/cache@v4
-        with:
-          path: ~/.foundry/cache
-          key: "${{ runner.os }}-foundry-network-fork-${{ github.sha }}"
-          restore-keys: |
-            ${{ runner.os }}-foundry-network-fork-
       - id: forge_test
-        run: forge test -vvv --mp "test/unit/*.sol" --fork-url https://mainnet.optimism.io
+        run: forge test -vvv --mc BaseInvariantTest --fork-url https://optimism.llamarpc.com/sk_llama_115e7405eff4c29287d6ff9a0275bf84
         continue-on-error: true
+

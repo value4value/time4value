@@ -1,14 +1,17 @@
 {
-  "name": "mest-protocol",
+  "name": "time4value",
   "version": "1.0.0",
-  "repository": "git@github.com:mest-io/mest-protocol.git",
-  "author": "dev@mest.io",
+  "repository": "git@github.com:value4value/time4value.git",
+  "author": "dev@vv.meme",
   "license": "MIT",
   "scripts": {
     "build": "forge build",
     "compile": "forge compile",
-    "test": "forge test --fork-url https://mainnet.optimism.io",
-    "coverage": "forge coverage --fork-url https://mainnet.optimism.io",
+    "test": "forge test -vvv --mp \"test/unit/**/*.sol\" --fork-url https://mainnet.optimism.io",
+    "test:integration": "forge test -vvv --mp \"test/integration/*/*.sol\" --fork-url https://mainnet.optimism.io ",
+    "test:invariant": "forge test -vvv --mc BaseInvariantTest --fork-url https://optimism.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea ",
+    "test:income": "forge test -vvvv --mp \"test/integration/IncomeSimulator.t.sol\" --fork-url https://mainnet.optimism.io ",
+    "coverage": "forge coverage --mp \"test/unit/**/*.sol\" --fork-url https://mainnet.optimism.io ",
     "deploy:testnet": "make deploy-testnet",
     "deploy:mainnet": "make deploy-mainnet",
     "fmt": "forge fmt --check && solhint \"{scripts,contracts,test}/**/*.sol\"",
@@ -18,19 +21,10 @@
   "devDependencies": {
     "ds-test": "github:dapphub/ds-test#master",
     "forge-std": "github:foundry-rs/forge-std#v1.8.1",
-    "prettier": "^3.2.5",
-    "solhint": "^4.5.4"
+    "solhint": "^5.0.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.9.6",
     "solady": "^0.0.198"
-  },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 4,
-    "useTabs": false,
-    "semi": true,
-    "singleQuote": false,
-    "bracketSpacing": true
   }
 }
