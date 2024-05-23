@@ -31,7 +31,7 @@ contract DeployScript is Script {
 
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 
-    string public constant BASE_URI = "https://v4v.com/shares/uri/";
+    string public constant BASE_URI = "https://vv.meme/shares/uri/";
     uint256 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
     uint256 public constant INFLECTION_POINT = 1500;
     uint256 public constant INFLECTION_PRICE = 102500000000000000;
@@ -53,13 +53,30 @@ contract DeployScript is Script {
 
         aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
-
+        
+        sharesFactory.resetYield(address(blankYieldAggregator));
         sharesNFT.setFactory(address(sharesFactory));
-        sharesFactory.migrate(address(aaveYieldAggregator));
 
         sharesNFT.transferOwnership(OWNER);
-        sharesFactory.transferOwnership(OWNER);
         aaveYieldAggregator.transferOwnership(OWNER);
+
+        /*
+         ********************************************************************************
+         * Mauunal steps to be executed after deploying this script
+         ********************************************************************************
+         */
+
+        // Note: SharesFactory transfer ownership with 2-step process
+        // sharesFactory.transferOwnership(owner);
+        // vm.prank(owner);
+        // sharesFactory.acceptOwnership();
+
+        // Note: Migrate yield from BlankYieldAggregator to AaveYieldAggregator with 3 days delay
+        // vm.startPrank(owner);
+        // sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        // vm.warp(block.timestamp + 3 days);
+        // sharesFactory.executeMigrateYield();
+        // vm.stopPrank();
 
         vm.stopBroadcast();
     }

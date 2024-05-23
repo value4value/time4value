@@ -42,7 +42,7 @@ contract BaseTest is Test {
     // aTokenAddress: associated token address
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 
-    string public constant BASE_URI = "https://v4v.com/shares/uri/";
+    string public constant BASE_URI = "https://vv.meme/shares/uri/";
     uint96 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
     uint32 public constant INFLECTION_POINT = 1500;
     uint128 public constant INFLECTION_PRICE = 102500000000000000;
@@ -66,12 +66,14 @@ contract BaseTest is Test {
         sharesFactory.resetYield(address(blankYieldAggregator));
         
         sharesNFT.transferOwnership(owner);
+        aaveYieldAggregator.transferOwnership(owner);
+
+        // SharesFactory transfer ownership with 2-step process
         sharesFactory.transferOwnership(owner);
         vm.prank(owner);
         sharesFactory.acceptOwnership();
-        aaveYieldAggregator.transferOwnership(owner);
 
-        // migrate to aave yield aggregator
+        // Migrate yield from BlankYieldAggregator to AaveYieldAggregator with 3 days delay
         vm.startPrank(owner);
         sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
         vm.warp(block.timestamp + 3 days);
@@ -79,5 +81,5 @@ contract BaseTest is Test {
         vm.stopPrank();
     }
 
-    function testSuccess() public { }
+    function test_success() public { }
 }
