@@ -83,14 +83,20 @@ contract BaseIntegrationTest is Test {
         aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
 
+
         sharesNFT.setFactory(address(sharesFactory));
-        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
-        vm.warp(block.timestamp + sharesFactory.TIMELOCK_DURATION());
-        sharesFactory.executeMigrateYield();
+        sharesFactory.resetYield(address(blankYieldAggregator));
 
         sharesNFT.transferOwnership(FACTORY_OWNER);
-        sharesFactory.transferOwnership(FACTORY_OWNER);
         aaveYieldAggregator.transferOwnership(FACTORY_OWNER);
+
+        sharesFactory.transferOwnership(FACTORY_OWNER);
+        sharesFactory.acceptOwnership();
+
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 4 days);
+        sharesFactory.executeMigrateYield();
+
         vm.stopPrank();
     }
 
