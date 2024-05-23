@@ -126,10 +126,6 @@ contract SharesFactoryV1 is Ownable2Step {
         emit SetCurve(_curveType);
     }
 
-    function setBlankAggregator(address _blankAggregator) external onlyOwner {
-        blankAggregator = _blankAggregator;
-    }
-
     /**
      * @notice reset yieldAggregator. Initial setting and migrate only to blank aggregator
      * Case 1: address(0) -> yieldAggregator, which initializes yield farming.
