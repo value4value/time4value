@@ -171,7 +171,7 @@ contract SharesFactoryTests is BaseTest {
         assertEq(address(sharesFactory).balance, 0);
         assertEq(aWETH.balanceOf(address(sharesFactory)), factoryBalBefore);
 
-        // TODO:Reset to blankYieldAggregator
+        // Reset to blankYieldAggregator
         vm.warp(block.timestamp + 90 days);
         uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
         vm.prank(owner);

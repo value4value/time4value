@@ -225,10 +225,6 @@ contract SharesFactoryV1 is Ownable2Step {
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
 
-        // Mint shares to the buyer
-        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
-
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
         yieldAggregator.yieldDeposit();
@@ -244,6 +240,10 @@ contract SharesFactoryV1 is Ownable2Step {
         if (refundAmount > 0) {
             _safeTransferETH(msg.sender, refundAmount);
         }
+
+        // Mint shares to the buyer
+        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
+        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
     }
 
     /**
