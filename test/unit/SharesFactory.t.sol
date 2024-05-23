@@ -150,27 +150,35 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrate() public {
-        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
+        vm.deal(addrAlice, 1000 ether);
+        _buyShare(addrAlice, 0, 1000, referralReceiver);
 
-        // Migrate to blankYieldAggregator
+        // Reset to blankYieldAggregator
+        uint256 factoryBalBefore = aWETH.balanceOf(address(sharesFactory));
         vm.prank(owner);
         sharesFactory.resetYield(address(blankYieldAggregator));
-
-        vm.prank(owner);
         assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
-        assertEq(address(sharesFactory).balance, factoryaWETHBalBefore);
+        assertEq(address(sharesFactory).balance, factoryBalBefore);
 
-        // Migrate back to aaveYieldAggregator
-        vm.prank(owner);
+        // Migrate to aaveYieldAggregator
+        vm.startPrank(owner);
         sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
-        uint256 timestamp = block.timestamp;
-        vm.warp(timestamp + 3 days);
-        vm.prank(owner);
+        vm.warp(block.timestamp + 3 days);
         sharesFactory.executeMigrateYield();
+        vm.stopPrank();
         assertEq(address(sharesFactory.yieldAggregator()), address(aaveYieldAggregator));
-        assertEq(aWETH.balanceOf(address(sharesFactory)), factoryaWETHBalBefore);
         assertEq(address(sharesFactory).balance, 0);
+        assertEq(aWETH.balanceOf(address(sharesFactory)), factoryBalBefore);
+
+        // TODO:Reset to blankYieldAggregator
+        vm.warp(90 days);
+        uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
+        vm.prank(owner);
+        sharesFactory.resetYield(address(blankYieldAggregator));
+        assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
+        assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
+        assertEq(address(sharesFactory).balance, factoryBalAfter);
     }
 
     function test_getShare() public {
@@ -316,23 +324,38 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrateFailed() public {
-        vm.prank(addrAlice);
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
         sharesFactory.queueMigrateYield(address(blankYieldAggregator));
+        vm.expectRevert(bytes("Ownable: caller is not the owner"));
+        sharesFactory.executeMigrateYield();
 
-        vm.prank(owner);
+        vm.startPrank(owner);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
         sharesFactory.queueMigrateYield(address(0));
+        vm.stopPrank();
+
+        // Revert if no initial queueMigrrateYield
+        vm.startPrank(owner);
+        vm.expectRevert(bytes("Invalid pendingAggregator"));
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
+
+        // Revert if timelock not reached
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 2 days);
+        vm.expectRevert(bytes("Timelock not expired"));
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
 
         // Revert if address isn't implemented IYieldAggregator
-        vm.prank(owner);
+        vm.startPrank(owner);
         sharesFactory.queueMigrateYield(address(1));
 
-        uint256 timestamp = block.timestamp;
-        vm.warp(timestamp + 3 days);
-        vm.prank(owner);
+        vm.warp(block.timestamp + 3 days);
         vm.expectRevert(bytes(""));
         sharesFactory.executeMigrateYield();
+        vm.stopPrank();
     }
 
     function test_claimYieldFailed() public {
@@ -488,7 +511,7 @@ contract SharesFactoryTests is BaseTest {
 
     function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
-
+        // console.log("buyPriceAfterFee", buyPriceAfterFee, shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }
