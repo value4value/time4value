@@ -36,9 +36,6 @@ contract BaseTest is Test {
     address public constant AAVE_POOL = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
     address public constant AAVE_WETH_GATEWAY = 0xe9E52021f4e11DEAD8661812A0A6c8627abA2a54;
 
-    // Speed up time to claim yield, 2029-11-01 00:00:30
-    uint256 public constant YIELD_CLAIM_TIME = 1930488030;
-
     // aTokenAddress: associated token address
     IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
 

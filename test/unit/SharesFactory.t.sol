@@ -128,7 +128,7 @@ contract SharesFactoryTests is BaseTest {
         assertEq(yieldMaxClaimableBefore, 0);
 
         // Speed up time to claim yield
-        vm.warp(YIELD_CLAIM_TIME);
+        vm.warp(block.timestamp + 365 days);
 
         (
             uint256 depositedETHAmountAfter,
@@ -172,7 +172,7 @@ contract SharesFactoryTests is BaseTest {
         assertEq(aWETH.balanceOf(address(sharesFactory)), factoryBalBefore);
 
         // TODO:Reset to blankYieldAggregator
-        vm.warp(90 days);
+        vm.warp(block.timestamp + 90 days);
         uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
         vm.prank(owner);
         sharesFactory.resetYield(address(blankYieldAggregator));
