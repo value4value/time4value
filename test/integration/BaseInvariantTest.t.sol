@@ -66,7 +66,9 @@ contract BaseInvariantTest is StdInvariant {
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
 
         sharesNFT.setFactory(address(sharesFactory));
-        sharesFactory.migrate(address(aaveYieldAggregator));
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + sharesFactory.TIMELOCK_DURATION());
+        sharesFactory.executeMigrateYield();
 
         sharesNFT.transferOwnership(FACTORY_OWNER);
         sharesFactory.transferOwnership(FACTORY_OWNER);
