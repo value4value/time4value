@@ -38,11 +38,11 @@ contract SharesFactoryV1 is Ownable2Step {
 
     IYieldAggregator public yieldAggregator;
     address public pendingAggregator;
+    address public blankAggregator;
 
     event ClaimYield(uint256 amount, address indexed to);
     event MigrateYield(address indexed yieldAggregator, uint256 timestamp);
     event MigrationInitiated(address indexed newAggregator, uint256 deadline);
-    event TimeLockDurationChanged(uint256 indexed newDuration);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
     event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
@@ -126,55 +126,44 @@ contract SharesFactoryV1 is Ownable2Step {
         emit SetCurve(_curveType);
     }
 
-    function setTimeLockDuration(uint256 _newDuration) external onlyOwner {
-        timeLockDuration = _newDuration;
-        emit TimeLockDurationChanged(_newDuration);
+    function setBlankAggregator(address _blankAggregator) external onlyOwner {
+        blankAggregator = _blankAggregator;
     }
 
     /**
-     * @notice Migrates the yieldAggregator.
-     * There are three cases:
+     * @notice reset yieldAggregator. Initial setting and migrate only to blank aggregator
      * Case 1: address(0) -> yieldAggregator, which initializes yield farming.
      * Case 2: yieldAggregator -> blank yieldAggregator, which cancels yield farming.
-     * Case 3: yieldAggregator -> new yieldAggregator, which migrates to a new yield farming.
-     * For Case 2 and 3, we need timelock protection
-     * @param _yieldAggregator The address of the yield aggregator.
-     */
-    function migrate(address _yieldAggregator) external onlyOwner {
-        require(_yieldAggregator != address(0), "Invalid yieldAggregator");
-
-        // Case 1 if yieldAggregator is empty, else Case 2 or 3.
+    */
+    function resetYield(address _yieldAggregator) external onlyOwner {
         if (address(yieldAggregator) == address(0)) {
+            require(_yieldAggregator != address(0), "Invalid yieldAggregator");
+            blankAggregator = _yieldAggregator;
             _setYieldAggregator(_yieldAggregator);
         } else {
-            // If the current aggregator is set, initiate a time-locked migration
-            pendingAggregator = _yieldAggregator;
-            migrationDeadline = block.timestamp + timeLockDuration;
-            emit MigrationInitiated(_yieldAggregator, migrationDeadline);
+            _migrate(blankAggregator);
         }
     }
 
-    function completeMigration() external onlyOwner {
-        require(block.timestamp >= migrationDeadline, "Time lock has not expired yet");
+    /**
+     * @notice Ask for migrating the yieldAggregator. Migrates to a new yield farming with timelock protection
+     * @param _yieldAggregator The address of the yield aggregator.
+     */
+    function queueMigrateYield(address _yieldAggregator) external onlyOwner {
+        require(_yieldAggregator != address(0), "Invalid yieldAggregator");
+        pendingAggregator = _yieldAggregator;
+        migrationDeadline = block.timestamp + timeLockDuration;
+        emit MigrationInitiated(_yieldAggregator, migrationDeadline);
+    }
+
+    function executeMigrateYield() external onlyOwner {
         require(pendingAggregator != address(0), "No pending aggregator to migrate to");
+        require(block.timestamp >= migrationDeadline, "Time lock has not expired yet");  
 
-        // Step 1: Withdraw all yieldToken into ETH.
-        _withdrawAllYieldTokenToETH();
+        _migrate(pendingAggregator);
 
-        // Step 2: Revoke the approval of the old yieldAggregator.
-        address yieldToken = yieldAggregator.yieldToken();
-        IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
-
-        // Step 3: Set the new yieldAggregator.
-        _setYieldAggregator(pendingAggregator);
-
-        // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
-        _depositAllETHToYieldToken();
-
-        pendingAggregator = address(0); // Reset pending aggregator
-        migrationDeadline = 0; // Reset migration deadline
-
-        emit MigrateYield(address(yieldAggregator), block.timestamp);
+        delete pendingAggregator; // Reset pending aggregator
+        delete migrationDeadline; // Reset migration deadline
     }
 
     /**
@@ -371,6 +360,27 @@ contract SharesFactoryV1 is Ownable2Step {
 
         address yieldToken = yieldAggregator.yieldToken();
         IERC20(yieldToken).safeApprove(_yieldAggregator, type(uint256).max);
+    }
+
+    /**
+     * @notice migrate yield aggregator
+     * @param _yieldAggregator The address of the yieldAggregator
+     */
+    function _migrate(address _yieldAggregator) internal {
+        // Step 1: Withdraw all yieldToken into ETH.
+        _withdrawAllYieldTokenToETH();
+
+        // Step 2: Revoke the approval of the old yieldAggregator.
+        address yieldToken = yieldAggregator.yieldToken();
+        IERC20(yieldToken).safeApprove(address(yieldAggregator), 0);
+
+        // Step 3: Set the new yieldAggregator.
+        _setYieldAggregator(_yieldAggregator);
+
+        // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
+        _depositAllETHToYieldToken();
+
+        emit MigrateYield(address(_yieldAggregator), block.timestamp);
     }
 
     /**

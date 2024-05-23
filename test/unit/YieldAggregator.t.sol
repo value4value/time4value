@@ -122,10 +122,7 @@ contract YieldAggregatorTests is BaseTest {
     }
 
     function _migrate2BlankYieldAggregator() internal {
-        vm.startPrank(owner);
-        sharesFactory.setTimeLockDuration(0);
-        sharesFactory.migrate(address(blankYieldAggregator));
-        sharesFactory.completeMigration();
-        vm.stopPrank();
+        vm.prank(owner);
+        sharesFactory.resetYield(address(0));
     }
 }

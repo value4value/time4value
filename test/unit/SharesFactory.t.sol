@@ -150,26 +150,24 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_migrate() public {
+        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
+
         // Migrate to blankYieldAggregator
         vm.prank(owner);
-        sharesFactory.migrate(address(blankYieldAggregator));
-        uint256 timestamp = block.timestamp;
-        vm.warp(timestamp + 3 days);
+        sharesFactory.resetYield(address(blankYieldAggregator));
 
-        uint256 factoryaWETHBalBefore = aWETH.balanceOf(address(sharesFactory));
         vm.prank(owner);
-        sharesFactory.completeMigration();
         assertEq(address(sharesFactory.yieldAggregator()), address(blankYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), 0);
         assertEq(address(sharesFactory).balance, factoryaWETHBalBefore);
 
         // Migrate back to aaveYieldAggregator
         vm.prank(owner);
-        sharesFactory.migrate(address(aaveYieldAggregator));
-        timestamp = block.timestamp;
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        uint256 timestamp = block.timestamp;
         vm.warp(timestamp + 3 days);
         vm.prank(owner);
-        sharesFactory.completeMigration();
+        sharesFactory.executeMigrateYield();
         assertEq(address(sharesFactory.yieldAggregator()), address(aaveYieldAggregator));
         assertEq(aWETH.balanceOf(address(sharesFactory)), factoryaWETHBalBefore);
         assertEq(address(sharesFactory).balance, 0);
@@ -320,21 +318,21 @@ contract SharesFactoryTests is BaseTest {
     function test_migrateFailed() public {
         vm.prank(addrAlice);
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
-        sharesFactory.migrate(address(blankYieldAggregator));
+        sharesFactory.queueMigrateYield(address(blankYieldAggregator));
 
         vm.prank(owner);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
-        sharesFactory.migrate(address(0));
+        sharesFactory.queueMigrateYield(address(0));
 
         // Revert if address isn't implemented IYieldAggregator
         vm.prank(owner);
-        sharesFactory.migrate(address(1));
+        sharesFactory.queueMigrateYield(address(1));
 
         uint256 timestamp = block.timestamp;
         vm.warp(timestamp + 3 days);
         vm.prank(owner);
         vm.expectRevert(bytes(""));
-        sharesFactory.completeMigration();
+        sharesFactory.executeMigrateYield();
     }
 
     function test_claimYieldFailed() public {

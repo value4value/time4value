@@ -63,13 +63,20 @@ contract BaseTest is Test {
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
 
         sharesNFT.setFactory(address(sharesFactory));
-        sharesFactory.migrate(address(aaveYieldAggregator));
+        sharesFactory.resetYield(address(blankYieldAggregator));
         
         sharesNFT.transferOwnership(owner);
         sharesFactory.transferOwnership(owner);
         vm.prank(owner);
         sharesFactory.acceptOwnership();
         aaveYieldAggregator.transferOwnership(owner);
+
+        // migrate to aave yield aggregator
+        vm.startPrank(owner);
+        sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
+        vm.warp(block.timestamp + 3 days);
+        sharesFactory.executeMigrateYield();
+        vm.stopPrank();
     }
 
     function testSuccess() public { }
