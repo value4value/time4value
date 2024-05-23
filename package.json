@@ -1,8 +1,8 @@
 {
-  "name": "mest-protocol",
+  "name": "time4value",
   "version": "1.0.0",
-  "repository": "git@github.com:mest-io/mest-protocol.git",
-  "author": "dev@mest.io",
+  "repository": "git@github.com:value4value/time4value.git",
+  "author": "dev@vv.meme",
   "license": "MIT",
   "scripts": {
     "build": "forge build",
