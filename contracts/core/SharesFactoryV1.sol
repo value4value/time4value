@@ -158,7 +158,6 @@ contract SharesFactoryV1 is Ownable2Step {
      */
     function executeMigrateYield() external onlyOwner {
         require(pendingAggregator != address(0), "Invalid pendingAggregator");
-        require(migrationDeadline != 0, "Invalid migrationDeadline");
         require(block.timestamp >= migrationDeadline, "Timelock not expired");  
 
         _migrate(pendingAggregator);
@@ -170,7 +169,7 @@ contract SharesFactoryV1 is Ownable2Step {
     /**
      * @notice Only for owner to claim a specific yield amount.
      * @param amount The yield amount the owner claims.
-     * @param to The address receiving the yield.
+     * @param to The address will be a smart contract to distribute yield to creators.
      */
     function claimYield(uint256 amount, address to) public onlyOwner {
         uint256 maxAmount = yieldAggregator.yieldMaxClaimable(depositedETHAmount);
@@ -364,7 +363,7 @@ contract SharesFactoryV1 is Ownable2Step {
     }
 
     /**
-     * @notice migrate yield aggregator
+     * @notice Migrate yield aggregator
      * @param _yieldAggregator The address of the yieldAggregator
      */
     function _migrate(address _yieldAggregator) internal {

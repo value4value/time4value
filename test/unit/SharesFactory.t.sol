@@ -329,9 +329,12 @@ contract SharesFactoryTests is BaseTest {
         vm.expectRevert(bytes("Ownable: caller is not the owner"));
         sharesFactory.executeMigrateYield();
 
+        // Revert if aggreegator not set or address is zero
         vm.startPrank(owner);
         vm.expectRevert(bytes("Invalid yieldAggregator"));
         sharesFactory.queueMigrateYield(address(0));
+        vm.expectRevert(bytes("Invalid yieldAggregator"));
+        sharesFactory.resetYield(address(0));
         vm.stopPrank();
 
         // Revert if no initial queueMigrrateYield
