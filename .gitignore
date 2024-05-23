@@ -16,3 +16,6 @@ node_modules
 .DS_Store
 coverage.json
 lcov.info
+
+report.txt
+reports

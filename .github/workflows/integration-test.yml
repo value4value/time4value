@@ -1,0 +1,32 @@
+on: [ push, pull_request, workflow_dispatch ]
+
+name: integration-test
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 18 ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - id: forge_test
+        run: forge test -vvv --mc BaseIntegrationTest --fork-url https://mainnet.optimism.io
+      - name: income simulator
+        run: mkdir reports && forge test -vv --mp "test/integration/IncomeSimulator.t.sol" --fork-url https://mainnet.optimism.io
+        continue-on-error: true
+      - name: Archive Simulator Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: income-simulator-report
+          path: |
+            reports/*.txt
+
