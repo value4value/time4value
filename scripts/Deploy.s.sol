@@ -2,63 +2,35 @@
 
 pragma solidity 0.8.25;
 
-import { Script } from "forge-std/Script.sol";
+import { BaseScript } from "./Base.s.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { SharesERC1155 } from "contracts/core/SharesERC1155.sol";
-import { AaveYieldAggregator } from "contracts/core/aggregator/AaveYieldAggregator.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IAavePool } from "contracts/interface/IAave.sol";
 
-contract DeployScript is Script {
+contract DeployScript is BaseScript {
     SharesFactoryV1 public sharesFactory;
     SharesERC1155 public sharesNFT;
-
-    AaveYieldAggregator public aaveYieldAggregator;
     BlankYieldAggregator public blankYieldAggregator;
 
-    // Optimism Sepolia
-    address public OWNER = 0xdA1d0C7f174effBA98Ea1E31424418DC9aeaEa22;
-    address public WETH = 0x4200000000000000000000000000000000000006;
-    address public AAVE_POOL = 0xb50201558B00496A145fE76f7424749556E326D8;
-    address public AAVE_WETH_GATEWAY = 0x589750BA8aF186cE5B55391B0b7148cAD43a1619;
-
-    // Optimism Mainnet
-    // address public OWNER = 0xdA1d0C7f174effBA98Ea1E31424418DC9aeaEa22;
-    // address public WETH = 0x4200000000000000000000000000000000000006;
-    // address public AAVE_POOL = 0x794a61358D6845594F94dc1DB02A252b5b4814aD;
-    // address public AAVE_WETH_GATEWAY = 0xe9E52021f4e11DEAD8661812A0A6c8627abA2a54;
-
-    IERC20 public aWETH = IERC20(IAavePool(AAVE_POOL).getReserveData(WETH).aTokenAddress);
-
     string public constant BASE_URI = "https://vv.meme/shares/uri/";
-    uint256 public constant BASE_PRICE = 5000000000000000; // 0.005 ETH as base price
-    uint256 public constant INFLECTION_POINT = 1500;
-    uint256 public constant INFLECTION_PRICE = 102500000000000000;
-    uint256 public constant LINEAR_PRICE_SLOPE = 0;
+    uint96 public constant BASE_PRICE = 0.005 ether;
+    uint32 public constant INFLECTION_POINT = 1500;
+    uint128 public constant INFLECTION_PRICE = 0.1025 ether;
+    uint128 public constant LINEAR_PRICE_SLOPE = 0;
 
-    function run() public virtual {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+    function run() public virtual broadcast() {
+        require(WETH[block.chainid] != address(0), "WETH not set");
 
         sharesNFT = new SharesERC1155(BASE_URI);
-
-        sharesFactory = new SharesFactoryV1(
-            address(sharesNFT), 
-            BASE_PRICE, 
-            INFLECTION_POINT, 
-            INFLECTION_PRICE, 
-            LINEAR_PRICE_SLOPE
-        );
-
-        aaveYieldAggregator = new AaveYieldAggregator(address(sharesFactory), WETH, AAVE_POOL, AAVE_WETH_GATEWAY);
-        blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH);
+        sharesFactory = new SharesFactoryV1(address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE);
+        blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH[block.chainid]);
         
+        // initialize
         sharesFactory.resetYield(address(blankYieldAggregator));
         sharesNFT.setFactory(address(sharesFactory));
 
+        // ownership
         sharesNFT.transferOwnership(OWNER);
-        aaveYieldAggregator.transferOwnership(OWNER);
 
         /*
          ********************************************************************************
@@ -66,18 +38,9 @@ contract DeployScript is Script {
          ********************************************************************************
          */
 
-        // Note: SharesFactory transfer ownership with 2-step process
+        // Note: Transfer sharesFactory ownership with 2-step process
         // sharesFactory.transferOwnership(owner);
         // vm.prank(owner);
         // sharesFactory.acceptOwnership();
-
-        // Note: Migrate yield from BlankYieldAggregator to AaveYieldAggregator with 3 days delay
-        // vm.startPrank(owner);
-        // sharesFactory.queueMigrateYield(address(aaveYieldAggregator));
-        // vm.warp(block.timestamp + 3 days);
-        // sharesFactory.executeMigrateYield();
-        // vm.stopPrank();
-
-        vm.stopBroadcast();
     }
 }
