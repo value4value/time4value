@@ -1,11 +1,11 @@
 <samp>
-  <sub><em>Value4Value</em></sub>
+  <sub><em>Time4Value</em></sub>
 
   <div align="center">
     <br />
-    <em>A NEW WAY TO PAY.</em> <br />
-    <em>Payment via the bonding curve and yield farming.</em>
-    <br />
+    A NEW WAY TO PAY. <br />
+    Payment via the bonding curve and yield farming. <br />
+    Sell your cryptocurrency time, and buy something with value. <br />
   </div>
 </samp>
 
@@ -28,7 +28,7 @@ The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it 
   <img src="images/curve.gif" width="80%">
 </div>
 
-## Why it is better?
+## Why is it better?
 <div align="center">
 
 | Features           | V4V   | Friendtech | Patreon | Coinbase Commerce |
@@ -50,7 +50,9 @@ The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it 
 | Network          | Address                                    |
 |------------------|--------------------------------------------|
 | Optimism Mainnet | N/A                                        |
-| Optimism Sepolia | 0x07cB2490DfBFd63613318F87156D935ddAcb62F4 |
+| Optimism Sepolia | 0x4aCF2aF23f51b7008dF3518A1511871F87083C38 |
+| Cyber Mainnet    | N/A                                        |
+| Cyber Sepolia    | 0x552d348657fafd661372f5864093dd9555a2ef06 |
 
 ### Shares
 
@@ -59,7 +61,9 @@ The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it 
 | Network          | Address                                    |
 |------------------|--------------------------------------------|
 | Optimism Mainnet | N/A                                        |
-| Optimism Sepolia | 0x5F31921A68eA5b350baF141536933Cc7d70EBAEa |
+| Optimism Sepolia | 0x9F94C75341D23EAb48793b2879F6062a400132e3 |
+| Cyber Mainnet    | N/A                                        |
+| Cyber Sepolia    | 0x1b05f188388b49ee9053914d3109119d228060b5 |
 
 ### Yield
 
@@ -68,7 +72,9 @@ The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it 
 | Network          | Address                                    |
 |------------------|--------------------------------------------|
 | Optimism Mainnet | N/A                                        |
-| Optimism Sepolia | 0x2c1414c3F442AA7a4E531E2891009Dd1a8744b59 |
+| Optimism Sepolia | 0xc1eB8f8119De78Da6852F2607d5525d849FCBaaE |
+| Cyber Mainnet    | N/A                                        |
+| Cyber Sepolia    | 0xba2553060e90551c797bebd48ee04909606bb04f |
 
 ## Test and Deploy
 
