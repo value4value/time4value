@@ -128,5 +128,5 @@ contract LogUtil is Test {
         return string(abi.encodePacked(a, b, c, d, e, f, g, h, i, j, k, l));
     }
 
-    function test() public {}
+    function test() public { }
 }

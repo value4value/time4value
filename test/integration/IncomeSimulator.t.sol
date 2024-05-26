@@ -37,8 +37,8 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     }
 
     function testFuzz_SimulateLinearCurveParams(uint256 _seed) public {
-        uint96 minBasePrice = 0.02 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 minBasePrice = 0.015 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -51,8 +51,8 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     }
 
     function testFuzz_SimulateSigmoidCurveParams(uint256 _seed) public {
-        uint96 minBasePrice = 0.02 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 minBasePrice = 0.015 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -75,7 +75,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
     function testFuzz_SimulateExclusiveSigmoidCurveParams(uint256 _seed) public {
         // @dev exclusive sigmoid curve params has extreme high inflectionPoint
         uint96 minBasePrice = 0.015 ether;
-        uint96 maxBasePrice = 0.1 ether;
+        uint96 maxBasePrice = 0.2 ether;
 
         uint128 minLinearPriceSlope = 0;
         uint128 maxLinearPriceSlope = 100000;
@@ -115,7 +115,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
                 ", ReachTargetInDays: ",
                 reachTargetInDays.toString(),
                 ", Income: ",
-                income.toString()
+                (income / 1 ether).toString()
             )
         );
     }
@@ -151,8 +151,9 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             ",",
             _inflectionPrice.toString()
         );
-        string memory results =
-            _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
+        string memory results = _contactString(
+            ", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", (income / 1 ether).toString()
+        );
         _logSummary("sigmoid_curve_params", _contactString(params, results));
     }
 
@@ -186,8 +187,9 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             ",",
             _inflectionPrice.toString()
         );
-        string memory results =
-            _contactString(", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", income.toString());
+        string memory results = _contactString(
+            ", ReachTargetInDays: ", reachTargetInDays.toString(), ", Income: ", (income / 1 ether).toString()
+        );
         _logSummary("exclusive_sigmoid_curve_params", _contactString(params, results));
     }
 
@@ -232,7 +234,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
             //            _logSummary(_contactString("Total supply: ", i.toString(), ", CurrentClaimableAmount:", currentClaimableAmount.toString()));
             // once claimableAmount >  targetIncome
             if (currentClaimableAmount > TARGET_INCOME && reachTargetInDays == 0) {
-                reachTargetInDays = uint8((i * _buyDuration) / (1 days));
+                reachTargetInDays = uint8((block.timestamp - startBlockTime) / (1 days));
                 console.log("This params earn income after days: ", reachTargetInDays);
             }
         }
@@ -252,7 +254,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
 
             // once claimableAmount >  targetIncome
             if (currentClaimableAmount > TARGET_INCOME && reachTargetInDays == 0) {
-                reachTargetInDays = uint8((i * _buyDuration) / (1 days));
+                reachTargetInDays = uint8((block.timestamp - startBlockTime) / (1 days));
                 console.log("This params earn income after days: ", reachTargetInDays);
             }
         }
@@ -279,27 +281,27 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
 
     function _random(uint256 _seed, uint256 min, uint256 max) public view returns (uint256) {
         require(max > min, "max must be greater than min");
-        uint256 randomHash = uint256(keccak256(abi.encodePacked(_seed,  block.timestamp, msg.sender)));
+        uint256 randomHash = uint256(keccak256(abi.encodePacked(_seed, block.timestamp, msg.sender)));
         return (randomHash % (max - min + 1)) + min;
     }
 
     function _random32(uint256 _seed, uint32 min, uint32 max) public view returns (uint32) {
         require(max > min, "max must be greater than min");
-        return uint32(_random(_seed, min, max) % (2**32));
+        return uint32(_random(_seed, min, max) % (2 ** 32));
     }
 
     function _random96(uint256 _seed, uint96 min, uint96 max) public view returns (uint96) {
         require(max > min, "max must be greater than min");
-        return uint96(_random(_seed, min, max) % (2**96));
+        return uint96(_random(_seed, min, max) % (2 ** 96));
     }
 
     function _random128(uint256 _seed, uint128 min, uint128 max) public view returns (uint128) {
         require(max > min, "max must be greater than min");
-        return uint128(_random(_seed, min, max) % (2**128));
+        return uint128(_random(_seed, min, max) % (2 ** 128));
     }
 
-    // TODO:
-    function _logGraphData(string memory _filename, uint _x, uint _y) internal {
+    // TODO: log graph data using point x y for data visualization
+    function _logGraphData(string memory _filename, uint256 _x, uint256 _y) internal {
         string memory filename = _contactString("reports/", _filename, ".txt");
         _logToFile(filename, _contactString(_x.toString(), ",", _y.toString()));
     }
