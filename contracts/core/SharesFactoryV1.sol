@@ -3,13 +3,14 @@
 pragma solidity 0.8.25;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IShare } from "../interface/IShare.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BondingCurveLib } from "../lib/BondingCurveLib.sol";
 
-contract SharesFactoryV1 is Ownable2Step {
+contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     struct Curve {
@@ -212,7 +213,7 @@ contract SharesFactoryV1 is Ownable2Step {
      * @param quantity The quantity of shares.
      * @param referral The address of the referral fee recipient.
      */
-    function buyShare(uint256 shareId, uint32 quantity, address referral) public payable {
+    function buyShare(uint256 shareId, uint32 quantity, address referral) public payable nonReentrant {
         require(address(yieldAggregator) != address(0), "Invalid yieldAggregator");
         require(shareId < shareIndex, "Invalid shareId");
 
@@ -223,6 +224,10 @@ contract SharesFactoryV1 is Ownable2Step {
             uint256 creatorFee
         ) = getBuyPriceAfterFee(shareId, quantity, referral);
         require(msg.value >= buyPriceAfterFee, "Insufficient payment");
+
+        // Mint shares to the buyer
+        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
+        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
 
         // Deposit the buy price (in ETH) to the yield aggregator (e.g., Aave)
         _safeTransferETH(address(yieldAggregator), buyPrice);
@@ -239,10 +244,6 @@ contract SharesFactoryV1 is Ownable2Step {
         if (refundAmount > 0) {
             _safeTransferETH(msg.sender, refundAmount);
         }
-
-        // Mint shares to the buyer
-        IShare(ERC1155).shareMint(msg.sender, shareId, quantity);
-        emit Buy(shareId, msg.sender, quantity, buyPriceAfterFee);
     }
 
     /**
@@ -256,7 +257,7 @@ contract SharesFactoryV1 is Ownable2Step {
         uint32 quantity,
         uint256 minETHAmount,
         address referral
-    ) public {
+    ) public nonReentrant {
         require(shareId < shareIndex, "Invalid shareId");
         require(
             IShare(ERC1155).shareBalanceOf(msg.sender, shareId) >= quantity,
