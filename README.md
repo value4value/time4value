@@ -20,6 +20,12 @@
 - Stake what you need, and withdraw when you want;
 - Made for creators like startups, indie hackers and KOLs.
 
+## Bug Bounty
+If you are interested in the smart contracts, here's a simple bug bounty:
+
+- Discover [hign / medium](https://docs.sherlock.xyz/audit/judging/judging#iv.-how-to-identify-a-high-issue) issues - $1200 *cc ashu@vv.meme*
+- Add/optimize test cases - $100 / PR
+
 ## How it works？
 
 The contract uses a sigmoid bonding curve for dynamic pricing. When you buy, it mints tokens and drives prices up, then when you sell, it burns tokens and drives prices down. The staked ETH is allocated in an interest-rate market to generate sustainable rewards, which are then redistributed to the creators.
