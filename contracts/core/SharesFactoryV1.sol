@@ -63,9 +63,9 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
 
         // Set default curve params
         curvesMap[0] = Curve({
-            basePrice: _basePrice, // 5000000000000000;
-            inflectionPoint: _inflectionPoint, // 1500;
-            inflectionPrice: _inflectionPrice, // 102500000000000000;
+            basePrice: _basePrice, // 0.001 ether;
+            inflectionPoint: _inflectionPoint, // 1000;
+            inflectionPrice: _inflectionPrice, // 0.1 ether;
             linearPriceSlope: _linearPriceSlope, // 0;
             exists: true
         });
@@ -84,17 +84,12 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     function getCurve(uint8 curveType) public view returns (uint96, uint32, uint128, uint128, bool) {
         require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
-        uint96 basePrice = curve.basePrice;
-        uint32 g = curve.inflectionPoint;
-        uint128 h = curve.inflectionPrice;
-        uint128 m = curve.linearPriceSlope;
-        bool exists = curve.exists;
-        return (basePrice, g, h, m, exists);
+        return (curve.basePrice, curve.inflectionPoint, curve.inflectionPrice, curve.linearPriceSlope, curve.exists);
     }
 
     function getSubTotal(uint32 fromSupply, uint32 quantity, uint8 curveType) public view returns (uint256) {
-        (uint96 basePrice, uint32 g, uint128 h, uint128 m,) = getCurve(curveType);
-        return _subTotal(fromSupply, quantity, basePrice, g, h, m);
+        (uint96 basePrice, uint32 inflectionPoint, uint128 inflectionPrice, uint128 linearPriceSlope,) = getCurve(curveType);
+        return _subTotal(fromSupply, quantity, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope);
     }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
@@ -414,7 +409,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         uint32 inflectionPoint,
         uint128 inflectionPrice,
         uint128 linearPriceSlope
-    ) public pure returns (uint256 subTotal) {
+    ) internal pure returns (uint256 subTotal) {
         unchecked {
             subTotal = basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity);
