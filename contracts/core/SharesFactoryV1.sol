@@ -43,7 +43,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     address public blankAggregator;
 
     event QueueMigrateYield(address indexed newAggregator, uint256 deadline);
-    event MigrateYield(address indexed newAggregator, uint256 timestamp);
+    event MigrateYield(address indexed newAggregator);
     event ClaimYield(uint256 amount, address indexed to);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
@@ -376,7 +376,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
         _depositAllETHToYieldToken();
 
-        emit MigrateYield(address(_yieldAggregator), block.timestamp);
+        emit MigrateYield(address(_yieldAggregator));
     }
 
     /**
