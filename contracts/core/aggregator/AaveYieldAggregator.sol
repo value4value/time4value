@@ -71,7 +71,6 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * Only callable by the factory contract.
      */
     function yieldWithdraw(uint256 amount) external onlyFactory {
-        require(_checkAavePoolState(), "Aave paused");
         if (amount > 0) {
             aWETH.safeTransferFrom(FACTORY, address(this), amount);
             AAVE_WETH_GATEWAY.withdrawETH(address(AAVE_POOL), amount, FACTORY);
