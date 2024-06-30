@@ -20,6 +20,9 @@ contract BaseScript is Script {
     mapping(uint chainid => address aave_weth_gateway) public AAVE_WETH_GATEWAY;
 
     constructor() {
+        // After the factory contract has been deployed, 
+        // set the factory address here so that the yieldAggregator can be deployed.
+
         // Optimism Sepolia
         SHARES_FACTORY[OPTIMISM_TESTNET] = 0x9F94C75341D23EAb48793b2879F6062a400132e3;
         WETH[OPTIMISM_TESTNET] = 0x4200000000000000000000000000000000000006;
