@@ -4,6 +4,7 @@ pragma solidity 0.8.25;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { SafeCastLib } from "solady/utils/SafeCastLib.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IShare } from "../interface/IShare.sol";
@@ -309,7 +310,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
 
-        buyPrice = getSubTotal(uint32(fromSupply), quantity, curveType);
+        buyPrice = getSubTotal(SafeCastLib.toUint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -341,7 +342,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = getSubTotal(uint32(fromSupply) - quantity, quantity, curveType);
+        sellPrice = getSubTotal(SafeCastLib.toUint32(fromSupply) - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;

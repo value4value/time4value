@@ -2,6 +2,7 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
+import { SafeCastLib } from "solady/utils/SafeCastLib.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BaseTest } from "../BaseTest.t.sol";
@@ -90,11 +91,6 @@ contract SharesFactoryTests is BaseTest {
 
         uint256 bobShareBal = sharesNFT.balanceOf(addrBob, 0);
         assertEq(bobShareBal, 2);
-    }
-
-    function test_buyShareWithHighVolume() public view {
-        (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(0, 100000, referralReceiver);
-        console.log("test_buyShareWithHighVolume", buyPriceAfterFee);
     }
 
     function test_sellShares() public {
@@ -385,6 +381,19 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_getBuyPriceAfterFeeFailed() public {
+        // When the quantity is 5_000 that reach th
+        uint256 gasBefore = gasleft();
+        sharesFactory.getBuyPriceAfterFee(0, 5_000, referralReceiver);
+        uint256 gasAfter = gasleft();
+        console.log("gas usage", gasBefore - gasAfter);
+
+        // Expect revert if supply is over `2**32 -1` (uint32)
+        vm.expectRevert();
+        sharesFactory.getSubTotal(SafeCastLib.toUint32(2**32), 1, 0);
+
+        // Expect success if supply is lower than `2**32` (uint32)
+        sharesFactory.getSubTotal(SafeCastLib.toUint32(2**32 - 1), 1, 0);
+
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.getBuyPriceAfterFee(999, 0, referralReceiver);
 
@@ -525,7 +534,6 @@ contract SharesFactoryTests is BaseTest {
 
     function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
-        // console.log("buyPriceAfterFee", buyPriceAfterFee, shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }
