@@ -13,9 +13,9 @@ contract DeployScript is BaseScript {
     BlankYieldAggregator public blankYieldAggregator;
 
     string public constant BASE_URI = "https://vv.meme/shares/uri/";
-    uint96 public constant BASE_PRICE = 0.005 ether;
-    uint32 public constant INFLECTION_POINT = 1500;
-    uint128 public constant INFLECTION_PRICE = 0.1025 ether;
+    uint96 public constant BASE_PRICE = 0.001 ether;
+    uint32 public constant INFLECTION_POINT = 1000;
+    uint128 public constant INFLECTION_PRICE = 0.1 ether;
     uint128 public constant LINEAR_PRICE_SLOPE = 0;
 
     function run() public virtual broadcast() {
