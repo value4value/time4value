@@ -34,7 +34,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
 
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
-    uint256 public referralFeePercent = 5 * 1e16;
+    uint256 public referralFeePercent = 2 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
     uint256 public migrationDeadline;
 
