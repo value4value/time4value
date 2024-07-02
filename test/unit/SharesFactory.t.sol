@@ -2,6 +2,7 @@
 pragma solidity 0.8.25;
 
 import { console } from "forge-std/console.sol";
+import { SafeCastLib } from "solady/utils/SafeCastLib.sol";
 import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BaseTest } from "../BaseTest.t.sol";
@@ -68,21 +69,25 @@ contract SharesFactoryTests is BaseTest {
         uint256 aliceBalBefore = addrAlice.balance;
         uint256 bobBalBefore = addrBob.balance;
         uint256 referrerBalBefore = referralReceiver.balance;
-        // uint256 factoryBalBefore = aWETH.balanceOf(address(sharesFactory));
         uint256 depositedETHAmountBefore = sharesFactory.depositedETHAmount();
 
+        (
+            uint256 buyPriceAfterFee,
+            uint256 buyPrice,
+            uint256 referralFee,
+            uint256 creatorFee
+        ) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         _buyShare(addrBob, 0, 1, referralReceiver);
+        console.log(buyPriceAfterFee, buyPrice, referralFee, creatorFee);
 
         uint256 aliceBalAfter = addrAlice.balance;
         uint256 bobBalAfter = addrBob.balance;
         uint256 referrerBalAfter = referralReceiver.balance;
-        // uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
         uint256 depositedETHAmountAfter = sharesFactory.depositedETHAmount();
 
-        assertEq(bobBalBefore - bobBalAfter, 5500450999999993); // Bob buy 1 share
+        assertEq(bobBalBefore - bobBalAfter, 5350438699999993); // Bob buy 1 share
         assertEq(aliceBalAfter - aliceBalBefore, 250020499999999); // Alice receive creator fee
-        assertEq(referrerBalAfter - referrerBalBefore, 250020499999999); // referral receive fee
-        // assertEq(factoryBalAfter - factoryBalBefore, 5000409999999995); // Factory aWETH balance with rounding error
+        assertEq(referrerBalAfter - referrerBalBefore, 100008199999999); // referral receive fee
         assertEq(depositedETHAmountAfter - depositedETHAmountBefore, 5000409999999995); // Factory records ETH Amount
 
         uint256 bobShareBal = sharesNFT.balanceOf(addrBob, 0);
@@ -93,21 +98,25 @@ contract SharesFactoryTests is BaseTest {
         uint256 aliceBalBefore = addrAlice.balance;
         uint256 bobBalBefore = addrBob.balance;
         uint256 referrerBalBefore = referralReceiver.balance;
-        // uint256 factoryBalBefore = aWETH.balanceOf(address(sharesFactory));
         uint256 depositedETHAmountBefore = sharesFactory.depositedETHAmount();
 
+         (
+            uint256 sellPriceAfterFee,
+            uint256 sellPrice,
+            uint256 referralFee,
+            uint256 creatorFee
+        ) = sharesFactory.getSellPriceAfterFee(1, 1, referralReceiver);
         _sellShare(addrAlice, 1, 1, referralReceiver);
+        console.log(sellPriceAfterFee, sellPrice, referralFee, creatorFee);
 
         uint256 aliceBalAfter = addrAlice.balance;
         uint256 bobBalAfter = addrBob.balance;
         uint256 referrerBalAfter = referralReceiver.balance;
-        // uint256 factoryBalAfter = aWETH.balanceOf(address(sharesFactory));
         uint256 depositedETHAmountAfter = sharesFactory.depositedETHAmount();
 
-        assertEq(aliceBalAfter - aliceBalBefore, 4500163999999998); // Alice sell 1 share
+        assertEq(aliceBalAfter - aliceBalBefore, 4650169466666665); // Alice sell 1 share
         assertEq(bobBalAfter - bobBalBefore, 250009111111111); // Bob receive creator fee
-        assertEq(referrerBalAfter - referrerBalBefore, 250009111111111); // Referral receive fee
-        // assertEq(factoryBalBefore - factoryBalAfter, 5000182222222220); // Factory aWETH balance with rounding error
+        assertEq(referrerBalAfter - referrerBalBefore, 100003644444444); // Referral receive fee
         assertEq(depositedETHAmountBefore - depositedETHAmountAfter, 5000182222222220); // Factory records ETH Amount
 
         uint256 aliceShareBal = sharesNFT.balanceOf(addrAlice, 1);
@@ -374,6 +383,22 @@ contract SharesFactoryTests is BaseTest {
     }
 
     function test_getBuyPriceAfterFeeFailed() public {
+        // When the quantity is 5_000 that reach th
+        uint256 gasBefore = gasleft();
+        sharesFactory.getBuyPriceAfterFee(0, 5_000, referralReceiver);
+        uint256 gasAfter = gasleft();
+        console.log("gas usage", gasBefore - gasAfter);
+
+        vm.expectRevert(bytes("Exceeds max supply"));
+        sharesFactory.getBuyPriceAfterFee(0, type(uint32).max, referralReceiver);
+
+        // Expect revert if supply is over `2**32 -1` (uint32)
+        vm.expectRevert();
+        sharesFactory.getSubTotal(SafeCastLib.toUint32(2**32), 1, 0);
+
+        // Expect success if supply is lower than `2**32` (uint32)
+        sharesFactory.getSubTotal(SafeCastLib.toUint32(2**32 - 1), 1, 0);
+
         vm.expectRevert(bytes("Invalid shareId"));
         sharesFactory.getBuyPriceAfterFee(999, 0, referralReceiver);
 
@@ -514,7 +539,6 @@ contract SharesFactoryTests is BaseTest {
 
     function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {
         (uint256 buyPriceAfterFee,,,) = sharesFactory.getBuyPriceAfterFee(shareId, quantity, referral);
-        // console.log("buyPriceAfterFee", buyPriceAfterFee, shareId, quantity, referral);
         vm.prank(address(sender));
         sharesFactory.buyShare{ value: buyPriceAfterFee }(shareId, quantity, referral);
     }

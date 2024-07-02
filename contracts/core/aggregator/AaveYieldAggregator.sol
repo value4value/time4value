@@ -22,10 +22,6 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
     IAaveGateway public immutable AAVE_WETH_GATEWAY;
     IERC20 public aWETH;
 
-    uint256 internal constant ACTIVE_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFF;
-    uint256 internal constant FROZEN_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFF;
-    uint256 internal constant PAUSED_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF;
-
     constructor(address _factory, address _weth, address _aavePool, address _aaveGateway) {
         FACTORY = _factory;
         WETH = _weth;
@@ -59,7 +55,6 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * Only callable by the factory contract.
      */
     function yieldDeposit() external onlyFactory {
-        require(_checkAavePoolState(), "Aave paused");
         uint256 ethAmount = address(this).balance;
         if (ethAmount > 0) {
             AAVE_WETH_GATEWAY.depositETH{ value: ethAmount }(address(AAVE_POOL), FACTORY, 0);
@@ -71,7 +66,6 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
      * Only callable by the factory contract.
      */
     function yieldWithdraw(uint256 amount) external onlyFactory {
-        require(_checkAavePoolState(), "Aave paused");
         if (amount > 0) {
             aWETH.safeTransferFrom(FACTORY, address(this), amount);
             AAVE_WETH_GATEWAY.withdrawETH(address(AAVE_POOL), amount, FACTORY);
@@ -97,31 +91,5 @@ contract AaveYieldAggregator is Ownable, IYieldAggregator {
         } else {
             return withdrawableETHAmount - depositedETHAmount - yieldBuffer;
         }
-    }
-
-    /**
-     * @notice Check Aave pool state
-     * @return bool true if Aave pool is active, false otherwise
-     * @dev For more information, see:
-     * https://github.com/aave/aave-v3-core/blob/master/contracts/protocol/libraries/configuration/ReserveConfiguration.sol
-     */
-    function _checkAavePoolState() internal view returns (bool) {
-        uint256 configData = AAVE_POOL.getReserveData(WETH).configuration.data;
-        if (!(_getActive(configData) && !_getFrozen(configData) && !_getPaused(configData))) {
-            return false;
-        }
-        return true;
-    }
-
-    function _getActive(uint256 configData) internal pure returns (bool) {
-        return configData & ~ACTIVE_MASK != 0;
-    }
-
-    function _getFrozen(uint256 configData) internal pure returns (bool) {
-        return configData & ~FROZEN_MASK != 0;
-    }
-
-    function _getPaused(uint256 configData) internal pure returns (bool) {
-        return configData & ~PAUSED_MASK != 0;
     }
 }

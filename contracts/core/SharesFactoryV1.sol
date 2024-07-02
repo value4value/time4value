@@ -4,6 +4,7 @@ pragma solidity 0.8.25;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { SafeCastLib } from "solady/utils/SafeCastLib.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IShare } from "../interface/IShare.sol";
@@ -34,7 +35,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
 
     uint256 public shareIndex;
     uint256 public depositedETHAmount;
-    uint256 public referralFeePercent = 5 * 1e16;
+    uint256 public referralFeePercent = 2 * 1e16;
     uint256 public creatorFeePercent = 5 * 1e16;
     uint256 public migrationDeadline;
 
@@ -43,7 +44,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     address public blankAggregator;
 
     event QueueMigrateYield(address indexed newAggregator, uint256 deadline);
-    event MigrateYield(address indexed newAggregator, uint256 timestamp);
+    event MigrateYield(address indexed newAggregator);
     event ClaimYield(uint256 amount, address indexed to);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
@@ -63,9 +64,9 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
 
         // Set default curve params
         curvesMap[0] = Curve({
-            basePrice: _basePrice, // 5000000000000000;
-            inflectionPoint: _inflectionPoint, // 1500;
-            inflectionPrice: _inflectionPrice, // 102500000000000000;
+            basePrice: _basePrice, // 0.001 ether;
+            inflectionPoint: _inflectionPoint, // 1000;
+            inflectionPrice: _inflectionPrice, // 0.1 ether;
             linearPriceSlope: _linearPriceSlope, // 0;
             exists: true
         });
@@ -84,17 +85,12 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     function getCurve(uint8 curveType) public view returns (uint96, uint32, uint128, uint128, bool) {
         require(curvesMap[curveType].exists, "Invalid curveType");
         Curve memory curve = curvesMap[curveType];
-        uint96 basePrice = curve.basePrice;
-        uint32 g = curve.inflectionPoint;
-        uint128 h = curve.inflectionPrice;
-        uint128 m = curve.linearPriceSlope;
-        bool exists = curve.exists;
-        return (basePrice, g, h, m, exists);
+        return (curve.basePrice, curve.inflectionPoint, curve.inflectionPrice, curve.linearPriceSlope, curve.exists);
     }
 
     function getSubTotal(uint32 fromSupply, uint32 quantity, uint8 curveType) public view returns (uint256) {
-        (uint96 basePrice, uint32 g, uint128 h, uint128 m,) = getCurve(curveType);
-        return _subTotal(fromSupply, quantity, basePrice, g, h, m);
+        (uint96 basePrice, uint32 inflectionPoint, uint128 inflectionPrice, uint128 linearPriceSlope,) = getCurve(curveType);
+        return _subTotal(fromSupply, quantity, basePrice, inflectionPoint, inflectionPrice, linearPriceSlope);
     }
 
     function setReferralFeePercent(uint256 _feePercent) external onlyOwner {
@@ -313,8 +309,9 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         (, uint8 curveType) = getShare(shareId);
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
+        require(fromSupply + uint256(quantity) <= type(uint32).max, "Exceeds max supply");
 
-        buyPrice = getSubTotal(uint32(fromSupply), quantity, curveType);
+        buyPrice = getSubTotal(SafeCastLib.toUint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (buyPrice * creatorFeePercent) / 1 ether;
         buyPriceAfterFee = buyPrice + referralFee + creatorFee;
@@ -346,7 +343,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
         require(fromSupply >= quantity, "Exceeds supply");
 
-        sellPrice = getSubTotal(uint32(fromSupply) - quantity, quantity, curveType);
+        sellPrice = getSubTotal(SafeCastLib.toUint32(fromSupply) - quantity, quantity, curveType);
         referralFee = (sellPrice * actualReferralFeePercent) / 1 ether;
         creatorFee = (sellPrice * creatorFeePercent) / 1 ether;
         sellPriceAfterFee = sellPrice - referralFee - creatorFee;
@@ -381,7 +378,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         // Step 4: Deposit all ETH into the new yieldAggregator as yieldToken.
         _depositAllETHToYieldToken();
 
-        emit MigrateYield(address(_yieldAggregator), block.timestamp);
+        emit MigrateYield(address(_yieldAggregator));
     }
 
     /**
@@ -414,7 +411,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         uint32 inflectionPoint,
         uint128 inflectionPrice,
         uint128 linearPriceSlope
-    ) public pure returns (uint256 subTotal) {
+    ) internal pure returns (uint256 subTotal) {
         unchecked {
             subTotal = basePrice * quantity;
             subTotal += BondingCurveLib.linearSum(linearPriceSlope, fromSupply, quantity);
