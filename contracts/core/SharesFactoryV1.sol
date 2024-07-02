@@ -309,6 +309,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
         (, uint8 curveType) = getShare(shareId);
         uint256 fromSupply = IShare(ERC1155).shareFromSupply(shareId);
         uint256 actualReferralFeePercent = referral != address(0) ? referralFeePercent : 0;
+        require(fromSupply + quantity <= type(uint32).max, "Exceeds max supply");
 
         buyPrice = getSubTotal(SafeCastLib.toUint32(fromSupply), quantity, curveType);
         referralFee = (buyPrice * actualReferralFeePercent) / 1 ether;

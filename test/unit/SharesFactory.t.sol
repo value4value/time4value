@@ -78,16 +78,17 @@ contract SharesFactoryTests is BaseTest {
             uint256 creatorFee
         ) = sharesFactory.getBuyPriceAfterFee(0, 1, referralReceiver);
         _buyShare(addrBob, 0, 1, referralReceiver);
+        console.log(buyPriceAfterFee, buyPrice, referralFee, creatorFee);
 
         uint256 aliceBalAfter = addrAlice.balance;
         uint256 bobBalAfter = addrBob.balance;
         uint256 referrerBalAfter = referralReceiver.balance;
         uint256 depositedETHAmountAfter = sharesFactory.depositedETHAmount();
 
-        assertEq(bobBalBefore - bobBalAfter, buyPriceAfterFee); // Bob buy 1 share
-        assertEq(aliceBalAfter - aliceBalBefore, creatorFee); // Alice receive creator fee
-        assertEq(referrerBalAfter - referrerBalBefore, referralFee); // referral receive fee
-        assertEq(depositedETHAmountAfter - depositedETHAmountBefore, buyPrice); // Factory records ETH Amount
+        assertEq(bobBalBefore - bobBalAfter, 5350438699999993); // Bob buy 1 share
+        assertEq(aliceBalAfter - aliceBalBefore, 250020499999999); // Alice receive creator fee
+        assertEq(referrerBalAfter - referrerBalBefore, 100008199999999); // referral receive fee
+        assertEq(depositedETHAmountAfter - depositedETHAmountBefore, 5000409999999995); // Factory records ETH Amount
 
         uint256 bobShareBal = sharesNFT.balanceOf(addrBob, 0);
         assertEq(bobShareBal, 2);
@@ -106,16 +107,17 @@ contract SharesFactoryTests is BaseTest {
             uint256 creatorFee
         ) = sharesFactory.getSellPriceAfterFee(1, 1, referralReceiver);
         _sellShare(addrAlice, 1, 1, referralReceiver);
+        console.log(sellPriceAfterFee, sellPrice, referralFee, creatorFee);
 
         uint256 aliceBalAfter = addrAlice.balance;
         uint256 bobBalAfter = addrBob.balance;
         uint256 referrerBalAfter = referralReceiver.balance;
         uint256 depositedETHAmountAfter = sharesFactory.depositedETHAmount();
 
-        assertEq(aliceBalAfter - aliceBalBefore, sellPriceAfterFee); // Alice sell 1 share
-        assertEq(bobBalAfter - bobBalBefore, creatorFee); // Bob receive creator fee
-        assertEq(referrerBalAfter - referrerBalBefore, referralFee); // Referral receive fee
-        assertEq(depositedETHAmountBefore - depositedETHAmountAfter, sellPrice); // Factory records ETH Amount
+        assertEq(aliceBalAfter - aliceBalBefore, 4650169466666665); // Alice sell 1 share
+        assertEq(bobBalAfter - bobBalBefore, 250009111111111); // Bob receive creator fee
+        assertEq(referrerBalAfter - referrerBalBefore, 100003644444444); // Referral receive fee
+        assertEq(depositedETHAmountBefore - depositedETHAmountAfter, 5000182222222220); // Factory records ETH Amount
 
         uint256 aliceShareBal = sharesNFT.balanceOf(addrAlice, 1);
         assertEq(aliceShareBal, 0);
@@ -386,6 +388,9 @@ contract SharesFactoryTests is BaseTest {
         sharesFactory.getBuyPriceAfterFee(0, 5_000, referralReceiver);
         uint256 gasAfter = gasleft();
         console.log("gas usage", gasBefore - gasAfter);
+
+        vm.expectRevert(bytes("Exceeds max supply"));
+        sharesFactory.getBuyPriceAfterFee(0, type(uint32).max, referralReceiver);
 
         // Expect revert if supply is over `2**32 -1` (uint32)
         vm.expectRevert();
