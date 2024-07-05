@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 .PHONY: deploy-testnet deploy-mainnet deploy-aave
 
 DEPLOY_CMD=source .env && forge script scripts/Deploy.s.sol:DeployScript
