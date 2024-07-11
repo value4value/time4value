@@ -56,7 +56,7 @@ contract BoundedIntegrationContextHandler is StdUtils {
         uint256 shareId = 0;
 
         vm.prank(factoryOwner);
-        sharesFactory.mintShare(0);
+        sharesFactory.mintShare(0, '');
 
         vm.prank(TRADER);
 

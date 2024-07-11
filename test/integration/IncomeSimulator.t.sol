@@ -216,7 +216,7 @@ contract IncomeSimulator is BaseIntegrationTest, LogUtil {
 
         // mint shares
         vm.prank(FACTORY_OWNER);
-        sharesFactory.mintShare(curveType);
+        sharesFactory.mintShare(curveType, '');
 
         // record start balance
         uint256 founderBalanceBefore = aWETH.balanceOf(address(SHARES_FOUNDER));
