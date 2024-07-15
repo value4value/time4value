@@ -98,15 +98,17 @@ generate sustainable rewards, which are then redistributed to the creators.
 We use foundry to build tests and deploy.
 
 ```bash
-install
-  yarn install
-test
-  yarn run test
-coverage
-  yarn run coverage
-deploy
-  yarn run deploy:testnet
-  yarn run deploy:mainnet
+# install
+yarn install
+# test
+yarn run test
+# coverage
+yarn run coverage
+# deploy
+yarn run deploy:optimism-sepolia
+yarn run deploy:optimism
+yarn run deploy:cyber-testnet
+yarn run deploy:cyber
 ```
 
 ## Acknowledgement
