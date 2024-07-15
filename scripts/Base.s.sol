@@ -5,9 +5,9 @@ pragma solidity 0.8.25;
 import { Script } from "forge-std/Script.sol";
 
 contract BaseScript is Script {
-    // TEMPORARY
-    // It will be replaced with multi-sig wallet.
-    address public OWNER = 0xdA1d0C7f174effBA98Ea1E31424418DC9aeaEa22;
+
+    // multi-sig wallet as owner.
+    address public OWNER = 0xb2dDDBdD1EB4EcF95BA63f271e40073860929a46;
 
     uint256 public constant OPTIMISM_MAINNET = 10;
     uint256 public constant OPTIMISM_SEPOLIA = 11155420;
