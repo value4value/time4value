@@ -18,7 +18,7 @@ contract DeployAaveScript is BaseScript {
 
         if (
             block.chainid == OPTIMISM_MAINNET || 
-            block.chainid == OPTIMISM_TESTNET
+            block.chainid == OPTIMISM_SEPOLIA
         ) {
             aaveYieldAggregator = new AaveYieldAggregator(
                 SHARES_FACTORY[block.chainid], 
