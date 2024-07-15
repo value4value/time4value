@@ -63,7 +63,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Optimism Mainnet | N/A                                                                                                                                    |
-| Optimism Sepolia | [0x97a3583954ba9eadd18dd5978908a99b1f9ee3fd](https://sepolia-optimism.etherscan.io/address/0x97a3583954ba9eadd18dd5978908a99b1f9ee3fd) |
+| Optimism Sepolia | [0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500](https://sepolia-optimism.etherscan.io/address/0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    |                                                                                                                                        |
 
@@ -75,7 +75,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Optimism Mainnet | N/A                                                                                                                                    |
-| Optimism Sepolia | [0xf11b123f3be83f0810b512e1fb16022e76f326f5](https://sepolia-optimism.etherscan.io/address/0xf11b123f3be83f0810b512e1fb16022e76f326f5) |
+| Optimism Sepolia | [0x1637a51717db3f62f836944fde09bfa4c673b2d9](https://sepolia-optimism.etherscan.io/address/0x1637a51717db3f62f836944fde09bfa4c673b2d9) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0x1b05f188388b49ee9053914d3109119d228060b5                                                                                             |
 
@@ -89,7 +89,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Optimism Mainnet | N/A                                                                                                                                    |
-| Optimism Sepolia | [0x10c43a51e50c91b67942df6ffd22e84aa5103f0d](https://sepolia-optimism.etherscan.io/address/0x10c43a51e50c91b67942df6ffd22e84aa5103f0d) |
+| Optimism Sepolia | [0x1ac43b6530f86a8b07bca8fe29d37ff3a7d84c5d](https://sepolia-optimism.etherscan.io/address/0x1ac43b6530f86a8b07bca8fe29d37ff3a7d84c5d) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0xba2553060e90551c797bebd48ee04909606bb04f                                                                                             |
 
