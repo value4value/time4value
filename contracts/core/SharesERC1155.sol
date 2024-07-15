@@ -11,7 +11,7 @@ import { IShare } from "../interface/IShare.sol";
 contract SharesERC1155 is ERC1155Supply, Ownable, IShare {
     address public _FACTORY_;
     string private _baseURI;
-    mapping(uint256 => string) public tokenURIs;
+    mapping(uint256 tokenId => string tokenURI) public tokenURIs;
 
     event Mint(address indexed user, uint256 indexed id, uint256 amount);
     event Burn(address indexed user, uint256 indexed id, uint256 amount);

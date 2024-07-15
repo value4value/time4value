@@ -11,14 +11,14 @@ contract DeployAaveScript is BaseScript {
     AaveYieldAggregator public aaveYieldAggregator;
 
     function run() public virtual broadcast {
-        require(SHARES_FACTORY[block.chainid] != address(0), "SAHRES_FACTORY not set");
+        require(SHARES_FACTORY[block.chainid] != address(0), "SHARES_FACTORY not set");
         require(WETH[block.chainid] != address(0), "WETH not set");
         require(AAVE_POOL[block.chainid] != address(0), "AAVE_POOL not set");
         require(AAVE_WETH_GATEWAY[block.chainid] != address(0), "AAVE_WETH_GATEWAY not set");
 
         if (
             block.chainid == OPTIMISM_MAINNET || 
-            block.chainid == OPTIMISM_TESTNET
+            block.chainid == OPTIMISM_SEPOLIA
         ) {
             aaveYieldAggregator = new AaveYieldAggregator(
                 SHARES_FACTORY[block.chainid], 
@@ -31,7 +31,7 @@ contract DeployAaveScript is BaseScript {
 
         /*
          ********************************************************************************
-         * Mauunal steps to be executed after deploying this script
+         * Manual steps to be executed after deploying this script
          ********************************************************************************
          */
 

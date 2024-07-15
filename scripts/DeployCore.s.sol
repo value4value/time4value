@@ -7,12 +7,16 @@ import { SharesFactoryV1 } from "contracts/core/SharesFactoryV1.sol";
 import { SharesERC1155 } from "contracts/core/SharesERC1155.sol";
 import { BlankYieldAggregator } from "contracts/core/aggregator/BlankYieldAggregator.sol";
 
-contract DeployScript is BaseScript {
+contract DeployCoreScript is BaseScript {
     SharesFactoryV1 public sharesFactory;
     SharesERC1155 public sharesNFT;
     BlankYieldAggregator public blankYieldAggregator;
 
-    string public constant BASE_URI = "https://vv.meme/shares/uri/";
+    // ERC1155 Base URI
+    // should be set to `https://api.vv.meme/api/v1/metadata/` in mainnet
+    string public constant BASE_URI = "https://dev-api.vv.meme/api/v1/metadata/";
+
+    // Curve Params
     uint96 public constant BASE_PRICE = 0.001 ether;
     uint32 public constant INFLECTION_POINT = 1000;
     uint128 public constant INFLECTION_PRICE = 0.1 ether;
@@ -24,7 +28,7 @@ contract DeployScript is BaseScript {
         sharesNFT = new SharesERC1155(BASE_URI);
         sharesFactory = new SharesFactoryV1(address(sharesNFT), BASE_PRICE, INFLECTION_POINT, INFLECTION_PRICE, LINEAR_PRICE_SLOPE);
         blankYieldAggregator = new BlankYieldAggregator(address(sharesFactory), WETH[block.chainid]);
-        
+
         // initialize
         sharesFactory.resetYield(address(blankYieldAggregator));
         sharesNFT.setFactory(address(sharesFactory));
@@ -34,7 +38,7 @@ contract DeployScript is BaseScript {
 
         /*
          ********************************************************************************
-         * Mauunal steps to be executed after deploying this script
+         * Manual steps to be executed after deploying this script
          ********************************************************************************
          */
 

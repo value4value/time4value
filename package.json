@@ -12,11 +12,17 @@
     "test:invariant": "forge test -vvv --mc BaseInvariantTest --fork-url https://optimism.llamarpc.com/sk_llama_3f92d666a172604faf69e469a67ec6ea ",
     "test:income": "forge test -vv --mp \"test/integration/IncomeSimulator.t.sol\" --fork-url https://mainnet.optimism.io ",
     "coverage": "forge coverage --mp \"test/unit/**/*.sol\" --fork-url https://mainnet.optimism.io ",
-    "deploy:testnet": "make deploy-testnet",
-    "deploy:mainnet": "make deploy-mainnet",
     "fmt": "forge fmt --check && solhint \"{scripts,contracts,test}/**/*.sol\"",
     "lint": "solhint 'contracts/**/*.sol'",
-    "clean": "rm -rf artifacts broadcast cache cache-foundry docs out-optimized out"
+    "clean": "rm -rf artifacts broadcast cache cache-foundry docs out-optimized out",
+    "deploy:core:optimism-sepolia": "make deploy-core-optimism-sepolia",
+    "deploy:aave:optimism-sepolia": "make deploy-aave-optimism-sepolia",
+    "deploy:core:optimism": "make deploy-core-optimism",
+    "deploy:aave:optimism": "make deploy-aave-optimism",
+    "deploy:core:cyber-testnet": "make deploy-core-cyber-testnet",
+    "deploy:aave:cyber-testnet": "make deploy-aave-cyber-testnet",
+    "deploy:core:cyber": "make deploy-core-cyber",
+    "deploy:aave:cyber": "make deploy-aave-cyber"
   },
   "devDependencies": {
     "ds-test": "github:dapphub/ds-test#master",
