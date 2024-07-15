@@ -37,6 +37,17 @@ contract ERC1155Tests is BaseTest {
         assertEq(userBal, 10);
     }
 
+    function test_setTokenURI() public {
+        vm.expectRevert(bytes("Caller is not the factory"));
+        sharesNFT.setTokenURI(0, "https://vv.com/0");
+
+        vm.prank(address(sharesFactory));
+        sharesNFT.setTokenURI(0, "https://vv.com/0");
+
+        string memory tokenURI = sharesNFT.tokenURIs(0);
+        assertEq(tokenURI, "https://vv.com/0");
+    }
+
     function test_shareMint() public {
         vm.prank(address(sharesFactory));
         sharesNFT.shareMint(addrUser, 0, 10);
