@@ -48,7 +48,7 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
     event ClaimYield(uint256 amount, address indexed to);
     event SetCurve(uint8 indexed curveType);
     event SetFee(uint256 indexed feePercent, string feeType);
-    event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType);
+    event Mint(uint256 indexed id, address indexed creator, uint8 indexed curveType, string uri);
     event Buy(uint256 indexed id, address indexed buyer, uint32 quantity, uint256 totalPrice);
     event Sell(uint256 indexed id, address indexed seller, uint32 quantity, uint256 totalPrice);
 
@@ -182,10 +182,11 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
      * @notice Mint a share and buy it in one transaction.
      * @param curveType The type of the curve.
      * @param quantity The quantity of shares.
+     * @param uri The URI of the share. Arweave, IPFS or any permanent id.
      * @param referral The address of the referral fee recipient.
      */
-    function mintAndBuyShare(uint8 curveType, uint32 quantity, address referral) public payable {
-        mintShare(curveType);
+    function mintAndBuyShare(uint8 curveType, uint32 quantity, string memory uri, address referral) public payable {
+        mintShare(curveType, uri);
         buyShare(shareIndex - 1, quantity, referral);
     }
 
@@ -193,13 +194,14 @@ contract SharesFactoryV1 is Ownable2Step, ReentrancyGuard {
      * @notice Mint a share with an auto-incremented ID.
      * @dev The share ID is identical to the ERC1155 ID.
      */
-    function mintShare(uint8 curveType) public {
+    function mintShare(uint8 curveType, string memory uri) public {
         require(curvesMap[curveType].exists, "Invalid curveType");
 
         Share memory newShare = Share({ creator: msg.sender, curveType: curveType });
         sharesMap[shareIndex] = newShare;
+        IShare(ERC1155).setTokenURI(shareIndex, uri);
 
-        emit Mint(shareIndex, msg.sender, curveType);
+        emit Mint(shareIndex, msg.sender, curveType, uri);
 
         shareIndex++;
     }

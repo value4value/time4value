@@ -8,6 +8,8 @@ import { IYieldAggregator } from "contracts/interface/IYieldAggregator.sol";
 import { BaseTest } from "../BaseTest.t.sol";
 
 contract SharesFactoryTests is BaseTest {
+    string private constant URI = "https://vv.com/uri/";
+
     function setUp() public {
         createFactory();
         _setUpShare();
@@ -19,7 +21,7 @@ contract SharesFactoryTests is BaseTest {
 
         // Alice mint & buy 1 share with 0 id
         vm.prank(addrAlice);
-        sharesFactory.mintShare(defaultCurveType);
+        sharesFactory.mintShare(defaultCurveType, URI);
         _buyShare(addrAlice, 0, 1, referralReceiver);
 
         // Bob mintAndBuy 1 share with 1 id
@@ -39,16 +41,18 @@ contract SharesFactoryTests is BaseTest {
 
     function test_mintShare() public {
         vm.prank(addrAlice);
-        sharesFactory.mintShare(defaultCurveType);
+        sharesFactory.mintShare(defaultCurveType, URI);
 
         uint256 shareIndex = sharesFactory.shareIndex();
         (address creator, uint8 curveType) = sharesFactory.getShare(shareIndex - 1);
+        string memory tokenURI = sharesNFT.tokenURIs(shareIndex - 1);
 
         assertEq(creator, addrAlice);
         assertEq(curveType, defaultCurveType);
+        assertEq(tokenURI, URI);
 
         vm.expectRevert(bytes("Invalid curveType"));
-        sharesFactory.mintShare(99);
+        sharesFactory.mintShare(99, URI);
     }
 
     function test_minAndBuyShare() public {
@@ -59,10 +63,12 @@ contract SharesFactoryTests is BaseTest {
         uint256 shareId = sharesFactory.shareIndex() - 1;
         uint256 bobShareBal = sharesNFT.shareBalanceOf(addrBob, shareId);
         (address creator, uint8 curveType) = sharesFactory.getShare(shareId);
+        string memory tokenURI = sharesNFT.tokenURIs(shareId);
 
         assertEq(creator, addrBob);
         assertEq(curveType, defaultCurveType);
         assertEq(bobShareBal, 99);
+        assertEq(tokenURI, URI);
     }
 
     function test_buyShares() public {
@@ -534,7 +540,7 @@ contract SharesFactoryTests is BaseTest {
         uint256 buyPrice = sharesFactory.getSubTotal(0, quantity, curveType);
 
         vm.prank(address(sender));
-        sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, referral);
+        sharesFactory.mintAndBuyShare{ value: buyPrice * 110 / 100 }(curveType, quantity, URI, referral);
     }
 
     function _buyShare(address sender, uint256 shareId, uint32 quantity, address referral) internal {

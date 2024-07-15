@@ -132,7 +132,7 @@ contract BaseIntegrationTest is Test {
         vm.deal(LONG_TERM_TRADER, 100 ether);
 
         vm.prank(DAILY_TRADER);
-        sharesFactory.mintShare(DEFAULT_CURVE_TYPE);
+        sharesFactory.mintShare(DEFAULT_CURVE_TYPE, '');
         uint256 shareId = sharesFactory.shareIndex() - 1;
 
         for (uint32 i = 0; i < tradeCount; i++) {

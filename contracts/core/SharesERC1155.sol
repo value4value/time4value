@@ -11,6 +11,7 @@ import { IShare } from "../interface/IShare.sol";
 contract SharesERC1155 is ERC1155Supply, Ownable, IShare {
     address public _FACTORY_;
     string private _baseURI;
+    mapping(uint256 => string) public tokenURIs;
 
     event Mint(address indexed user, uint256 indexed id, uint256 amount);
     event Burn(address indexed user, uint256 indexed id, uint256 amount);
@@ -30,6 +31,10 @@ contract SharesERC1155 is ERC1155Supply, Ownable, IShare {
 
     function setURI(string memory newURI) public onlyOwner {
         _baseURI = newURI;
+    }
+
+    function setTokenURI(uint256 tokenId, string memory tokenURI) public onlyFactory {
+        tokenURIs[tokenId] = tokenURI;
     }
 
     function shareMint(address to, uint256 id, uint256 amount) public onlyFactory {
