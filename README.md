@@ -27,7 +27,7 @@ If you are interested in the smart contracts, here's a simple bug bounty:
 
 - Discover [hign / medium](https://docs.sherlock.xyz/audit/judging/judging#iv.-how-to-identify-a-high-issue) issues -
   $1200 *cc ashu@vv.meme*
-- Add/optimize test cases - $100 / PR
+- Add / optimize test cases - $100 / PR
 
 ## How it works？
 
@@ -62,10 +62,10 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
+| Optimism Mainnet | [0xb4D09212dcF391aEF9d098Fbfc335527Bf52bc4a](https://optimistic.etherscan.io/address/0xb4d09212dcf391aef9d098fbfc335527bf52bc4a)       |
 | Optimism Sepolia | [0x02a04ee779587afbbe7f844180ff760bc5e73039](https://sepolia-optimism.etherscan.io/address/0x02a04ee779587afbbe7f844180ff760bc5e73039) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
-| Cyber Sepolia    |                                                                                                                                        |
+| Cyber Sepolia    | 0x552d348657fafd661372f5864093dd9555a2ef06                                                                                             |
 
 ### Shares
 
@@ -74,7 +74,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
+| Optimism Mainnet | [0xc2BDb7510CDD65a1bA7aD9b490033563b24f141F](https://optimistic.etherscan.io/address/0xc2BDb7510CDD65a1bA7aD9b490033563b24f141F)       |
 | Optimism Sepolia | [0x4509932e2f18b622f454cf73fac8069901fbbebc](https://sepolia-optimism.etherscan.io/address/0x4509932e2f18b622f454cf73fac8069901fbbebc) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0x1b05f188388b49ee9053914d3109119d228060b5                                                                                             |
@@ -88,7 +88,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
+| Optimism Mainnet | [0xFE51D108EeF116a1fFbDf95C563ed6144fC67530](https://optimistic.etherscan.io/address/0xfe51d108eef116a1ffbdf95c563ed6144fc67530)       |
 | Optimism Sepolia | [0xa77fc72fbb2e7f6c4ba4f97f0f6eeee9f46a2b97](https://sepolia-optimism.etherscan.io/address/0xa77fc72fbb2e7f6c4ba4f97f0f6eeee9f46a2b97) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0xba2553060e90551c797bebd48ee04909606bb04f                                                                                             |
