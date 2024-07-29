@@ -27,7 +27,7 @@ If you are interested in the smart contracts, here's a simple bug bounty:
 
 - Discover [hign / medium](https://docs.sherlock.xyz/audit/judging/judging#iv.-how-to-identify-a-high-issue) issues -
   $1200 *cc ashu@vv.meme*
-- Add/optimize test cases - $100 / PR
+- Add / optimize test cases - $100 / PR
 
 ## How it works？
 
@@ -62,10 +62,10 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
-| Optimism Sepolia | [0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500](https://sepolia-optimism.etherscan.io/address/0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500) |
+| Optimism Mainnet | [0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500](https://optimistic.etherscan.io/address/0x6582281f6fb0adb509ffd7d5e7e6ae957cb3e500)       |
+| Optimism Sepolia | [0x02a04ee779587afbbe7f844180ff760bc5e73039](https://sepolia-optimism.etherscan.io/address/0x02a04ee779587afbbe7f844180ff760bc5e73039) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
-| Cyber Sepolia    |                                                                                                                                        |
+| Cyber Sepolia    | 0x552d348657fafd661372f5864093dd9555a2ef06                                                                                             |
 
 ### Shares
 
@@ -74,8 +74,8 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
-| Optimism Sepolia | [0x1637a51717db3f62f836944fde09bfa4c673b2d9](https://sepolia-optimism.etherscan.io/address/0x1637a51717db3f62f836944fde09bfa4c673b2d9) |
+| Optimism Mainnet | [0xc2BDb7510CDD65a1bA7aD9b490033563b24f141F](https://optimistic.etherscan.io/address/0xc2BDb7510CDD65a1bA7aD9b490033563b24f141F)       |
+| Optimism Sepolia | [0x1637A51717db3F62f836944FdE09BFA4C673b2D9](https://sepolia-optimism.etherscan.io/address/0x1637A51717db3F62f836944FdE09BFA4C673b2D9) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0x1b05f188388b49ee9053914d3109119d228060b5                                                                                             |
 
@@ -88,7 +88,7 @@ generate sustainable rewards, which are then redistributed to the creators.
 
 | Network          | Address                                                                                                                                |
 |------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| Optimism Mainnet | N/A                                                                                                                                    |
+| Optimism Mainnet | [0xFE51D108EeF116a1fFbDf95C563ed6144fC67530](https://optimistic.etherscan.io/address/0xfe51d108eef116a1ffbdf95c563ed6144fc67530)       |
 | Optimism Sepolia | [0x1ac43b6530f86a8b07bca8fe29d37ff3a7d84c5d](https://sepolia-optimism.etherscan.io/address/0x1ac43b6530f86a8b07bca8fe29d37ff3a7d84c5d) |
 | Cyber Mainnet    | N/A                                                                                                                                    |
 | Cyber Sepolia    | 0xba2553060e90551c797bebd48ee04909606bb04f                                                                                             |
